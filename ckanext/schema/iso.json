@@ -1,0 +1,331 @@
+{
+  "type":"object",
+  "definitions":{
+    "namespaces":{
+      "type":"object",
+      "properties":{
+        "@xmlns:gmd":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gmd"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:gco":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gco"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:srv":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/srv"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:gmx":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gmx"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:gts":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gts"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:gsr":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gsr"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:gmi":{
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gmi"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:gml":{
+          "type":"string",
+          "enum": ["http://www.opengis.net/gml/3.2"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:xlink": {
+          "type":"string",
+          "enum": ["http://www.w3.org/1999/xlink"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xmlns:xsi": {
+          "type":"string",
+          "enum": ["http://www.w3.org/2001/XMLSchema-instance"],
+          "options": {
+            "hidden":true
+          }
+        },
+        "@xsi:schemaLocation": {
+          "type":"string",
+          "enum": ["http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd"],
+          "options": {
+            "hidden":true
+          }
+        }
+      }
+    },
+    "geonet":{
+      "type":"object",
+      "properties": {
+        "@xmlns:geonet":{
+          "type":"string",
+          "enum":["http://www.fao.org/geonetwork"],
+          "options": {
+            "hidden":true
+          }
+        }
+      }
+    },
+    "characterSet":{
+      "$ref": "#/definitions/geonet",
+      "properties":{
+        "gmd:MD_CharacterSetCode":{
+          "type":"object",
+          "properties":{
+            "@codeListValue":{
+              "type":"string",
+              "enum":["utf8"]
+            },
+            "@codeList": {
+              "type":"string",
+              "enum":["http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"],
+              "options": {
+                "hidden":true
+              }
+            }
+          }
+        }
+      }
+    },
+    "language":{
+      "$ref": "#/definitions/geonet",
+      "properties":{
+        "gmd:LanguageCode": {
+          "type":"object",
+          "properties":{
+            "@codeList":{
+              "type":"string",
+              "enum": ["https://www.loc.gov/standards/iso639-2/"],
+              "options": {
+                "hidden":true
+              }
+            },
+            "@codeListValue":{
+              "type":"string",
+              "default":"eng"
+            }
+          }
+        }
+      }
+    },
+    "dateStamp":{
+      "$ref": "#/definitions/geonet",
+      "properties": {
+        "gco:DateTime":{
+          "type":"string",
+          "format": "datetime-local"
+        }
+      }
+    },
+    "metadataStandardName":{
+      "$ref": "#/definitions/geonet",
+      "properties": {
+        "gco:CharacterString":{
+          "type":"string",
+          "enum":["ISO 19115:2003/19139"]
+        }
+      },
+      "options": {
+        "hidden":true
+      }
+    },
+    "referenceSystemInfo":{
+      "$ref": "#/definitions/geonet",
+      "properties": {
+        "gmd:MD_ReferenceSystem":{
+          "type":"object",
+          "properties":{
+            "gmd:referenceSystemIdentifier":{
+              "type":"object",
+              "properties":{
+                "gmd:RS_Identifier":{
+                  "type":"object",
+                  "properties":{
+                    "gmd:code":{
+                      "type":"object",
+                      "properties":{
+                        "gco:CharacterString":{
+                          "type":"string",
+                          "enum":["EPSG:4326 - WGS84"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "dataQualityInfo":{
+      "$ref": "#/definitions/geonet",
+      "properties": {
+        "gmd:DQ_DataQuality":{
+          "type":"object",
+          "properties":{
+            "gmd:scope":{
+              "type":"object",
+              "properties":{
+                "gmd:DQ_Scope":{
+                  "type":"object",
+                  "properties":{
+                    "gmd:level":{
+                      "type":"object",
+                      "properties":{
+                        "gmd:MD_ScopeCode":{
+                          "type":"object",
+                          "properties":{
+                            "@codeListValue":{
+                              "type":"string",
+                              "enum":["dataset"]
+                            },
+                            "@codeList":{
+                              "type":"string",
+                              "enum":["http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"],
+                              "options": {
+                                "hidden":true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "gmd:levelDescription":{
+                      "type":"object",
+                      "description":"was null TODO"
+                    }
+                  }
+                }
+              }
+            },
+            "gmd:lineage":{
+              "type":"object",
+              "properties":{
+                "gmd:LI_Lineage":{
+                  "type":"object",
+                  "properties":{
+                    "gmd:statement":{
+                      "type":"object",
+                      "properties":{
+                        "gco:CharacterString":{
+                          "type":"string",
+                          "format":"text"
+                        }
+                      }
+                    },
+                    "gmd:source":{
+                      "type":"array",
+                      "items":{
+                        "type":"object",
+                        "properties":{
+                          "@uuidref":{
+                            "type":"string"
+                          },
+                          "gmd:LI_Source":{
+                            "type":"object",
+                            "description":"was null TODO"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties":{
+    "gmd:MD_Metadata":{
+      "type":"object",
+      "allOf":[
+        {"$ref":"#/definitions/namespaces"}
+      ],
+      "properties": {
+        "gmd:fileIdentifier" : {
+          "type":"object",
+          "properties":{
+            "gco:CharacterString":{
+              "type":"string",
+              "description":"UUID"
+            }
+          }
+        },
+        "gmd:language":{
+          "$ref": "#/definitions/language"
+        },
+        "gmd:characterSet":{
+          "$ref": "#/definitions/characterSet"
+        },
+        "gmd:dateStamp":{
+          "$ref": "#/definitions/dateStamp"
+        },
+        "gmd:metadataStandardName":{
+          "$ref": "#/definitions/metadataStandardName"
+        },
+        "gmd:metadataStandardVersion":{
+          "$ref": "#/definitions/geonet",
+          "properties": {
+            "gco:CharacterString":{
+              "type":"string"
+            }
+          }
+        },
+        "gmd:referenceSystemInfo":{
+          "$ref": "#/definitions/referenceSystemInfo"
+        },
+        "gmd:dataQualityInfo":{
+          "$ref": "#/definitions/dataQualityInfo"
+        },
+        "gmd:contact":{
+          "type":"object",
+          "description":"TODO"
+        },
+        "gmd:identificationInfo":{
+          "type":"object",
+          "description":"TODO"
+        },
+        "gmd:spatialRepresentationInfo":{
+          "type":"object",
+          "description":"TODO"
+        },
+        "gmd:distributionInfo":{
+          "type":"object",
+          "description":"TODO"
+        }
+      }
+    }
+  }
+}

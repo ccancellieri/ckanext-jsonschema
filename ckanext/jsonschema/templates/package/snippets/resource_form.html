@@ -1,0 +1,15 @@
+{% ckan_extends %}
+
+{% block basic_fields_url %}
+{{ super() }}
+
+    {% set BODY_KEY = h.get_body_key() %}
+    {% set TYPE_KEY = h.get_type_key() %}
+    {% set OPT_KEY = h.get_opt_key() %}
+    {% set VERSION_KEY = h.get_version_key() %}
+    
+    {{ form.input(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY, placeholder=_('custom'), value=data[TYPE_KEY], error=errors[TYPE_KEY], classes=['control-medium']) }}
+    {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=data[BODY_KEY], error=errors[BODY_KEY], classes=['control-medium']) }}
+    {{ form.input(VERSION_KEY, label=_('VERSION'), id='field-'+VERSION_KEY, placeholder=_('custom'), value=data[VERSION_KEY], error=errors[VERSION_KEY], classes=['control-medium']) }}
+
+{% endblock %}

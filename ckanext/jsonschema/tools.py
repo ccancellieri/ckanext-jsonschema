@@ -36,17 +36,11 @@ def dataset_type(dataset):
 
     return dataset_type
 
-def _get_by_type(field, type):
-    if not type:
-        return None
-    return _c.JSON_CATALOG[field].get('{}.json'.format(type))
-
 def get_schema_of(type):
-    return _get_by_type(_c.JSON_SCHEMA_KEY, type)
-type,
-def get_template_of(type):
-    return _get_by_type(_c.JSON_TEMPLATE_KEY, type)
+    return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(type)
 
+def get_template_of(type):
+    return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(type)
 
 import six
 import jinja2

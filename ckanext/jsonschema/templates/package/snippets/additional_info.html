@@ -1,10 +1,13 @@
 {% ckan_extends %}
 
 {% block extras %}
-  {% if pkg_dict.custom_text %}
+  {% set BODY_KEY = h.get_body_key() %}
+  {% set TYPE_KEY = h.get_type_key() %}
+  {% set OPT_KEY = h.get_opt_key() %}
+  {% if pkg_dict[BODY_KEY] %}
     <tr>
-      <th scope="row" class="dataset-label">{{ _("Custom Text") }}</th>
-      <td class="dataset-details">{{ pkg_dict.custom_text }}</td>
+      <th scope="row" class="dataset-label">{{ _("BODY") }}</th>
+      <td class="dataset-details">{{ pkg_dict[BODY_KEY] }}</td>
     </tr>
   {% endif %}
 {% endblock %}
