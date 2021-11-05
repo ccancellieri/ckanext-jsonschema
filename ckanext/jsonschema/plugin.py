@@ -2,6 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 from ckan.common import c
+import json
 
 _ = toolkit._
 
@@ -20,6 +21,8 @@ empty = get_validator('empty')
 boolean_validator = get_validator('boolean_validator')
 int_validator = get_validator('int_validator')
 OneOf = get_validator('OneOf')
+isodate = get_validator('isodate')
+
 
 convert_to_extras = toolkit.get_converter('convert_to_extras')
 convert_from_extras = toolkit.get_converter('convert_from_extras')
@@ -60,16 +63,30 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     def get_helpers(self):
         return {
-                'is_jsonschema': lambda : True,
                 'package_types': self.package_types,
+                'resource_types': lambda t : self._resource_types(t),
                 'get_body_key': lambda : _c.SCHEMA_BODY_KEY,
                 'get_type_key': lambda : _c.SCHEMA_TYPE_KEY,
                 'get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
                 'get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
-                'get_schema': _t.get_schema_of,
-                'get_template': _t.get_template_of
+                'get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
+                'get_template': lambda x : json.dumps(_t.get_template_of(x)),
+                'get_schema_type': self._get_schema_type,
+                # 'get_body': _get_body,
+                # 'get_type': _get_type,
+                # 'get_opts': _get_opts
+
         }
 
+# def _get_body (pkg): lambda pkg : pkg.get(_c.SCHEMA_BODY_KEY)
+# def _get_type (pkg): lambda pkg : pkg.get(_c.SCHEMA_TYPE_KEY)
+# def _get_opts (pkg): lambda pkg : pkg.get(_c.SCHEMA_OPT_KEY)
+    def _get_schema_type(self):
+        # TODO: https://github.com/ckan/ckan/issues/6518
+        path = c.environ['CKAN_CURRENT_URL']
+        type = path.split('/')[1]
+        return type  
+    
     # IConfigurer
 
     def update_config(self, config_):
@@ -153,6 +170,14 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # package types not handled by any other IDatasetForm plugin.
         return False
 
+    def _resource_types(self, dataset_type):
+        '''
+        returns a list of supported resource based on the dataset_type
+        '''
+        # TODO
+
+        return self.package_types()
+
     def package_types(self):
         '''
         The package_types() function defines a list of dataset types that
@@ -170,26 +195,26 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # IDatasetForm
     ##############
 
-    def setup_template_variables(self, context, data_dict):
+    # def setup_template_variables(self, context, data_dict):
         
-        # super(toolkit.DefaultDatasetForm,self).setup_template_variables(self, context, data_dict)
-        
-        # TODO: https://github.com/ckan/ckan/issues/6518
-        path = c.environ['CKAN_CURRENT_URL']
-        type = path.split('/')[1]
+    #     super(toolkit.DefaultDatasetForm,self).setup_template_variables(self, context, data_dict)
+    #     pass
+        # # TODO: https://github.com/ckan/ckan/issues/6518
+        # path = c.environ['CKAN_CURRENT_URL']
+        # type = path.split('/')[1]
 
         
-        # data_dict.update({
+        # # data_dict.update({
+        # #     _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
+        # # })
+        # jsonschema = {
+        #     # 'data_dict' : data_dict,
+        #     _c.SCHEMA_TYPE_KEY : type,
         #     _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
-        # })
-        jsonschema = {
-            # 'data_dict' : data_dict,
-            _c.SCHEMA_TYPE_KEY : type,
-            _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
-        }
-        c.jsonschema = jsonschema
+        # }
+        # c.jsonschema = jsonschema
 
-        return jsonschema
+        # return jsonschema
 
     # def new_template(self):
     #     return 'package/new.html'
@@ -261,12 +286,20 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
             _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
         })
-                # Add our custom_resource_text metadata field to the schema
+
+        # TODO why?!?!? this has been fixed in scheming 
+        # but core now is broken... :(
+        for field in schema['resources'].keys():
+            if isodate in schema['resources'][field]:
+                schema['resources'][field].remove(isodate)
+
+        # Add our custom_resource_text metadata field to the schema
         schema['resources'].update({
                 _c.SCHEMA_BODY_KEY : [ convert_from_extras, ignore_missing ],
                 _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
                 _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
                 })
+        
         return schema
         
     def _modify_package_schema(self, schema):
@@ -286,5 +319,3 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
                 })
         return schema
-
-    

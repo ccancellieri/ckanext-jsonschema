@@ -29,6 +29,7 @@
           }
        },
        "gmd:parentIdentifier":{
+"comment":"TODO: as url resource",
           "@xmlns:geonet":"http://www.fao.org/geonetwork",
           "gco:CharacterString":"3a795799-4552-43f8-9a22-f16cf6367325"
        },

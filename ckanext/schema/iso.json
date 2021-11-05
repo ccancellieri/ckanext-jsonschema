@@ -96,7 +96,7 @@
       }
     },
     "characterSet":{
-      "$ref": "#/definitions/geonet",
+      "$ref": "iso.json#/definitions/geonet",
       "properties":{
         "gmd:MD_CharacterSetCode":{
           "type":"object",
@@ -117,7 +117,7 @@
       }
     },
     "language":{
-      "$ref": "#/definitions/geonet",
+      "$ref": "iso.json#/definitions/geonet",
       "properties":{
         "gmd:LanguageCode": {
           "type":"object",
@@ -138,7 +138,7 @@
       }
     },
     "dateStamp":{
-      "$ref": "#/definitions/geonet",
+      "$ref": "iso.json#/definitions/geonet",
       "properties": {
         "gco:DateTime":{
           "type":"string",
@@ -147,7 +147,7 @@
       }
     },
     "metadataStandardName":{
-      "$ref": "#/definitions/geonet",
+      "$ref": "iso.json#/definitions/geonet",
       "properties": {
         "gco:CharacterString":{
           "type":"string",
@@ -159,7 +159,7 @@
       }
     },
     "referenceSystemInfo":{
-      "$ref": "#/definitions/geonet",
+      "$ref": "iso.json#/definitions/geonet",
       "properties": {
         "gmd:MD_ReferenceSystem":{
           "type":"object",
@@ -188,7 +188,7 @@
       }
     },
     "dataQualityInfo":{
-      "$ref": "#/definitions/geonet",
+      "$ref": "iso.json#/definitions/geonet",
       "properties": {
         "gmd:DQ_DataQuality":{
           "type":"object",
@@ -271,10 +271,10 @@
     "gmd:MD_Metadata":{
       "type":"object",
       "allOf":[
-        {"$ref":"#/definitions/namespaces"}
+        {"$ref":"iso.json#/definitions/namespaces"}
       ],
       "properties": {
-        "gmd:fileIdentifier" : {
+        "gmd:fileIdentifier":{
           "type":"object",
           "properties":{
             "gco:CharacterString":{
@@ -284,19 +284,19 @@
           }
         },
         "gmd:language":{
-          "$ref": "#/definitions/language"
+          "$ref": "iso.json#/definitions/language"
         },
         "gmd:characterSet":{
-          "$ref": "#/definitions/characterSet"
+          "$ref": "iso.json#/definitions/characterSet"
         },
         "gmd:dateStamp":{
-          "$ref": "#/definitions/dateStamp"
+          "$ref": "iso.json#/definitions/dateStamp"
         },
         "gmd:metadataStandardName":{
-          "$ref": "#/definitions/metadataStandardName"
+          "$ref": "iso.json#/definitions/metadataStandardName"
         },
         "gmd:metadataStandardVersion":{
-          "$ref": "#/definitions/geonet",
+          "$ref": "iso.json#/definitions/geonet",
           "properties": {
             "gco:CharacterString":{
               "type":"string"
@@ -304,25 +304,32 @@
           }
         },
         "gmd:referenceSystemInfo":{
-          "$ref": "#/definitions/referenceSystemInfo"
+          "$ref": "iso.json#/definitions/referenceSystemInfo"
         },
         "gmd:dataQualityInfo":{
-          "$ref": "#/definitions/dataQualityInfo"
+          "$ref": "iso.json#/definitions/dataQualityInfo"
         },
         "gmd:contact":{
           "type":"object",
+          "$ref": "iso.json#/definitions/geonet",
           "description":"TODO"
         },
         "gmd:identificationInfo":{
           "type":"object",
+          "$ref": "iso.json#/definitions/geonet",
           "description":"TODO"
         },
         "gmd:spatialRepresentationInfo":{
-          "type":"object",
-          "description":"TODO"
+          "type":"array",
+          "items":{
+            "type":"object",
+            "$ref": "iso.json#/definitions/geonet",
+            "description":"TODO"
+          }
         },
         "gmd:distributionInfo":{
           "type":"object",
+          "$ref": "iso.json#/definitions/geonet",
           "description":"TODO"
         }
       }

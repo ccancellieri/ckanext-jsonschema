@@ -1,15 +1,39 @@
 {% ckan_extends %}
 
-{% block basic_fields_url %}
+{% block basic_fields %}
 {{ super() }}
 
-    {% set BODY_KEY = h.get_body_key() %}
-    {% set TYPE_KEY = h.get_type_key() %}
-    {% set OPT_KEY = h.get_opt_key() %}
-    {% set VERSION_KEY = h.get_version_key() %}
+{% set TYPE_KEY = h.get_type_key() %}
+{% set schema_type = data[TYPE_KEY] or h.get_schema_type() %}
+
+{% if dataset_type in h.package_types() %}
+
+    {% set formats = [] %}
+    {% for type in h.resource_types(dataset_type) %}
+        {% set fake = formats.append({"value": type, "text": _(type)}) %}
+    {% endfor %}
+
+    {% call form.select(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY,
+        options=formats,
+        selected=data[TYPE_KEY], error=errors.format, classes=['control-medium'], attrs={}, is_required=false) %}
+    <span class="info-block info-block-small">
+        <i class="fa fa-info-circle"></i>
+        {{ _('This will change the form based on the selected type, please select the right one') }}
+    </span>
+    {% endcall %}
     
-    {{ form.input(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY, placeholder=_('custom'), value=data[TYPE_KEY], error=errors[TYPE_KEY], classes=['control-medium']) }}
-    {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=data[BODY_KEY], error=errors[BODY_KEY], classes=['control-medium']) }}
+    {% set BODY_KEY = h.get_body_key() %}
+    {% set body = data[BODY_KEY] or h.get_template(data[TYPE_KEY]) %}
+    {# TODO JS reload on resource_type change #}
+    {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=body, error=errors[BODY_KEY], classes=['control-medium']) }}
+
+    {# TODO JS #}
+    
+    {% set VERSION_KEY = h.get_version_key() %}
+    {% set version = data[VERSION_KEY] %}
     {{ form.input(VERSION_KEY, label=_('VERSION'), id='field-'+VERSION_KEY, placeholder=_('custom'), value=data[VERSION_KEY], error=errors[VERSION_KEY], classes=['control-medium']) }}
+
+{% endif %}
+
 
 {% endblock %}

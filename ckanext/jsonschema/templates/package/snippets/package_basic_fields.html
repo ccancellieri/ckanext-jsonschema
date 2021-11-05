@@ -1,41 +1,35 @@
 {% ckan_extends %}
 
 {% block package_basic_fields_custom %}
+
 {#
-
+  which is the jsonschema type in this context/environment
 #}
-{# if type in h.package_types() #}
+{% set TYPE_KEY = h.get_type_key() %}
+{% set schema_type = data[TYPE_KEY] or h.get_schema_type() %}
+{% if schema_type in h.package_types() %}
+ 
+  {{ form.input(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY, placeholder=_('custom'), value=schema_type, error=errors[TYPE_KEY], classes=['control-medium']) }}
 
-  
+  {#
+    let's fetch a fresh copy of the schema based on saved type
+  #}
+  {% set schema = h.get_schema(schema_type) %}
+  <p>{{ schema }}</p>
 
-{% set jsonschema = c.jsonschema %}
-{% if jsonschema %}
+  {% set OPT_KEY = h.get_opt_key() %}
+  {% set opt = data[OPT_KEY] %}
+  {{ form.input(OPT_KEY, label=_('OPTIONS'), id='field-'+OPT_KEY, placeholder=_('custom'), value=opt, error=errors[OPT_KEY], classes=['control-medium']) }}
   
   {% set BODY_KEY = h.get_body_key() %}
-  {% set TYPE_KEY = h.get_type_key() %}
-  {% set OPT_KEY = h.get_opt_key() %}
+  {% set body = data[BODY_KEY] or h.get_template(schema_type) %}
+  {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=body, error=errors[BODY_KEY], classes=['control-medium']) }}
+    
+  {# TODO JS #}
+   
   {% set VERSION_KEY = h.get_version_key() %}
-  
-  {% set version = jsonschema[VERSION_KEY] %}
-  {% set type = jsonschema[TYPE_KEY] %}
-  {% set schema = h.get_schema(type) %}
-  {% set template = h.get_template(type) %}
-
-  <h2>{{type}}</h2>
-
-  <h3>{{schema}}</h3>
-  
-  <h3>{{template}}</h3>
-
-  <h3>{{data}}</h3>
-  
-  {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=data[BODY_KEY], error=errors[BODY_KEY], classes=['control-medium']) }}
-  {{ form.input(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY, placeholder=_('custom'), value=data[TYPE_KEY], error=errors[TYPE_KEY], classes=['control-medium']) }}
-  {{ form.input(OPT_KEY, label=_('OPTIONS'), id='field-'+OPT_KEY, placeholder=_('custom'), value=data[OPT_KEY], error=errors[OPT_KEY], classes=['control-medium']) }}
+  {% set version = data[VERSION_KEY] %}
   {{ form.input(VERSION_KEY, label=_('VERSION'), id='field-'+VERSION_KEY, placeholder=_('custom'), value=data[VERSION_KEY], error=errors[VERSION_KEY], classes=['control-medium']) }}
-  
 
 {% endif %}
-
-
 {% endblock %}

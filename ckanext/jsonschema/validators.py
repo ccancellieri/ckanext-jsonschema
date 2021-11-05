@@ -13,6 +13,7 @@ is_boolean = toolkit.get_validator('boolean_validator')
 # https://docs.ckan.org/en/2.8/extensions/validators.html#ckan.logic.validators.json_object
 # NOT FOUND import ckan.logic.validators.json_object
 #json_object = p.toolkit.get_validator('json_object')
+# isodate
 
 import ckan.lib.navl.dictization_functions as df
 
@@ -47,7 +48,38 @@ _SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_S
 def _stop_on_error(errors,key,message):
     errors[key].append(_(message))
     raise StopOnError(_(message))
+    
+import six
+def scheming_valid_json_object(value, context):
+    """Store a JSON object as a serialized JSON string
+    It accepts two types of inputs:
+        1. A valid serialized JSON string (it must be an object or a list)
+        2. An object that can be serialized to JSON
+    """
+    if not value:
+        return
+    elif isinstance(value, six.string_types):
+        try:
+            loaded = json.loads(value)
 
+            if not isinstance(loaded, dict):
+                raise Invalid(
+                    _('Unsupported value for JSON field: {}').format(value)
+                )
+
+            return value
+        except (ValueError, TypeError) as e:
+            raise Invalid(_('Invalid JSON string: {}').format(e))
+
+    elif isinstance(value, dict):
+        try:
+            return json.dumps(value)
+        except (ValueError, TypeError) as e:
+            raise Invalid(_('Invalid JSON object: {}').format(e))
+    else:
+        raise Invalid(
+            _('Unsupported type for JSON field: {}').format(type(value))
+        )
 
 def default_version(key, data, errors, context):
     '''
@@ -68,11 +100,11 @@ def schema_check(key, data, errors, context):
     # ##############SIDE EFFECT#################
     # # if configuration comes as string:
     # # convert incoming string to a dict
-    # try:
-    #     if not isinstance(body, dict):
-    #         data[key] = json.loads(body)
-    # except Exception as e:
-    #     _stop_on_error(errors,key,'Not a valid json dict :{}'.format(str(e)))
+    try:
+        if not isinstance(body, dict):
+            body = json.loads(body)
+    except Exception as e:
+        _stop_on_error(errors,key,'Not a valid json dict :{}'.format(str(e)))
     # ##############SIDE EFFECT#################
     
     schema = _t.get_schema_of(data.get((_c.SCHEMA_TYPE_KEY,)))
