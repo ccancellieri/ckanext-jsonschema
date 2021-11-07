@@ -11,6 +11,7 @@ from ckan import plugins as p
 from ckantoolkit import config
 
 from ckan.lib.navl.validators import not_empty
+from ckan.plugins.core import SingletonPlugin, implements
 
 # IHarvester
 
@@ -37,8 +38,8 @@ def text_traceback():
         ).strip()
     return res
 
-class HarvesterIso19139(HarvesterBase):
-    p.implements(IHarvester)
+class HarvesterIso19139(HarvesterBase, SingletonPlugin):
+    p.implements(IHarvester, inherit=True)
 
     csw_harvester = None
 
