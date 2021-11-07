@@ -88,7 +88,7 @@ class HarvesterIso19139(HarvesterBase):
 
     def info(self):
         return {
-            'name': 'iso19139_harvester',
+            'name': 'harvester_iso19139',
             'title': 'new ISO19139 CSW+JSONSchema based',
             'description': ''
             }
