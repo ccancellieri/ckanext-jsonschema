@@ -38,7 +38,7 @@ def text_traceback():
         ).strip()
     return res
 
-class HarvesterIso19139(HarvesterBase):
+class HarvesterIso19139(HarvesterBase, SingletonPlugin):
     implements(IHarvester, inherit=True)
 
     csw_harvester = None
@@ -55,7 +55,6 @@ class HarvesterIso19139(HarvesterBase):
     extent_template = Template('''
     {"type": "Polygon", "coordinates": [[[$xmin, $ymin], [$xmax, $ymin], [$xmax, $ymax], [$xmin, $ymax], [$xmin, $ymin]]]}
     ''')
-
 
     def _get_csw_harvester(self):
         if not self.csw_harvester:
