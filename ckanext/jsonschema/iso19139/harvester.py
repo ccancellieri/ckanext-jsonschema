@@ -38,7 +38,9 @@ def text_traceback():
         ).strip()
     return res
 
-class HarvesterIso19139(HarvesterBase):
+class HarvesterIso19139(SingletonPlugin,HarvesterBase):
+    implements(IHarvester)
+
     csw_harvester = None
 
     _user_name = None
@@ -96,8 +98,6 @@ class HarvesterIso19139(HarvesterBase):
 #################################################################
 
 # IHarvester
-
-    implements(IHarvester)
 
     # CSWHarvester
     def _setup_csw_client(self, url):
