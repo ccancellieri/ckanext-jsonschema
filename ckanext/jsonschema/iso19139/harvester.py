@@ -38,8 +38,8 @@ def text_traceback():
         ).strip()
     return res
 
-class HarvesterIso19139(SingletonPlugin,HarvesterBase):
-    implements(IHarvester)
+class HarvesterIso19139(HarvesterBase):
+    implements(IHarvester, inherit=True)
 
     csw_harvester = None
 
