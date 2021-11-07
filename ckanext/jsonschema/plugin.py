@@ -54,7 +54,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         Extensions will receive what will be given to the solr for indexing. This is essentially a flattened dict (except for multli-valued fields such as tags) of all the terms sent to the indexer. The extension can modify this by returning an altered version.
         '''
         # TODO solr
-        pass
+        return pkg_dict
 
     # def before_view(self, pkg_dict):
     #     '''
