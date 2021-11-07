@@ -12,6 +12,9 @@ import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.blueprints as _b
 
+from ckanext.jsonschema.iso19139.harvester import HarvesterIso19139 
+from ckanext.jsonschema.iso19139.iso19139 import JsonschemaIso19139
+
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
 not_empty = get_validator('not_empty')
