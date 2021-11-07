@@ -81,8 +81,8 @@ setup(
     entry_points='''
         [ckan.plugins]
         jsonschema=ckanext.jsonschema.plugin:JsonschemaPlugin
-        harvester_iso19139=ckanext.jsonschema.iso19139.harvester:HarvesterIso19139
-        jsonschema_iso19139=ckanext.jsonschema.iso19139.iso19139:JsonschemaIso19139
+        harvester_iso19139=ckanext.jsonschema.iso19139:HarvesterIso19139
+        jsonschema_iso19139=ckanext.jsonschema.iso19139:JsonschemaIso19139
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
