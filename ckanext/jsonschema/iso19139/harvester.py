@@ -38,7 +38,7 @@ def text_traceback():
         ).strip()
     return res
 
-class HarvesterIso19139(HarvesterBase):
+class HarvesterIso19139(HarvesterBase, SingletonPlugin):
     p.implements(IHarvester)
 
     csw_harvester = None
