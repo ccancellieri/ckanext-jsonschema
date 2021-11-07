@@ -1,4 +1,5 @@
 from sqlalchemy.sql.expression import true
+
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
 
@@ -21,9 +22,14 @@ missing = df.missing
 StopOnError = df.StopOnError
 Invalid = df.Invalid
 
+def stop_with_error(message, key, errors):
+    errors[key].append(_(message))
+    raise StopOnError(_(message))
+
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
-# import ckanext.jsonschema.validators as v
+import ckanext.jsonschema.interfaces as _i
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -45,42 +51,7 @@ import ckan.model as model
 
 _SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
 
-def _stop_on_error(errors,key,message):
-    errors[key].append(_(message))
-    raise StopOnError(_(message))
     
-import six
-def scheming_valid_json_object(value, context):
-    """Store a JSON object as a serialized JSON string
-    It accepts two types of inputs:
-        1. A valid serialized JSON string (it must be an object or a list)
-        2. An object that can be serialized to JSON
-    """
-    if not value:
-        return
-    elif isinstance(value, six.string_types):
-        try:
-            loaded = json.loads(value)
-
-            if not isinstance(loaded, dict):
-                raise Invalid(
-                    _('Unsupported value for JSON field: {}').format(value)
-                )
-
-            return value
-        except (ValueError, TypeError) as e:
-            raise Invalid(_('Invalid JSON string: {}').format(e))
-
-    elif isinstance(value, dict):
-        try:
-            return json.dumps(value)
-        except (ValueError, TypeError) as e:
-            raise Invalid(_('Invalid JSON object: {}').format(e))
-    else:
-        raise Invalid(
-            _('Unsupported type for JSON field: {}').format(type(value))
-        )
-
 def default_version(key, data, errors, context):
     '''
     Validator providing default values 
@@ -89,13 +60,10 @@ def default_version(key, data, errors, context):
         data[key]=_c.SCHEMA_VERSION
     return
 
-def schema_check(key, data, errors, context):
-    '''
-    Validator providing schema check capabilities
-    '''
+def _get_body(key, data, errors, context):
     body = data.get(key)
     if not body:
-        _stop_on_error(errors,key,_('Can\'t validate empty Missing value {}'.format(key)))
+        stop_with_error(_('Can\'t validate empty Missing value {}'.format(key)), key, errors)
 
     # ##############SIDE EFFECT#################
     # # if configuration comes as string:
@@ -104,14 +72,32 @@ def schema_check(key, data, errors, context):
         if not isinstance(body, dict):
             body = json.loads(body)
     except Exception as e:
-        _stop_on_error(errors,key,'Not a valid json dict :{}'.format(str(e)))
+        stop_with_error('Not a valid json dict :{}'.format(str(e)), key, errors)
     # ##############SIDE EFFECT#################
+
+    # TODO extension point (we may want to plug other schema checkers)
+    if not body:
+        stop_with_error('Unable to load a valid json schema body', key, errors)
+
+    return body
+
+def schema_check(key, data, errors, context):
+    '''
+    Validator providing schema check capabilities
+    '''
+    body = _get_body(key, data, errors, context)
     
-    schema = _t.get_schema_of(data.get((_c.SCHEMA_TYPE_KEY,)))
+    type = data.get((_c.SCHEMA_TYPE_KEY,))
+
+    # TODO extension point (we may want to plug other schema checkers)
+    if not type:
+        stop_with_error('Unable to load a valid json schema type', key, errors)
+
+    schema = _t.get_schema_of(type)
 
     # TODO extension point (we may want to plug other schema checkers)
     if not schema:
-        _stop_on_error(errors,key,'Unable to load a valid jsonschema_type')
+        stop_with_error('Unable to load a valid json-schema for type {}'.format(type), key, errors)
 
     try:
         # if not Draft4Validator.check_schema(constants.LAZY_GROUP_SCHEMA):
@@ -126,62 +112,52 @@ def schema_check(key, data, errors, context):
         #import traceback
         #traceback.print_exc()
         #TODO better message
-        _stop_on_error(errors,key,'Error validating:{}'.format(str(e)))
+        stop_with_error('Error validating: {}'.format(str(e)), key, errors)
     except Exception as e:
         #DEBUG
         #import traceback
         #traceback.print_exc()
         #TODO better message
-        _stop_on_error(errors,key,'Error validating:{}'.format(str(e)))
+        stop_with_error('Error validating:{}'.format(str(e)), key, errors)
 
-def default_lon_e(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=180
-        return
-    try:
-        if float(data[key])>180:
-            data[key]=180
-    except ValueError:
-        data[key]=180
 
-def default_lon_w(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=-180
-        return
-    try:
-        if float(data[key])<-180:
-            data[key]=-180
-    except ValueError:
-        data[key]=-180
+def extractor(key, data, errors, context):
 
-def default_lat_n(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=90
-        return
-    try:
-        if float(data[key])>90:
-            data[key]=90
-    except ValueError:
-        data[key]=90
+    body = _get_body(key, data, errors, context)
 
-def default_lat_s(key, data, errors, context):
+    type = data.get((_c.SCHEMA_TYPE_KEY,))
+
+    opt = data.get((_c.SCHEMA_OPT_KEY,))
+
+    version = data.get((_c.SCHEMA_VERSION_KEY,))
+
+    from ckan.plugins import PluginImplementations
+    # from ckan.plugins.interfaces import IConfigurable
+    # for plugin in PluginImplementations(IConfigurable):
+    for plugin in PluginImplementations(_i.IBinder):
+        try:
+            plugin.extract_from_json(body, opt, type, version, key, data, errors, context)
+        except Exception as e:
+            stop_with_error('Error extracting json model: {}'.format(str(e)), key, errors)
+
+def serializer(key, data, errors, context):
     '''
-    Validator providing default values 
+    serialize to body the data model in the desired form
     '''
-    if not data[key]:
-        data[key]=-90
-        return
-    try:
-        if float(data[key])<-90:
-            data[key]=-90
-    except ValueError:
-        data[key]=-90
+
+    body = _get_body(key, data, errors, context)
+
+    type = data.get((_c.SCHEMA_TYPE_KEY,))
+
+    opt = data.get((_c.SCHEMA_OPT_KEY,))
+
+    version = data.get((_c.SCHEMA_VERSION_KEY,))
+
+    from ckan.plugins import PluginImplementations
+    # from ckan.plugins.interfaces import IConfigurable
+    # for plugin in PluginImplementations(IConfigurable):
+    for plugin in PluginImplementations(_i.IBinder):
+        if plugin.bind_with(body, opt, type, version):
+            plugin.extract_from_json(body, opt, type, version, key, data, errors, context)
+
+

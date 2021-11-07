@@ -10,6 +10,7 @@ _ = toolkit._
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
+import ckanext.jsonschema.blueprints as _b
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -40,7 +41,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IBlueprint)
 
+    # IBlueprint
+    def get_blueprint(self):
+        return _b.jsonschema
 
     # IPackageController
 
@@ -75,7 +80,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 # 'get_body': _get_body,
                 # 'get_type': _get_type,
                 # 'get_opts': _get_opts
-
         }
 
 # def _get_body (pkg): lambda pkg : pkg.get(_c.SCHEMA_BODY_KEY)
@@ -92,7 +96,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('fanstatic', 'jsonschema')
+        toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
         # Append all the rest of the available schemas
         _c.JSON_CATALOG.update({
@@ -103,18 +107,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         assert len(_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY])==\
             len(_c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY])
     
-
-        # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
-        # # TODO DEBUG
-        # import ckanext.jsonschema.utils as _u
-        # import os
-        # j = _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'))
-        # import json
-        # _j=json.loads(j)
-        # _namespaces=_j['http://www.isotc211.org/2005/gmd:MD_Metadata']['@xmlns']
-        # namespaces = dict((v,k) for k,v in _namespaces.iteritems())
-        # _u.json_to_xml()
-        # _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'), True, namespaces)
         
     # IValidators
 
@@ -282,7 +274,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         schema.update({
             _c.SCHEMA_OPT_KEY : [ convert_from_extras, ignore_missing ],
-            _c.SCHEMA_BODY_KEY: [ convert_from_extras ],
+            _c.SCHEMA_BODY_KEY: [ convert_from_extras, _v.serializer ],
             _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
             _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
         })
@@ -308,7 +300,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # ignore_missing, empty, boolean_validator, int_validator,  OneOf
         schema.update({
             _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_extras ],
-            _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, convert_to_extras ],
+            _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, _v.extractor, convert_to_extras ],
             _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
             _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
         })

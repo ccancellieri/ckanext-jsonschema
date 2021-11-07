@@ -1,0 +1,4 @@
+{
+  "type":"object",
+  "$ref": "iso.json#/definitions/geonet"
+}

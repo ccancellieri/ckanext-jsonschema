@@ -1,0 +1,50 @@
+/* https://github.com/json-editor/json-editor/issues/1042 */
+.js .tab-content {
+  display: block;
+}
+
+
+/*
+ Save space and higlight borders
+*/
+
+div#terriajs-group {
+  padding: 5px;
+}
+
+.je-header{
+  margin: 5px;
+}
+
+.well .well-sm {
+  border: none;
+  background-color: #FFFFFF;
+  border-top: 2px solid #ccc;
+  border-left: 2px solid #ccc;
+  margin: 5px;
+  /*border-color: #000000; /*#0c6cac;*/
+}
+.well {    
+  background-color: #FFFFFF;
+}
+.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+  background-color: #eaf0f2;
+  opacity: 1;
+}
+.well.well-sm div[data-schemapath^=root] {
+  padding-right: 5px;
+  padding-bottom: 9px;
+}
+
+.form-group {
+  margin-bottom: 5px;
+}
+
+/* terriajs-view  table does not respect width
+  overriding 
+  style="width: auto; max-width: none;"
+
+#editor-terriajs-config .table {
+  width: 100% !important;
+  max-width: 100% !important;
+}*/
