@@ -43,7 +43,7 @@ import ckan.model as model
 TYPE_ONLINE_RESOURCE='online-resource'
 TYPE_ISO='iso'
 
-class jsonschemaIso19139(p.SingletonPlugin):
+class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder)
 
         # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
@@ -104,7 +104,7 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
     # <gmd:CI_Citation>
     # <gmd:title>
     # <gco:CharacterString>
-    title = _data.get('title','')   
+    title = _data.get('title','')
     _title = citation.get('gmd:title', {}).get('gco:CharacterString')\
             or\
             citation.get('gmd:alternateTitle', {}).get('gco:CharacterString')
@@ -112,7 +112,7 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
 
     # <gmd:abstract>
     # <gco:CharacterString>
-    abstract = identification.get('gmd:abstract',{}).get('gco:CharacterString')
+    abstract = identification.get('gmd:abstract', {}).get('gco:CharacterString')
         
     # description / notes / abstract
     notes = abstract or _data.get('notes')
@@ -144,32 +144,41 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
     # <gmd:MD_Metadata
     # <gmd:metadataStandardName xmlns:geonet="http://www.fao.org/geonetwork">
     # <gco:CharacterString>ISO 19115:2003/19139</gco:CharacterString>
-
-    for options in \
-        body.get("gmd:MD_Metadata", {})\
+# body.get("gmd:MD_Metadata", {}).get('gmd:distributionInfo', {}).get('gmd:MD_Distribution', {})
+    transfer_options = body.get("gmd:MD_Metadata", {})\
             .get('gmd:distributionInfo', {})\
                 .get('gmd:MD_Distribution', {})\
-                    .get('gmd:transferOptions', {}):
-        #"Geographic areas"
-        transfer_opts = options.get('gmd:MD_DigitalTransferOptions', {})
-        if not transfer_opts:
-            _v.stop_with_error('Unable to find transfer options', key, errors)
-        
-        # transfer_opts.get('gmd:unitsOfDistribution', {}).get('gco:CharacterString') 
-        # transfer_opts.get('gmd:transferSize', {}).get('gco:Real') 
-        
-        online = transfer_opts.get('gmd:onLine', [])
-        if isinstance(online, list):
-            for idx, online_resource in enumerate(list(online)):
-                pop_online(online_resource, opt, type, version, key, data, errors, context)
-                online.remove(online_resource)
-        else:
-            pop_online(online, opt, type, version, key, data, errors, context)
-            transfer_opts.pop('gmd:onLine')
+                    .get('gmd:transferOptions')
+
+    if transfer_options:
+        _transfer_options = transfer_options
+        if not isinstance(transfer_options, list):
+            _transfer_options = [ transfer_options ]
+        for options in _transfer_options:
+            #"Geographic areas"
+            # if not options or not isinstance(options, dict):
+            #     continue
+            transfer_opts = options.get('gmd:MD_DigitalTransferOptions', {})
+            if not transfer_opts:
+                continue
+                #TODO: LOGS
+                #_v.stop_with_error('Unable to find transfer options', key, errors)
+            
+            # transfer_opts.get('gmd:unitsOfDistribution', {}).get('gco:CharacterString') 
+            # transfer_opts.get('gmd:transferSize', {}).get('gco:Real') 
+            
+            online = transfer_opts.get('gmd:onLine', [])
+            if isinstance(online, list):
+                for idx, online_resource in enumerate(list(online)):
+                    pop_online(online_resource, opt, type, version, key, data, errors, context)
+                    online.remove(online_resource)
+            else:
+                pop_online(online, opt, type, version, key, data, errors, context)
+                transfer_opts.pop('gmd:onLine')
 
             
                 
-    dict = {
+    _dict = {
         'name': name,
         'title': title,
         'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
@@ -181,7 +190,7 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
     }
 
     # let's return flatten dict as per specifications
-    data.update(df.flatten_dict(dict))
+    data.update(df.flatten_dict(_dict))
 
 def pop_online(online_resource, opt, type, version, key, data, errors, context):
     if isinstance(online_resource, list):
@@ -308,6 +317,7 @@ def _get_type_from(protocol = None, url = None):
     if url:
         if not isinstance(url, str):
             url = str(url)
+        url = url.lower().strip()
         for resource_type, parts in resource_types.items():
             if any(part in url for part in parts):
                 return resource_type

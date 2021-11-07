@@ -55,7 +55,7 @@
         },
         "@xmlns:gml":{
           "type":"string",
-          "enum": ["http://www.opengis.net/gml/3.2"],
+          "enum": ["http://www.opengis.net/gml/3.2","http://www.opengis.net/gml"],
           "options": {
             "hidden":true
           }
@@ -76,7 +76,9 @@
         },
         "@xsi:schemaLocation": {
           "type":"string",
-          "enum": ["http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd"],
+          "enum": [
+            "http://www.isotc211.org/2005/gmd https://www.isotc211.org/2005/gmd/gmd.xsd http://www.isotc211.org/2005/gmx https://www.isotc211.org/2005/gmx/gmx.xsd http://www.isotc211.org/2005/srv http://schemas.opengis.net/iso/19139/20060504/srv/srv.xsd",
+            "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd"],
           "options": {
             "hidden":true
           }
@@ -159,6 +161,19 @@
       }
     },
     "referenceSystemInfo":{
+      "oneOf":[
+        {
+          "$ref":"iso.json#/definitions/MD_ReferenceSystem"
+        },
+        {
+          "type":"array",
+          "items": {
+            "$ref":"iso.json#/definitions/MD_ReferenceSystem"
+          }
+        }
+      ]
+    },
+    "MD_ReferenceSystem": {
       "$ref": "iso.json#/definitions/geonet",
       "properties": {
         "gmd:MD_ReferenceSystem":{
@@ -186,7 +201,8 @@
           }
         }
       }
-    },
+    }
+    ,
     "dataQualityInfo":{
       "$ref": "iso.json#/definitions/geonet",
       "properties": {
@@ -315,17 +331,31 @@
           "description":"TODO"
         },
         "gmd:identificationInfo":{
-          "type":"object",
-          "$ref": "iso.json#/definitions/geonet",
-          "description":"TODO"
+          "oneOf":[
+            {
+              "type":"object",
+              "$ref": "iso.json#/definitions/geonet",
+              "description":"TODO"
+            },
+            {
+              "type":"array"
+            }
+          ]
         },
         "gmd:spatialRepresentationInfo":{
-          "type":"array",
-          "items":{
-            "type":"object",
-            "$ref": "iso.json#/definitions/geonet",
-            "description":"TODO"
-          }
+          "oneOf":[
+            {
+              "type":"array",
+              "items":{
+                "type":"object",
+                "$ref": "iso.json#/definitions/geonet"
+              }
+            },
+            {
+              "type":"object",
+              "$ref": "iso.json#/definitions/geonet"
+            }
+          ]
         },
         "gmd:distributionInfo":{
           "type":"object",
