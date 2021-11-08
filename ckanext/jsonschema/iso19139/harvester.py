@@ -418,6 +418,38 @@ class HarvesterIso19139(HarvesterBase, SingletonPlugin):
         log.debug('XML content saved (len %s)', len(record['xml']))
         return True
 
+
+    def _get_user_name(self):
+        '''
+        Returns the name of the user that will perform the harvesting actions
+        (deleting, updating and creating datasets)
+
+        By default this will be the internal site admin user. This is the
+        recommended setting, but if necessary it can be overridden with the
+        `ckanext.spatial.harvest.user_name` config option, eg to support the
+        old hardcoded 'harvest' user:
+
+           ckanext.spatial.harvest.user_name = harvest
+
+        '''
+        if self._user_name:
+            return self._user_name
+
+        context = {'model': model,
+                   'ignore_auth': True,
+                   'defer_commit': True, # See ckan/ckan#1714
+                  }
+        self._site_user = p.toolkit.get_action('get_site_user')(context, {})
+
+        config_user_name = config.get('ckanext.spatial.harvest.user_name')
+        if config_user_name:
+            self._user_name = config_user_name
+        else:
+            self._user_name = self._site_user['name']
+
+        return self._user_name
+
+
     # From parent IHarvester
     def import_stage(self, harvest_object):
         '''
