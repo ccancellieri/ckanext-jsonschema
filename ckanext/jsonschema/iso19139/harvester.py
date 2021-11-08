@@ -661,6 +661,7 @@ class HarvesterIso19139(HarvesterBase, SingletonPlugin):
         except p.toolkit.ValidationError as e:
             log.error('Error: {} unchanged, skipping...'.format(str(e)))
             self._save_object_error('Error: %s' % six.text_type(e.error_summary), harvest_object, 'Import')
+            model.Session.expunge()
             model.Session.rollback()
             model.Session.close()
             return False 
