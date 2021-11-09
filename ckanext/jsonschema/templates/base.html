@@ -1,11 +1,11 @@
 {% ckan_extends %}
 
-{# which is the jsonschema type in this context/environment #}
-{% if h.get_dataset_type() in h.package_types() %}
-
-  {% block scripts %}
+{% block scripts %}
+  
   {{super()}}
 
+  {# which is the jsonschema type in this context/environment #}
+  {% if h.get_dataset_type() in h.package_types() %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
     <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
 
@@ -23,15 +23,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- autocomplete -->
     <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
+  {% endif %}
+  
+{% endblock %}
 
-  {% endblock %}
+{% block styles %}
+{{super()}}
+{% endblock %}
 
-  {% block styles %}
-  {{super()}}
-  {% endblock %}
+{% block custom_styles %}
+{{super()}}
+{% endblock %}
 
-  {% block custom_styles %}
-  {{super()}}
-  {% endblock %}
-
-{% endif %}

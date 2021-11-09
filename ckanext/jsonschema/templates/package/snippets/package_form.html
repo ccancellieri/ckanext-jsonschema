@@ -1,32 +1,203 @@
 {% ckan_extends %}
 
+{% import 'macros/form.html' as form %}
+{% set action = c.form_action or '' %}
 
-{# which is the jsonschema type in this context/environment #}
-{% if h.get_dataset_type() in h.package_types() %}
+{# This provides a full page that renders a form for adding a dataset. It can
+then itself be extended to add/remove blocks of functionality. #}
+<form id="dataset-edit" class="dataset-form form-horizontal" method="post" action="{{ action }}" data-module="basic-form" novalidate>
+  {% block stages %}
+    {{ h.snippet('package/snippets/stages.html', stages=stage) }}
+  {% endblock %}
 
-  {% block disclaimer %}
-    <p class="action-info small">
-      {%- trans -%}
-      The <i>data license</i> you select above only applies to the contents
-      of any resource files that you add to this dataset. By submitting
-      this form, you agree to release the <i>metadata</i> values that you
-      enter into the form under the
-      <a href="http://opendatacommons.org/licenses/odbl/1-0/">Open Database License</a>.
-      {%- endtrans -%}
-    </p>
+  <input type="hidden" name="_ckan_phase" value="dataset_new_1" />
+  {# pkg_name used in 3 stage edit #}
+  <input type="hidden" name="pkg_name" value="{{ data.id }}" />
+  {% block errors %}{{ form.errors(error_summary) }}{% endblock %}
+
+
+  {% block basic_fields %}
+    
+    {% block package_basic_fields_org %}
+      {# if we have a default group then this wants remembering #}
+      {% if data.group_id %}
+      <input type="hidden" name="groups__0__id" value="{{ data.group_id }}" />
+      {% endif %}
+
+      {% set dataset_is_draft = data.get('state', 'draft').startswith('draft') or data.get('state', 'none') ==  'none' %}
+      {% set dataset_has_organization = data.owner_org or data.group_id %}
+      {% set organizations_available = h.organizations_available('create_dataset') %}
+      {% set user_is_sysadmin = h.check_access('sysadmin') %}
+      {% set show_organizations_selector = organizations_available %}
+      {% set show_visibility_selector = dataset_has_organization or (organizations_available and (user_is_sysadmin or dataset_is_draft)) %}
+    
+      {% if show_organizations_selector and show_visibility_selector %}
+      <div data-module="dataset-visibility">
+        {% endif %}
+    
+        {% if show_organizations_selector %}
+        {% set existing_org = data.owner_org or data.group_id %}
+        <div class="form-group control-medium">
+          <label for="field-organizations" class="control-label">{{ _('Organization') }}</label>
+          <div class="controls">
+            <select id="field-organizations" name="owner_org" data-module="autocomplete">
+              {% if h.check_config_permission('create_unowned_dataset') %}
+              <option value="" {% if not selected_org and data.id %} selected="selected" {% endif %}>{{ _('No organization') }}</option>
+              {% endif %}
+              {% for organization in organizations_available %}
+              {# get out first org from users list only if there is not an existing org #}
+              {% set selected_org = (existing_org and existing_org == organization.id) or (not existing_org and not data.id and organization.id == organizations_available[0].id) %}
+              <option value="{{ organization.id }}" {% if selected_org %} selected="selected" {% endif %}>{{ organization.display_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        {% endif %}
+    
+        {% if show_visibility_selector %}
+        {% block package_metadata_fields_visibility %}
+        <div class="form-group control-medium">
+          <label for="field-private" class="control-label">{{ _('Visibility') }}</label>
+          <div class="controls">
+            <select id="field-private" name="private" class="form-control">
+              {% for option in [('True', _('Private')), ('False', _('Public'))] %}
+              <option value="{{ option[0] }}" {% if option[0] == data.private|trim %}selected="selected"{% endif %}>{{ option[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        {% endblock %}
+        {% endif %}
+    
+        {% if show_organizations_selector and show_visibility_selector %}
+      </div>
+      {% endif %}
+
+      {% if data.id and h.check_access('package_delete', {'id': data.id}) and data.state != 'active' %}
+      <div class="form-group control-medium">
+        <label for="field-state" class="control-label">{{ _('State') }}</label>
+        <div class="controls">
+          <select class="form-control" id="field-state" name="state">
+            <option value="active" {% if data.get('state', 'none') == 'active' %} selected="selected" {% endif %}>{{ _('Active') }}</option>
+            <option value="deleted" {% if data.get('state', 'none') == 'deleted' %} selected="selected" {% endif %}>{{ _('Deleted') }}</option>
+          </select>
+        </div>
+      </div>
+      {% endif %}
+
+    {% endblock %}
+
+    {% if h.get_dataset_type() in h.package_types() %}
+
+      {% block package_basic_fields_title %}
+      {% endblock %}
+
+      {% block package_basic_fields_url %}
+      {% endblock %}
+
+      {% block package_basic_fields_custom %}
+      {% endblock %}
+
+      {% block package_basic_fields_description %}
+      {% endblock %}
+
+      {% block package_basic_fields_tags %}
+      {% endblock %}
+
+      {% block package_basic_fields_license %}
+      {% endblock %}
+
+    {% else %}
+      {% snippet 'package/snippets/package_basic_fields.html', data=data, errors=errors, licenses=c.licenses, groups_available=c.groups_available %}
+    {% endif %}
+  {% endblock %}
+
+  {% block metadata_fields %}
+    {% if h.get_dataset_type() in h.package_types() %}
+
+      {% set extras = h.resolve_extras(data) %}
+
+      {% set TYPE_KEY = h.get_type_key() %}
+      {% set BODY_KEY = h.get_body_key() %}
+      {% set OPT_KEY = h.get_opt_key() %}
+      {% set VERSION_KEY = h.get_version_key() %}
+
+
+      {% set schema_type = extras[TYPE_KEY] %}
+      {% set body = extras[BODY_KEY] %}
+      {% set opt = extras[OPT_KEY] %}
+      {% set version = extras[VERSION_KEY] %}
+
+      {% set schema = h.get_schema(schema_type) %}
+      
+      <div class="input-group">
+        <input id="field-extras-0-key" name="extras__1__key" value="{{BODY_KEY}}" type="hidden" />
+        <input id="field-extras-0-value" name="extras__1__value" value="{{body}}" type="hidden" class="form-control"/>
+      
+        <input id="field-extras-1-key" name="extras__0__key" value="{{TYPE_KEY}}" type="hidden" />
+        <input id="field-extras-1-value" name="extras__0__value" value={{schema_type}} type="hidden" class="form-control"/>
+      
+        <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
+        <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="text" class="form-control"/>
+      
+        <input id="field-extras-3-key" name="extras__3__key" value="{{VERSION_KEY}}" type="hidden" />
+        <input id="field-extras-3-value" name="extras__3__value" value="{{version}}" type="text" class="form-control"/>
+      </div>
+
+
+      <div id="jsonschema-config-form" data-module="jsonschema"
+        data-module-opt="{{ opt }}"
+        data-module-schema="{{ schema }}"
+        data-module-body="{{ body }}"
+        data-module-type="{{ schema_type }}" data-module-ckan-url="{{ h.url_for('/',_external=True) }}"/>
+
+      <!--  -->
+      <div id="editor">
+        <p>
+            <div style="display: inline-block;">
+                <button class="btn btn-primary" id="editor-editor" onclick="javascript:jsonschema.wrap(jsonschema.getEditorAce);">Editor</button>
+                <button class="btn btn-primary" id="editor-howto" onclick="javascript:jsonschema.wrap(jsonschema.getEditor);">HowTo</button>
+                <button class="btn btn-primary" id="editor-toggle" onclick="javascript:jsonschema.wrap(jsonschema.editorToggle);"></button>
+            </div>
+        </p>
+        <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
+        <div id="editor-jsonschema-config">
+            {% resource 'ckanext-jsonschema/main' %}
+        </div>
+        <p>
+            <div style="border-bottom: 1px solid gray;">
+                Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
+            </div>
+        </p>
+      </div>
+    {% else %}
+      {% snippet 'package/snippets/package_metadata_fields.html', data=data, errors=errors %}
+    {% endif %}
   {% endblock %}
 
   {% block form_actions %}
-    {{super()}}
-    <input type="hidden" name="_ckan_phase" value="" />
-    
-    
-    {#
-    {% block save_button %}
-      <button class="btn btn-primary" type="submit" name="save" value="go-metadata">{% block save_button_text %}{{ _('Next: Add Data') }}{% endblock %}</button>
-    {% endblock %}
-    #}
-
+    <div class="form-actions">
+      {% block disclaimer %}
+        <p class="action-info small">
+          {%- trans -%}
+          The <i>data license</i> you select above only applies to the contents
+          of any resource files that you add to this dataset. By submitting
+          this form, you agree to release the <i>metadata</i> values that you
+          enter into the form under the
+          <a href="http://opendatacommons.org/licenses/odbl/1-0/">Open Database License</a>.
+          {%- endtrans -%}
+        </p>
+      {% endblock %}
+      {% block delete_button %}
+        {% if h.check_access('package_delete', {'id': data.id}) and not data.state == 'deleted' %}
+          <a class="btn btn-danger pull-left" href="{% url_for controller='package', action='delete', id=data.id %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this dataset?') }}">{% block delete_button_text %}{{ _('Delete') }}{% endblock %}</a>
+        {% endif %}
+      {% endblock %}
+      {% block save_button %}
+        <button class="btn btn-primary" type="submit" name="save">{% block save_button_text %}{{ _('Next: Add Data') }}{% endblock %}</button>
+      {% endblock %}
+      {{ form.required_message() }}
+    </div>
   {% endblock %}
+</form>
 
-{% endif %}
