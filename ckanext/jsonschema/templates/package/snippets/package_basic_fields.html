@@ -1,97 +1,10 @@
-
 {% ckan_extends %}
 
-{% block package_basic_fields_title %}
+
+{% block package_basic_fields_org %}
+  {{ super() }}
 {% endblock %}
 
 
-
-
-  {% block package_basic_fields_license %}
-    {{ super() }}
-  {% endblock %}
-
-  {% block package_basic_fields_org %}
-    {{ super() }}
-  {% endblock %}
-
-  {% block extras %}
-  {% endblock %}
-
-  {% block package_basic_fields_tags %}
-  {% endblock %}
-
-  {% block package_basic_fields_description %}
-  {% endblock %}
-
-  {% block package_basic_fields_url %}
-  {% endblock %}
-  
-  {% block package_basic_fields_custom %}
-    {#
-    which is the jsonschema type in this context/environment
-    #}
-    {% set TYPE_KEY = h.get_type_key() %}
-    {% set schema_type = data[TYPE_KEY] or h.get_schema_type() %}
-    {% if schema_type in h.package_types() %}
-    
-        <!-- <input id="save" type="hidden" name="save" value="go-metadata" /> -->
-        <!-- <input id="_ckan_phase" type="hidden" name="_ckan_phase" value="" /> -->
-        <!-- {{ form.input(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY, placeholder=_('custom'), value=schema_type, error=errors[TYPE_KEY], classes=['control-medium']) }} -->
-        <input id="{{'field-'+TYPE_KEY}}" type="hidden" name={{TYPE_KEY}} value={{schema_type}} />
-
-        {#
-          let's fetch a fresh copy of the schema based on saved type
-        #}
-        {% set schema = h.get_schema(schema_type) %}
-
-        {% set OPT_KEY = h.get_opt_key() %}
-        {% set opt = data[OPT_KEY] %}
-        <input id="{{'field-'+OPT_KEY}}" type="hidden" name="{{OPT_KEY}}" value="{{opt}}" />
-
-        {% set BODY_KEY = h.get_body_key() %}
-        {% set body = data[BODY_KEY] or h.get_template(schema_type) %}
-
-        <input id="{{'field-'+BODY_KEY}}" type="hidden" name="{{BODY_KEY}}" value="{{body}}" />
-          
-        {% set VERSION_KEY = h.get_version_key() %}
-        {% set version = data[VERSION_KEY] %}
-        <input id="{{'field-'+VERSION_KEY}}" type="hidden" name="{{VERSION_KEY}}" value="{{data[VERSION_KEY]}}", error=errors[VERSION_KEY] />
-          
-        {#
-          
-        <!-- {{ form.input(OPT_KEY, label=_('OPTIONS'), id='field-'+OPT_KEY, placeholder=_('custom'), value=opt, error=errors[OPT_KEY], classes=['control-medium']) }} -->
-        <!-- {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=body, error=errors[BODY_KEY], classes=['control-medium']) }} -->
-        <!-- {{ form.input(VERSION_KEY, label=_('VERSION'), id='field-'+VERSION_KEY, placeholder=_('custom'), value=version, error=errors[VERSION_KEY], classes=['control-medium']) }} -->
-          #}
-
-        <div id="jsonschema-config-form" data-module="jsonschema"
-        data-module-opt="{{ opt }}"
-        data-module-schema="{{ schema }}"
-        data-module-body="{{ body }}"
-        data-module-type="{{ schema_type }}" data-module-ckan-url="{{ h.url_for('/',_external=True) }}"/>
-
-        <!--  -->
-          <div id="editor">
-            <p>
-                <div style="display: inline-block;">
-                    <button class="btn btn-primary" id="editor-editor" onclick="javascript:jsonschema.wrap(jsonschema.getEditorAce);">Editor</button>
-                    <button class="btn btn-primary" id="editor-howto" onclick="javascript:jsonschema.wrap(jsonschema.getEditor);">HowTo</button>
-                    <button class="btn btn-primary" id="editor-toggle" onclick="javascript:jsonschema.wrap(jsonschema.editorToggle);"></button>
-                </div>
-            </p>
-            <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
-            <div id="editor-jsonschema-config">
-                {% resource 'ckanext-jsonschema/main' %}
-            </div>
-            <p>
-                <div style="border-bottom: 1px solid gray;">
-                    Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
-                </div>
-            </p>
-        </div>
-    {% endif %}
-    
-{% endblock %}
 
 

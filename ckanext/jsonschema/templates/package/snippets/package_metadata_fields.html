@@ -1,23 +1,94 @@
 {% ckan_extends %}
+
+{% import 'macros/form.html' as form %}
+
 {% block package_metadata_fields %}
 
-  {% block package_metadata_fields_custom %}
-  {% endblock %}
+  {# which is the jsonschema type in this context/environment #}
+  {% if h.get_dataset_type() in h.package_types() %}
+    {% block package_metadata_fields_url %}
+      
+    {% endblock %}
 
+    {% block package_metadata_fields_version %}
+      
+    {% endblock %}
 
-  {% block package_metadata_fields_url %}
-  {% endblock %}
+    {% block package_metadata_author %}
+      
+    {% endblock %}
 
-  {% block package_metadata_fields_version %}
-  {% endblock %}
+    {% block package_metadata_fields_maintainer %}
 
-  {% block package_metadata_author %}
-  {% endblock %}
+    {% endblock %}
 
-  {% block package_metadata_fields_maintainer %}
-  {% endblock %}
-  
+  {% endif %}
+
   {% block dataset_fields %}
+  {% endblock %}
+
+  {% block package_metadata_fields_custom %}
+    {% block custom_fields %}
+      {# which is the jsonschema type in this context/environment #}    
+      {% if h.get_dataset_type() in h.package_types() %}
+
+        {% set extras = h.resolve_extras(data) %}
+
+        {% set TYPE_KEY = h.get_type_key() %}
+        {% set BODY_KEY = h.get_body_key() %}
+        {% set OPT_KEY = h.get_opt_key() %}
+        {% set VERSION_KEY = h.get_version_key() %}
+
+
+        {% set schema_type = extras[TYPE_KEY] %}
+        {% set body = extras[BODY_KEY] %}
+        {% set opt = extras[OPT_KEY] %}
+        {% set version = extras[VERSION_KEY] %}
+
+        {% set schema = h.get_schema(schema_type) %}
+        
+        <div class="input-group">
+          <input id="field-extras-0-key" name="extras__1__key" value="{{BODY_KEY}}" type="hidden" />
+          <input id="field-extras-0-value" name="extras__1__value" value="{{body}}" type="hidden" class="form-control"/>
+        
+          <input id="field-extras-1-key" name="extras__0__key" value="{{TYPE_KEY}}" type="hidden" />
+          <input id="field-extras-1-value" name="extras__0__value" value={{schema_type}} type="hidden" class="form-control"/>
+        
+          <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
+          <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="text" class="form-control"/>
+        
+          <input id="field-extras-3-key" name="extras__3__key" value="{{VERSION_KEY}}" type="hidden" />
+          <input id="field-extras-3-value" name="extras__3__value" value="{{version}}" type="text" class="form-control"/>
+        </div>
+
+
+        <div id="jsonschema-config-form" data-module="jsonschema"
+          data-module-opt="{{ opt }}"
+          data-module-schema="{{ schema }}"
+          data-module-body="{{ body }}"
+          data-module-type="{{ schema_type }}" data-module-ckan-url="{{ h.url_for('/',_external=True) }}"/>
+
+        <!--  -->
+        <div id="editor">
+          <p>
+              <div style="display: inline-block;">
+                  <button class="btn btn-primary" id="editor-editor" onclick="javascript:jsonschema.wrap(jsonschema.getEditorAce);">Editor</button>
+                  <button class="btn btn-primary" id="editor-howto" onclick="javascript:jsonschema.wrap(jsonschema.getEditor);">HowTo</button>
+                  <button class="btn btn-primary" id="editor-toggle" onclick="javascript:jsonschema.wrap(jsonschema.editorToggle);"></button>
+              </div>
+          </p>
+          <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
+          <div id="editor-jsonschema-config">
+              {% resource 'ckanext-jsonschema/main' %}
+          </div>
+          <p>
+              <div style="border-bottom: 1px solid gray;">
+                  Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
+              </div>
+          </p>
+        </div>
+      {% endif %}
+    {% endblock %}
   {% endblock %}
 
 

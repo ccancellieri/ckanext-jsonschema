@@ -79,7 +79,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 let value=this.editor.getValue();
                 this.jsonschema_body=jsonschema.asObject(value);
 //TODO externalize id
-                let input=$('#field-_body_')[0]; 
+                let input=$('#field-extras-0-value')[0]; 
                 input.value=jsonschema.asString(value);
 
                 this.editorToggle(enable=false);

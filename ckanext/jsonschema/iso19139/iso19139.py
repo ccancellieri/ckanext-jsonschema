@@ -69,14 +69,41 @@ class JsonschemaIso19139(p.SingletonPlugin):
         
 
     def extract_from_json(self, body, opt, type, version, key, data, errors, context):
-
-        if type == TYPE_ISO:
+        # TODO which type schema or dataset?
+        
+        if key==('name',):
+            extract_name(body, opt, type, version, key, data, errors, context)
+        else:
             _extract_iso(body, opt, type, version, key, data, errors, context)
         # if type == TYPE_ONLINE_RESOURCE:
         #     _create_online_resources(body, opt, type, version, key, data, errors, context)
 
 
 import ckan.lib.navl.dictization_functions as df
+
+def extract_name(body, opt, type, version, key, data, errors, context):
+
+    _data = df.unflatten(data)
+
+    # name:
+    #<gmd:MD_Metadata 
+    #<gmd:fileIdentifier>
+    #<gco:CharacterString>c26de669-90f9-43a1-ae4d-6b1b9660f5e0</gco:CharacterString>
+    # TODO generate if still none...
+
+    name = body.get("gmd:MD_Metadata", {})\
+                            .get('gmd:fileIdentifier', {})\
+                                .get('gco:CharacterString')
+    name = name or _data.get('name') #TODO error if null...
+
+    if not name:
+        _v.stop_with_error('Unable to obtain', key, errors)
+        
+    _dict = {
+        'name': name,
+        'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
+    }
+    data.update(df.flatten_dict(_dict))
 
 def _extract_iso(body, opt, type, version, key, data, errors, context):
 
@@ -124,15 +151,10 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
     # <gco:CharacterString>
 
 
-    # name:
-    #<gmd:MD_Metadata 
-    #<gmd:fileIdentifier>
-    #<gco:CharacterString>c26de669-90f9-43a1-ae4d-6b1b9660f5e0</gco:CharacterString>
-
-    name = body.get("gmd:MD_Metadata", {})\
-                            .get('gmd:fileIdentifier', {})\
-                                .get('gco:CharacterString')
-    name = name or _data.get('name') #TODO error if null...
+# name = body.get("gmd:MD_Metadata", {})\
+#                         .get('gmd:fileIdentifier', {})\
+#                             .get('gco:CharacterString')
+# name = name or _data.get('name') #TODO error if null...
     # TODO generate if still none
 
     # version
@@ -179,16 +201,15 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
             
                 
     _dict = {
-        'name': name,
         'title': title,
-        'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
         'notes': notes,
-        _c.SCHEMA_BODY_KEY: json.dumps(body),
-        _c.SCHEMA_TYPE_KEY: type,
-        _c.SCHEMA_OPT_KEY: json.dumps(opt),
-        _c.SCHEMA_VERSION_KEY:_c.SCHEMA_VERSION,
+        # _c.SCHEMA_BODY_KEY: json.dumps(body),
+        # _c.SCHEMA_TYPE_KEY: type,
+        # _c.SCHEMA_OPT_KEY: json.dumps(opt),
+        # _c.SCHEMA_VERSION_KEY: json.dumps(_c.SCHEMA_VERSION),
     }
 
+    # context['defer_commit']=True# TODO #########################################CHECKME WHY??
     # let's return flatten dict as per specifications
     data.update(df.flatten_dict(_dict))
 
@@ -220,9 +241,9 @@ def extract_online_resource(body, opt, type, version, key, data, errors, context
         'title': body.get('gmd:name', {}).get('gco:CharacterString', ''),
         'description': body.get('gmd:description', {}).get('gco:CharacterString', ''),
         'url': body.get('gmd:linkage', {}).get('gmd:URL', ''),
-        _c.SCHEMA_VERSION_KEY: version,
-        _c.SCHEMA_BODY_KEY: json.dumps(body),
-        _c.SCHEMA_TYPE_KEY: type,
+        # _c.SCHEMA_VERSION_KEY: json.dumps(version),
+        # _c.SCHEMA_BODY_KEY: json.dumps(body),
+        # _c.SCHEMA_TYPE_KEY: type,
     }
     protocol = body.get('gmd:protocol', {}).get('gco:CharacterString')
     new_resource.update({
@@ -323,19 +344,25 @@ def _get_type_from(protocol = None, url = None):
                 return resource_type
 
         file_types = {
-            'kml' : ('kml',),
-            'kmz': ('kmz',),
-            'gml': ('gml',),
-            'tif': ('tif','tiff',),
-            'shp': ('shp',),
-            'zip': ('zip',),
-            'jpg': ('jpeg','jpg'),
-            'png': ('png'),
+            'kml' : 'kml',
+            'kmz': 'kmz',
+            'gml': 'gml',
+            'tif': 'tif',
+            'tiff': 'tif',
+            'json': 'json',
+            'shp': 'shp',
+            'zip': 'zip',
+            'jpg': 'jpg',
+            'jpeg': 'jpg',
+            'png': 'png',
         }
 
-        for file_type, extensions in file_types.items():
-            if any(url.endswith(extension) for extension in extensions):
-                return file_type
+        import os
+        splitted_url = os.path.splitext(url)
+        if len(splitted_url) > 1:
+            extension = splitted_url[1][1:]
+            if extension:
+                return file_types.get(extension)
 
 def default_lon_e(key, data, errors, context):
     '''

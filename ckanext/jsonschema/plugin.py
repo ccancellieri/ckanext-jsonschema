@@ -53,8 +53,15 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         '''
         Extensions will receive what will be given to the solr for indexing. This is essentially a flattened dict (except for multli-valued fields such as tags) of all the terms sent to the indexer. The extension can modify this by returning an altered version.
         '''
-        # TODO solr
         return pkg_dict
+        # d=pkg_dict
+        # # TODO solr
+        # return {
+        #     'title':d.title,
+        #     'name':d.name,
+        #     'url':d.url
+        # }
+            
 
     # def before_view(self, pkg_dict):
     #     '''
@@ -76,7 +83,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 'get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
                 'get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
                 'get_template': lambda x : json.dumps(_t.get_template_of(x)),
-                'get_schema_type': self._get_schema_type,
+                'get_dataset_type': _v.get_dataset_type,
+                'resolve_extras': _v.resolve_extras,
                 # 'get_body': _get_body,
                 # 'get_type': _get_type,
                 # 'get_opts': _get_opts
@@ -85,11 +93,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 # def _get_body (pkg): lambda pkg : pkg.get(_c.SCHEMA_BODY_KEY)
 # def _get_type (pkg): lambda pkg : pkg.get(_c.SCHEMA_TYPE_KEY)
 # def _get_opts (pkg): lambda pkg : pkg.get(_c.SCHEMA_OPT_KEY)
-    def _get_schema_type(self):
-        # TODO: https://github.com/ckan/ckan/issues/6518
-        path = c.environ['CKAN_CURRENT_URL']
-        type = path.split('/')[1]
-        return type  
+
     
     # IConfigurer
 
@@ -272,12 +276,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         '''
         schema = default_create_package_schema()
 
-        schema.update({
-            _c.SCHEMA_OPT_KEY : [ convert_from_extras, ignore_missing ],
-            _c.SCHEMA_BODY_KEY: [ convert_from_extras, _v.serializer ],
-            _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
-            _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
-        })
+        # schema.update({
+        #     _c.SCHEMA_OPT_KEY : [ convert_from_extras, ignore_missing ],
+        #     _c.SCHEMA_BODY_KEY: [ convert_from_extras, _v.serializer ],
+        #     _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
+        #     _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
+        # })
 
         # TODO why?!?!? this has been fixed in scheming 
         # but core now is broken... :(
@@ -286,28 +290,37 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 schema['resources'][field].remove(isodate)
 
         # Add our custom_resource_text metadata field to the schema
-        schema['resources'].update({
-                _c.SCHEMA_BODY_KEY : [ convert_from_extras, ignore_missing ],
-                _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
-                _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
-                })
+        # schema['resources'].update({
+        #         _c.SCHEMA_BODY_KEY : [ convert_from_extras, ignore_missing ],
+        #         _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
+        #         _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
+        #         })
         
+        # schema.update({
+        #     '__extras': [_v.serializer]
+        # })
+
+        schema.get('name', []).append(_v.serializer)
+        schema.get('__extras', []).append(_v.serializer)
         return schema
         
     def _modify_package_schema(self, schema):
         # our custom field
         # not_missing, not_empty, resource_id_exists, package_id_exists, 
         # ignore_missing, empty, boolean_validator, int_validator,  OneOf
-        schema.update({
-            _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_extras ],
-            _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, _v.extractor, convert_to_extras ],
-            _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
-            _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
-        })
+        # schema.update({
+        #     _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_extras ],
+        #     _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, _v.extractor, convert_to_extras ],
+        #     _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
+        #     _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
+        # })
         # Add our custom_resource_text metadata field to the schema
-        schema['resources'].update({
-                _c.SCHEMA_BODY_KEY : [ not_missing, _v.schema_check, convert_to_extras ],
-                _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
-                _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
-                })
+        # schema['resources'].update({
+        #         _c.SCHEMA_BODY_KEY : [ not_missing, _v.schema_check, convert_to_extras ],
+        #         _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
+        #         _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
+        #         })
+        schema.get('name', []).insert(0,_v.extractor)
+        schema.get('__extras', []).insert(0,_v.extractor)
+        schema.get('__extras', []).insert(0,_v.schema_check)
         return schema

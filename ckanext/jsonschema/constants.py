@@ -13,11 +13,12 @@ TYPE='jsonschema'
 
 # Schema keys will be part of the extras keys
 SCHEMA_OPT_KEY='_opt_'
+SCHEMA_OPT='{}' # TODO MAKE DEFAULT CONFIG CONFIGURABLE....
 SCHEMA_BODY_KEY='_body_'
 # to mark a metadata as 
 # ckanext-jsonschema managed package
 SCHEMA_VERSION_KEY='_version_'
-SCHEMA_VERSION='0.1'
+SCHEMA_VERSION='0.1' # TODO MAKE DEFAULT VERSION CONFIGURABLE....
 # TODO schema Mapping
 SCHEMA_TYPE_KEY='_type_'
 
@@ -50,9 +51,6 @@ PATH_TEMPLATE=path.realpath(config.get('ckanext.jsonschema.path.template', path.
 # REST paths
 REST_MAPPING_PATH='/{}/mapping'.format(TYPE)
 REST_SCHEMA_PATH='/{}/schema'.format(TYPE)
-# TODO REST_*_PATH
-# document PAGE_SIZE
-PAGE_SIZE = 15
 
 
 
