@@ -1,0 +1,109 @@
+{
+    "type": "object",
+    "extent":{
+        "type":"array",
+        "items":{
+            "oneOf":[
+                {
+                    "description":"temporal extent",
+                    "properties":{
+                        "beginPosition":{
+                            "type":"string"
+                        },
+                        "endPosition":{
+                            "type":"string"
+                        }
+                    }
+                },
+                {
+                    "description":"vertical extent",
+                    "properties":{
+                        "description":{
+                            "type":"string"
+                        },
+                        "minimumValue":{
+                            "type":"string"
+                        },
+                        "maximumValue":{
+                            "type":"string"
+                        }
+                    }
+                },
+                {
+                    "type":"object",
+                    "oneOf": [
+                        {
+                            "description":"bbox geographic extent",
+                            "properties":{
+                                "east":{
+                                    "type":"string"
+                                },
+                                "south":{
+                                    "type":"string"
+                                },
+                                "west":{
+                                    "type":"string"
+                                },
+                                "north":{
+                                    "type":"string"
+                                }
+                            }
+                        },
+                        {
+                            "description":"polygon geographic extent",
+                            "properties":{
+                                "geospatial":{
+                                    "type":"string"
+                                }
+                            }
+                        },
+                        {
+                            "description":"geographic extent",
+                            "properties":{
+                                "extentTypeCode":{
+                                    "type":"boolean"
+                                },
+                                "code":{
+                                    "type":"object",
+                                    "oneOf":[
+                                        {
+                                            "description":"filename",
+                                            "properties":{
+                                                "src": {
+                                                    "type":"string",
+                                                    "description":"code // TODO"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description":"anchor",
+                                            "properties":{
+                                                "uri": {
+                                                    "type":"string",
+                                                    "description":"TODO"
+                                                },
+                                                "url": {
+                                                    "type":"string",
+                                                    "description":"TODO"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "description":"text",
+                                            "properties":{
+                                                "code": {
+                                                    "type":"string",
+                                                    "description":"TODO"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
