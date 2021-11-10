@@ -5,7 +5,7 @@ for convenience.
 import six
 import logging
 
-from owslib.etree import etree
+from lxml import etree
 from owslib.fes import PropertyIsEqualTo, SortBy, SortProperty
 
 log = logging.getLogger(__name__)

@@ -1,0 +1,58 @@
+{% ckan_extends %}
+
+{% if h.get_dataset_type() in h.package_types() %}
+  {% set jsonschema = true %}
+{% endif %}
+
+
+{% block package_basic_fields_title %}
+  {% if jsonschema %}
+  
+  {% else%}
+  {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block package_basic_fields_url %}
+  {% if jsonschema %}
+    
+  {% else%}
+  {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block package_basic_fields_custom %}
+  {% if jsonschema %}
+    
+  {% else%}
+  {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block package_basic_fields_description %}
+  {% if jsonschema %}
+    
+  {% else%}
+  {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block package_basic_fields_tags %}
+  {% if jsonschema %}
+    
+  {% else %}
+  {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block package_basic_fields_license %}
+  {% if jsonschema %}
+    
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block package_basic_fields_org %}
+  {{super()}}
+{% endblock %}

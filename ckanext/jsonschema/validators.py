@@ -87,7 +87,7 @@ def schema_check(key, data, errors, context):
 
 def get_dataset_type(data = None):
     
-    _type = data and data.get('tipe')
+    _type = data and data.get('type')
     if _type:
         return _type
 

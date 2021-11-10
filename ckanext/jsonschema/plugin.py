@@ -30,6 +30,7 @@ convert_from_extras = toolkit.get_converter('convert_from_extras')
 from ckan.logic.schema import \
     default_create_package_schema,\
     default_update_package_schema,\
+    default_show_package_schema,\
     default_group_schema,\
     default_tags_schema
 
@@ -47,12 +48,18 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     # IPackageController
 
-    def before_index(self, pkg_dict):
-        '''
-        Extensions will receive what will be given to the solr for indexing. This is essentially a flattened dict (except for multli-valued fields such as tags) of all the terms sent to the indexer. The extension can modify this by returning an altered version.
-        '''
-        return pkg_dict
-        # d=pkg_dict
+    # def before_index(self, pkg_dict):
+    #     '''
+    #     Extensions will receive what will be given to the solr for indexing. This is essentially a flattened dict (except for multli-valued fields such as tags) of all the terms sent to the indexer. The extension can modify this by returning an altered version.
+    #     '''
+    #     # return pkg_dict
+    #     # d=pkg_dict
+
+    #     # d.pop('_version_')
+
+    #     pkg_dict.update({'validated_data_dict': json.loads(pkg_dict)})
+        
+    #     return pkg_dict
         # # TODO solr
         # return {
         #     'title':d.title,
@@ -272,7 +279,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         field to be converted from an extras field.
         So we want to use the convert_from_extras() converter.
         '''
-        schema = default_create_package_schema()
+        schema = default_show_package_schema()
 
         # schema.update({
         #     _c.SCHEMA_OPT_KEY : [ convert_from_extras, ignore_missing ],
