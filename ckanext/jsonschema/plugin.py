@@ -1,11 +1,9 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+_ = toolkit._
 
 from ckan.common import c
 import json
-
-_ = toolkit._
-
 
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
@@ -108,8 +106,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                     _c.JSON_TEMPLATE_KEY:_t.read_all_template()
             })
 
-        assert len(_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY])==\
-            len(_c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY])
+        # assert len(_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY])==\
+        #     len(_c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY])
     
         
     # IValidators

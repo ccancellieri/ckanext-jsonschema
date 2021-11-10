@@ -151,7 +151,8 @@ def extractor(key, data, errors, context):
     #             del data_dict['save']
     for plugin in PluginImplementations(_i.IBinder):
         try:
-            plugin.extract_from_json(body, opt, type, version, key, data, errors, context)
+            if plugin.bind_with(body, opt, type, version):
+                plugin.extract_from_json(body, opt, type, version, key, data, errors, context)
         except Exception as e:
             stop_with_error('Error extracting json model: {}'.format(str(e)), key, errors)
 

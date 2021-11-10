@@ -41,7 +41,7 @@ import json
 import ckan.model as model
 
 TYPE_ONLINE_RESOURCE='online-resource'
-TYPE_ISO='iso'
+TYPE_ISO19139='iso19139'
 
 class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder)
@@ -62,7 +62,7 @@ class JsonschemaIso19139(p.SingletonPlugin):
             # when version is not the default one we don't touch
             return False
 
-        if type == TYPE_ISO:
+        if type == TYPE_ISO19139:
             return True
         if type == TYPE_ONLINE_RESOURCE:
             raise Exception('should only bind to package types')
@@ -97,7 +97,7 @@ def extract_name(body, opt, type, version, key, data, errors, context):
     name = name or _data.get('name') #TODO error if null...
 
     if not name:
-        _v.stop_with_error('Unable to obtain', key, errors)
+        _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
         
     _dict = {
         'name': name,
