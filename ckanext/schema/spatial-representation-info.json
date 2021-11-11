@@ -1,0 +1,84 @@
+{
+    "type": "object",
+    "oneOf": [
+        {
+            "type": "object",
+            "description":"GridSpatialRepresentation",
+            "properties":{
+                "numberOfDimensions":{
+                    "type": "string"
+                },
+                "transformationParameterAvailability":{
+                    "type": "string"
+                },
+                "cellGeometry":{
+                    "type": "string",
+                    "enum":[
+                        "area"
+                     ],
+                     "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CellGeometryCode"
+                },
+                "dimension":{
+                    "type": "array",
+                    "items": {
+                        "type":"object",
+                        "properties":{
+                            "dimensionName":{
+                                "type":"string",
+                                "enum":[
+                                    "row"
+                                 ],
+                                 "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_DimensionNameTypeCode"
+                            },
+                            "dimensionSize":{
+                                "type":"string"
+                            },
+                            "resolution": {
+                                "type":"object",
+                                "properties":{
+                                    "uom": {
+                                        "type":"string"
+                                    },
+                                    "value":{
+                                        "type":"string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "object",
+            "description":"VectorSpatialRepresentation",
+            "properties":{
+                "topologyLevel":{
+                    "type":"string",
+                    "enum": [
+                        "geometryOnly"
+                    ],
+                    "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_TopologyLevelCode"
+                },
+                "geometricObjects":{
+                    "type": "array",
+                    "items": {
+                        "type":"object",
+                        "properties":{
+                            "geometricObjectCount":{
+                                "type":"string"
+                            },
+                            "geometricObjectType":{
+                                "type":"string",
+                                "enum":[
+                                    "surface"
+                                ],
+                                "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_GeometricObjectTypeCode"
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+    ]
+}

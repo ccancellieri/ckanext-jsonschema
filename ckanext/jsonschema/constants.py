@@ -13,11 +13,11 @@ TYPE='jsonschema'
 
 # Schema keys will be part of the extras keys
 SCHEMA_OPT_KEY='_opt_'
-SCHEMA_OPT='{}' # TODO MAKE DEFAULT CONFIG CONFIGURABLE....
+SCHEMA_OPT={} # TODO MAKE DEFAULT CONFIG CONFIGURABLE....
 SCHEMA_BODY_KEY='_body_'
 # to mark a metadata as 
 # ckanext-jsonschema managed package
-SCHEMA_VERSION_KEY='_version##'
+SCHEMA_VERSION_KEY='##version##'
 SCHEMA_VERSION='1' # TODO MAKE DEFAULT VERSION CONFIGURABLE....
 # TODO schema Mapping
 SCHEMA_TYPE_KEY='_type_'

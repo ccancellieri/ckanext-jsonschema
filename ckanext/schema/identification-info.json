@@ -4,6 +4,9 @@
         "identificationInfo":{
             "type": "object",
             "properties":{
+                "language": {
+                    "$ref":"language.json"
+                },
                 "citation":{
                     "type":"object",
                     "properties":{
@@ -46,10 +49,6 @@
                 },
                 "abstract":{
                     "type":"string"
-                },
-                "language":{
-                    "type":"string",
-                    "enum": ["eng","todo"]
                 },
                 "purpose":{
                     "type":"string"
@@ -157,19 +156,19 @@
                 "descriptiveKeywords":{
                     "type":"object",
                     "properties":{
-                        "description":"In case of Type: temporal you may define keywords like: Daily or Monthly",
                         "type":{
                             "type":"string",
                             "enum":[
-                                "temporal",
-                                "http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"
-                            ]
+                                "temporal"
+                            ],
+                            "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"
                         },  
                         "keywords": {
                             "type":"array",
                             "items":{
                                 "type":"string"
-                            }
+                            },
+                            "description":"In case of Type: temporal you may define keywords like: Daily or Monthly"
                         }
                     }
                 },
@@ -191,6 +190,13 @@
                             }
                         }
                     }
+                },
+                "spatialRepresentationType":{
+                    "type":"string",
+                    "enum":[
+                        "grid","vector","textTable","tin","stereoModel","video"
+                    ],
+                    "description":"https://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
                 }
             }
         }

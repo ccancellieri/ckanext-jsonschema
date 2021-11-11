@@ -1,25 +1,97 @@
 {
     "type": "object",
+    "required":[
+        "metadataStandardName",
+        "fileIdentifier",
+        "characterSet"
+    ],
     "properties":{
+        "language": {
+            "$ref":"language.json"
+        },
+        "parentIdentifier":{
+            "type":"string",
+            "description": "uri or UUID of the metadata parent"
+        },
         "metadataStandardName":{
-            "type":"string"
+            "type":"string",
+            "enum":[
+                "ISO 19115:2003/19139"
+            ]
         },
         "fileIdentifier":{
             "type":"string",
             "description": "UUID of the metadata"
         },
         "characterSet":{
-            "type":"string",
-            "enum":["utf8","TODO","http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"]
+            "$ref":"character-set.json"
         },
         "referenceSystemIdentifier":{
-            "type":"string"
+            "type":"string",
+            "enum":[
+                "EPSG:4326 - WGS84"
+            ]
         },
         "responsibleParty":{
             "$ref":"responsible-party.json"
         },
         "identificationInfo":{
             "$ref":"identification-info.json"
+        },
+        "contact":{
+            "$ref":"responsible-party.json"
+        },
+        "metadataStandardVersion":{
+            "type":"string",
+            "default":"1"
+        },
+        "dataQualityInfo":{
+            "type":"object",
+            "properties":{
+                "scope":{
+                    "type":"string",
+                    "enum":[
+                        "dataset",
+                        "series",
+                        "attribute",
+                        "attributeType",
+                        "collectionHardware",
+                        "collectionSession",
+                        "nonGeographicDataset",
+                        "dimensionGroup",
+                        "feature",
+                        "featureType",
+                        "propertyType",
+                        "fieldSession",
+                        "software",
+                        "service",
+                        "model",
+                        "tile"
+                    ],
+                    "description":"class of information to which the referencing entity applies http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
+                },
+                "lineage":{
+                    "type":"object",
+                    "properties":{
+                        "statement":{
+                            "type":"string"
+                        },
+                        "source":{
+                            "type":"array",
+                            "items":{
+                                "type":"string"
+                            },
+                            "description":"Source metadata"
+                        }
+                    },
+                    "required":["statement"]
+    
+                }
+            },
+            "required":["scope"]
+        },
+        "spatialRepresentationInfo":{
+            "$ref":"spatial-representation-info.json"
         }
     }
 
