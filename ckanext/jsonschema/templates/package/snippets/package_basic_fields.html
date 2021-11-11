@@ -1,6 +1,6 @@
 {% ckan_extends %}
 
-{% if h.get_dataset_type() in h.package_types() %}
+{% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
   {% set jsonschema = true %}
 {% endif %}
 

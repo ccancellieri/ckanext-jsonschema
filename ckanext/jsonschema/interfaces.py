@@ -2,11 +2,17 @@ from ckan.plugins.interfaces import Interface
 
 class IBinder(Interface):
 
-    def bind_with(self, body, opt, type, version):
+    def supported_resource_types(self, dataset_type, opt, version):
         '''
-        return true if this plugin can handle this type
+        returns a list of supported resource type
         '''
-        return False
+        return [] #'dataset'
+
+    def supported_dataset_types(self, opt, version):
+        '''
+        returns a list of supported resource type
+        '''
+        return [] #'dataset'
 
     def dump_to_json(self, body, type, version, key, data, context):
         '''
@@ -22,7 +28,7 @@ class IBinder(Interface):
         pass
 
 
-    def extract_from_json(self, body, opt, type, version, key, data, errors, context):
+    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
         '''
         create the data model from the incoming body
         modify body in a UI suitable form

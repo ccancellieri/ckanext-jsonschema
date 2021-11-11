@@ -1,37 +1,107 @@
-{% ckan_extends %}
 
-{% if h.get_dataset_type() in h.package_types() %}
+  {% ckan_extends %}
+  
+    {% if dataset_type is defined %}
+        {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
+        {% if resource_types is defined and resource_types | length > 0 %}
+            {% set jsonschema = resource_types[0] %}
+        {% endif %}
+    {% endif %}
 
     {% block basic_fields %}
+        {% block scripts %}
+            {# which is the jsonschema type in this context/environment #}
+            {% if jsonschema is defined %}
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+                <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
 
-    {{ super() }}
-        {% set formats = [] %}
-        {% for type in h.resource_types(dataset_type) %}
-            {% set fake = formats.append({"value": type, "text": _(type)}) %}
-        {% endfor %}
+                <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+                <!-- Markdown -->
+                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 
-        {% set TYPE_KEY = h.get_type_key() %}
-        {% set schema_type = data[TYPE_KEY] or h.get_dataset_type() %}
-        {% call form.select(TYPE_KEY, label=_('TYPE'), id='field-'+TYPE_KEY,
-            options=formats,
-            selected=data[TYPE_KEY], error=errors.format, classes=['control-medium'], attrs={}, is_required=false) %}
-        <span class="info-block info-block-small">
-            <i class="fa fa-info-circle"></i>
-            {{ _('This will change the form based on the selected type, please select the right one') }}
-        </span>
-        {% endcall %}
-        
-        {% set BODY_KEY = h.get_body_key() %}
-        {% set body = data[BODY_KEY] or h.get_template(data[TYPE_KEY]) %}
-        {# TODO JS reload on resource_type change #}
-        {{ form.input(BODY_KEY, label=_('BODY'), id='field-'+BODY_KEY, placeholder=_('custom'), value=body, error=errors[BODY_KEY], classes=['control-medium']) }}
+                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ace.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-markdown.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-javascript.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-json.js"></script>
+                <!-- <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-css.js"></script> -->
+                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ext-beautify.js"></script>
 
-        {# TODO JS #}
-        
-        {% set VERSION_KEY = h.get_version_key() %}
-        {% set version = data[VERSION_KEY] %}
-        {{ form.input(VERSION_KEY, label=_('VERSION'), id='field-'+VERSION_KEY, placeholder=_('custom'), value=data[VERSION_KEY], error=errors[VERSION_KEY], classes=['control-medium']) }}
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                <!-- autocomplete -->
+                <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
+            {% endif %}
+        {% endblock %}
+        {% block basic_fields_url %}
+            {{super()}}
+        {% endblock %}
 
-    {% endblock %}
 
-{% endif %}
+        {% block basic_fields_format %}
+            {{super()}}
+        {% endblock %}
+{% endblock %}
+
+{% block metadata_fields %}
+  {% if jsonschema is defined %}
+
+    {% set extras = h.jsonschema_resolve_extras(data) %}
+
+    {% set TYPE_KEY = h.jsonschema_get_type_key() %}
+    {% set BODY_KEY = h.jsonschema_get_body_key() %}
+    {% set OPT_KEY = h.jsonschema_get_opt_key() %}
+    {% set VERSION_KEY = h.jsonschema_get_version_key() %}
+
+
+    {% set schema_type = extras[TYPE_KEY] %}
+    {% set body = extras[BODY_KEY] %}
+    {% set opt = extras[OPT_KEY] %}
+    {% set version = extras[VERSION_KEY] %}
+
+    {% set schema = h.jsonschema_get_schema(schema_type) %}
+    
+    <div class="input-group">
+      <input id="field-extras-0-key" name="extras__1__key" value="{{BODY_KEY}}" type="hidden" />
+      <input id="field-extras-0-value" name="extras__1__value" value="{{body}}" type="hidden" class="form-control"/>
+    
+      <input id="field-extras-1-key" name="extras__0__key" value="{{TYPE_KEY}}" type="hidden" />
+      <input id="field-extras-1-value" name="extras__0__value" value={{schema_type}} type="hidden" class="form-control"/>
+    
+      <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
+      <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="hidden" class="form-control"/>
+    
+      <input id="field-extras-3-key" name="extras__3__key" value="{{VERSION_KEY}}" type="hidden" />
+      <input id="field-extras-3-value" name="extras__3__value" value="{{version}}" type="hidden" class="form-control"/>
+    </div>
+
+
+    <div id="jsonschema-config-form" data-module="jsonschema"
+      data-module-opt="{{ opt }}"
+      data-module-schema="{{ schema }}"
+      data-module-body="{{ body }}"
+      data-module-type="{{ schema_type }}"
+      data-module-ckan-url="{{ h.url_for('/',_external=True) }}"/>
+
+    <!--  -->
+    <div id="editor">
+      <p>
+          <div style="display: inline-block;">
+              <button class="btn btn-primary" id="editor-editor" onclick="javascript:jsonschema.wrap(jsonschema.getEditorAce);">Editor</button>
+              <button class="btn btn-primary" id="editor-howto" onclick="javascript:jsonschema.wrap(jsonschema.getEditor);">HowTo</button>
+              <button class="btn btn-primary" id="editor-toggle" onclick="javascript:jsonschema.wrap(jsonschema.editorToggle);"></button>
+          </div>
+      </p>
+      <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
+      <div id="editor-jsonschema-config">
+          {% resource 'ckanext-jsonschema/main' %}
+      </div>
+      <p>
+          <div style="border-bottom: 1px solid gray;">
+              Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
+          </div>
+      </p>
+    </div>
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+

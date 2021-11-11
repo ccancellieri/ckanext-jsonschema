@@ -7,7 +7,7 @@
     
     {% block scripts %}
       {# which is the jsonschema type in this context/environment #}
-      {% if h.get_dataset_type() in h.package_types() %}
+      {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
         <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
 
@@ -31,14 +31,14 @@
   {% endblock %}
 
   {% block metadata_fields %}
-    {% if h.get_dataset_type() in h.package_types() %}
+    {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
 
-      {% set extras = h.resolve_extras(data) %}
+      {% set extras = h.jsonschema_resolve_extras(data) %}
 
-      {% set TYPE_KEY = h.get_type_key() %}
-      {% set BODY_KEY = h.get_body_key() %}
-      {% set OPT_KEY = h.get_opt_key() %}
-      {% set VERSION_KEY = h.get_version_key() %}
+      {% set TYPE_KEY = h.jsonschema_get_type_key() %}
+      {% set BODY_KEY = h.jsonschema_get_body_key() %}
+      {% set OPT_KEY = h.jsonschema_get_opt_key() %}
+      {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
 
       {% set schema_type = extras[TYPE_KEY] %}
@@ -46,7 +46,7 @@
       {% set opt = extras[OPT_KEY] %}
       {% set version = extras[VERSION_KEY] %}
 
-      {% set schema = h.get_schema(schema_type) %}
+      {% set schema = h.jsonschema_get_schema(schema_type) %}
       
       <div class="input-group">
         <input id="field-extras-0-key" name="extras__1__key" value="{{BODY_KEY}}" type="hidden" />

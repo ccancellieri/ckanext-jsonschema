@@ -1,4 +1,5 @@
 import ckan.plugins as plugins
+import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
 _ = toolkit._
 
@@ -9,6 +10,7 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.blueprints as _b
+import ckanext.jsonschema.interfaces as _i
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -26,6 +28,9 @@ isodate = get_validator('isodate')
 convert_to_extras = toolkit.get_converter('convert_to_extras')
 convert_from_extras = toolkit.get_converter('convert_from_extras')
 
+import uuid
+import ckan.lib.navl.dictization_functions as df
+
     # let's grab the default schema in our plugin
 from ckan.logic.schema import \
     default_create_package_schema,\
@@ -34,6 +39,55 @@ from ckan.logic.schema import \
     default_group_schema,\
     default_tags_schema
 
+import logging
+log = logging.getLogger(__name__)
+
+from ckan.plugins import PluginImplementations
+
+def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+    supported_resource_types = []
+    for plugin in PluginImplementations(_i.IBinder):
+        try:
+            supported_resource_types.extend(plugin.supported_resource_types(dataset_type, opt, version))
+        except Exception as e:
+            log.error('Error resolving resource json types for dataset type: {}\n{}'.format(dataset_type,str(e)))
+    
+    for type in supported_resource_types:
+        if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
+            raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
+    
+    return supported_resource_types
+
+
+def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+    '''
+    #TODO
+    defines a list of dataset types that
+    this plugin handles. Each dataset has a field containing its type.
+    Plugins can register to handle specific types of dataset and ignore
+    others. Since our plugin is not for any specific type of dataset and
+    we want our plugin to be the default handler, we update the plugin
+    code to contain the following:
+    '''
+    # This plugin doesn't handle any special package types, it just
+    # registers itself as the default (above).
+    supported_dataset_types = []
+    for plugin in PluginImplementations(_i.IBinder):
+        try:
+            supported_dataset_types.extend(plugin.supported_dataset_types(opt, version))
+        except Exception as e:
+            log.error('Error resolving dataset types:\n{}'.format(str(e)))
+    
+    for type in supported_dataset_types:
+        if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
+            raise Exception('Error resolving dataset json schema for type:\n{}'.format(type))
+
+    return supported_dataset_types
+
+
+
+TYPE_JSONSCHEMA='jsonschema'
+
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IDatasetForm)
@@ -41,6 +95,56 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint)
+    plugins.implements(_i.IBinder, inherit = True)
+
+    # IBinder
+
+    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
+        # TODO which type schema or dataset?
+        
+        _data = df.unflatten(data)
+        if key==('name',):
+            name = str(body.get('name', uuid.uuid4()))
+            name = name or _data.get('name') #TODO error if null...
+            if not name:
+                _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+                    
+            _dict = {
+                'name': name,
+                'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
+            }
+            data.update(df.flatten_dict(_dict))
+
+        elif key==('title',):
+            title = str(body.get('title', uuid.uuid4()))
+            title = title or _data.get('title') #TODO error if null...
+            if not title:
+                _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+                    
+            _dict = {
+                'title': title
+            }
+            data.update(df.flatten_dict(_dict))
+
+        # TODO notes
+
+        data.update(df.flatten_dict(_dict))
+
+    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+        if version != _c.SCHEMA_VERSION:
+            # when version is not the default one we don't touch
+            return []
+
+        if dataset_type in _c.SUPPORTED_DATASET_FORMATS:
+            #TODO should be a dic binding set of resources to dataset types 
+            return _c.SUPPORTED_RESOURCE_FORMATS
+        return []
+
+    def supported_dataset_types(self, opt, version):
+        if version != _c.SCHEMA_VERSION:
+            # when version is not the default one we don't touch
+            return []
+        return _c.SUPPORTED_DATASET_FORMATS
 
     # IBlueprint
     def get_blueprint(self):
@@ -80,25 +184,21 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     def get_helpers(self):
         return {
-                'package_types': self.package_types,
-                'resource_types': lambda t : self._resource_types(t),
-                'get_body_key': lambda : _c.SCHEMA_BODY_KEY,
-                'get_type_key': lambda : _c.SCHEMA_TYPE_KEY,
-                'get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
-                'get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
-                'get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
-                'get_template': lambda x : json.dumps(_t.get_template_of(x)),
-                'get_dataset_type': _v.get_dataset_type,
-                'resolve_extras': _v.resolve_extras,
-                # 'get_body': _get_body,
-                # 'get_type': _get_type,
-                # 'get_opts': _get_opts
+            'jsonschema_get_body_key': lambda : _c.SCHEMA_BODY_KEY,
+            'jsonschema_get_type_key': lambda : _c.SCHEMA_TYPE_KEY,
+            'jsonschema_get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
+            'jsonschema_get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
+            'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
+            'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
+            'jsonschema_get_dataset_type': _v.get_dataset_type,
+            'jsonschema_resolve_extras': _v.resolve_extras,
+            'jsonschema_handled_resource_types': handled_resource_types,
+            'jsonschema_handled_dataset_types': handled_dataset_types,
         }
 
 # def _get_body (pkg): lambda pkg : pkg.get(_c.SCHEMA_BODY_KEY)
 # def _get_type (pkg): lambda pkg : pkg.get(_c.SCHEMA_TYPE_KEY)
 # def _get_opts (pkg): lambda pkg : pkg.get(_c.SCHEMA_OPT_KEY)
-
     
     # IConfigurer
 
@@ -171,30 +271,20 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # package types not handled by any other IDatasetForm plugin.
         return False
 
-    def _resource_types(self, dataset_type):
-        '''
-        returns a list of supported resource based on the dataset_type
-        '''
-        # TODO
+    # def _resource_types(self, dataset_type):
+    #     '''
+    #     returns a list of supported resource based on the dataset_type
+    #     '''
+    #     # TODO
 
-        return self.package_types()
+    #     return self.package_types()
 
-    def package_types(self):
-        '''
-        The package_types() function defines a list of dataset types that
-        this plugin handles. Each dataset has a field containing its type.
-        Plugins can register to handle specific types of dataset and ignore
-        others. Since our plugin is not for any specific type of dataset and
-        we want our plugin to be the default handler, we update the plugin
-        code to contain the following:
-        '''
-        # This plugin doesn't handle any special package types, it just
-        # registers itself as the default (above).
-
-        return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys()
 
     # IDatasetForm
     ##############
+
+    def package_types(self):
+        return handled_dataset_types()
 
     # def setup_template_variables(self, context, data_dict):
         
@@ -254,7 +344,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # schema = super(toolkit.DefaultDatasetForm, self).create_package_schema()
         schema = default_create_package_schema()
 
-        return self._modify_package_schema(schema)
+        return _modify_package_schema(schema)
 
     def update_package_schema(self):
         '''
@@ -268,7 +358,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         '''
         schema = default_update_package_schema()
 
-        return self._modify_package_schema(schema)
+        return _modify_package_schema(schema)
 
     def show_package_schema(self):
         '''
@@ -304,28 +394,29 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # schema.update({
         #     '__extras': [_v.serializer]
         # })
-
+        # schema.get('resources', []).schema.get('__extras', []).append(_v.serializer)
         schema.get('name', []).append(_v.serializer)
         schema.get('__extras', []).append(_v.serializer)
         return schema
         
-    def _modify_package_schema(self, schema):
-        # our custom field
-        # not_missing, not_empty, resource_id_exists, package_id_exists, 
-        # ignore_missing, empty, boolean_validator, int_validator,  OneOf
-        # schema.update({
-        #     _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_extras ],
-        #     _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, _v.extractor, convert_to_extras ],
-        #     _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
-        #     _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
-        # })
-        # Add our custom_resource_text metadata field to the schema
-        # schema['resources'].update({
-        #         _c.SCHEMA_BODY_KEY : [ not_missing, _v.schema_check, convert_to_extras ],
-        #         _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
-        #         _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
-        #         })
-        schema.get('name', []).insert(0,_v.extractor)
-        schema.get('__extras', []).insert(0,_v.extractor)
-        schema.get('__extras', []).insert(0,_v.schema_check)
-        return schema
+def _modify_package_schema(schema):
+    # our custom field
+    # not_missing, not_empty, resource_id_exists, package_id_exists, 
+    # ignore_missing, empty, boolean_validator, int_validator,  OneOf
+    # schema.update({
+    #     _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_extras ],
+    #     _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, _v.extractor, convert_to_extras ],
+    #     _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
+    #     _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
+    # })
+    # Add our custom_resource_text metadata field to the schema
+    # schema['resources'].update({
+    #         _c.SCHEMA_BODY_KEY : [ not_missing, _v.schema_check, convert_to_extras ],
+    #         _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
+    #         _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
+    #         })
+    # schema.get('resources', []).schema.get('__extras', []).append(_v.serializer)
+    schema.get('name', []).insert(0,_v.extractor)
+    schema.get('__extras', []).insert(0,_v.extractor)
+    schema.get('__extras', []).insert(0,_v.schema_check)
+    return schema

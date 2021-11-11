@@ -40,41 +40,60 @@ from jsonschema import validate,RefResolver,Draft4Validator,Draft7Validator
 import json
 import ckan.model as model
 
+config = toolkit.config
+
 TYPE_ISO='iso'
+TYPE_ISO_ONLINE_RESOURCE='online-resource'
+
+SUPPORTED_DATASET_FORMATS = [TYPE_ISO]
+
+SUPPORTED_ISO_RESOURCE_FORMATS = [TYPE_ISO_ONLINE_RESOURCE]
 
 class JsonschemaIso(p.SingletonPlugin):
-    p.implements(_i.IBinder)
+    p.implements(p.IConfigurer)
+    p.implements(_i.IBinder, inherit = True)
 
-        # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
-        # # TODO DEBUG
-        # import ckanext.jsonschema.utils as _u
-        # import os
-        # j = _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'))
-        # import json
-        # _j=json.loads(j)
-        # _namespaces=_j['http://www.isotc211.org/2005/gmd:MD_Metadata']['@xmlns']
-        # namespaces = dict((v,k) for k,v in _namespaces.iteritems())
-        # _u.json_to_xml()
-        # _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'), True, namespaces)
-    def bind_with(self, body, opt, type, version):
+    # IConfigurer
+
+    def update_config(self, config_):
+        pass
+        #TODO
+
+    # IBinder
+    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+
         if version != _c.SCHEMA_VERSION:
             # when version is not the default one we don't touch
-            return False
+            return []
 
-        if type == TYPE_ISO:
-            return True
-
-    def extract_from_json(self, body, opt, type, version, key, data, errors, context):
-        # TODO which type schema or dataset?
+        if dataset_type == TYPE_ISO:
+            return SUPPORTED_ISO_RESOURCE_FORMATS
+        return []
         
+    def supported_dataset_types(self, opt, version):
+        if version != _c.SCHEMA_VERSION:
+            # when version is not the default one we don't touch
+            return []
+
+        return SUPPORTED_DATASET_FORMATS
+
+    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
+        if type == TYPE_ISO:
+            self._extract_from_iso(body, type, opt, version, key, data, errors, context)
+            return
+        elif type == TYPE_ISO_ONLINE_RESOURCE:
+            # TODO
+            return
+        
+    def _extract_from_iso(self, body, type, opt, version, key, data, errors, context):
         if key==('name',):
-            extract_name(body, opt, type, version, key, data, errors, context)
-            
+            _extract_iso_name(body, type, opt, version, key, data, errors, context)
+        # TODO
 
 
 import ckan.lib.navl.dictization_functions as df
 
-def extract_name(body, opt, type, version, key, data, errors, context):
+def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 
     _data = df.unflatten(data)
 

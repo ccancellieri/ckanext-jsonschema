@@ -1,6 +1,6 @@
 {
     "type": "object",
-    "oneOf": [
+    "anyOf": [
         {
             "type": "object",
             "description":"GridSpatialRepresentation",

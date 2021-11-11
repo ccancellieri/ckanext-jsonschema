@@ -1,14 +1,13 @@
 
 {
-    "language":{
-        "type":"string",
-        "enum":[
-            "en",
-            "fr",
-            "es",
-            "zo",
-            "ru",
-            "TODO"
-        ]
-    }
+    "type":"string",
+    "enum":[
+        "en",
+        "fr",
+        "es",
+        "zo",
+        "ru",
+        "TODO"
+    ],
+    "description":"language"
 }

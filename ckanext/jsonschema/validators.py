@@ -85,20 +85,7 @@ def schema_check(key, data, errors, context):
         #TODO better message
         stop_with_error('Error validating:{}'.format(str(e)), key, errors)
 
-def get_dataset_type(data = None):
-    
-    _type = data and data.get('type')
-    if _type:
-        return _type
-
-    from ckan.common import c
-    # TODO: https://github.com/ckan/ckan/issues/6518
-    path = c.environ['CKAN_CURRENT_URL']
-    _type = path.split('/')[1]
-    return _type  
-
 def resolve_extras(data, as_dict = False):
-    
     # Pre-setting defaults
     _type = get_dataset_type(data)
     body = _t.get_template_of(_type)
@@ -142,17 +129,17 @@ def extractor(key, data, errors, context):
 
     type = extra.get(_c.SCHEMA_TYPE_KEY)
 
-    opt = extra.get(_c.SCHEMA_OPT_KEY)
+    opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
 
-    version = extra.get(_c.SCHEMA_VERSION_KEY)
+    version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
 
     from ckan.plugins import PluginImplementations
     # del data_dict['_ckan_phase']
     #             del data_dict['save']
     for plugin in PluginImplementations(_i.IBinder):
         try:
-            if plugin.bind_with(body, opt, type, version):
-                plugin.extract_from_json(body, opt, type, version, key, data, errors, context)
+            if type in plugin.supported_dataset_types(opt, version):
+                plugin.extract_from_json(body, type, opt, version, key, data, errors, context)
         except Exception as e:
             stop_with_error('Error extracting json model: {}'.format(str(e)), key, errors)
 
@@ -166,19 +153,32 @@ def serializer(key, data, errors, context):
 
     type = extra.get(_c.SCHEMA_TYPE_KEY)
 
-    opt = extra.get(_c.SCHEMA_OPT_KEY)
+    opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
 
-    version = extra.get(_c.SCHEMA_VERSION_KEY)
+    version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
 
     from ckan.plugins import PluginImplementations
     # from ckan.plugins.interfaces import IConfigurable
     # for plugin in PluginImplementations(IConfigurable):
     for plugin in PluginImplementations(_i.IBinder):
-        if plugin.bind_with(body, opt, type, version):
-            plugin.extract_from_json(body, opt, type, version, key, data, errors, context)
+        try:
+            if type in plugin.supported_dataset_types(opt, version):
+                plugin.extract_from_json(body, type, opt, version, key, data, errors, context)
+        except Exception as e:
+            log.error('Error extracting dataset type {}\
+                from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
+def get_dataset_type(data = None):
+    
+    _type = data and data.get('type')
+    if _type:
+        return _type
 
-
+    from ckan.common import c
+    # TODO: https://github.com/ckan/ckan/issues/6518
+    path = c.environ['CKAN_CURRENT_URL']
+    _type = path.split('/')[1]
+    return _type
 
 
 ########### UNUSED
@@ -211,3 +211,4 @@ def _get_body(key, data, errors, context):
         stop_with_error('Unable to load a valid json schema body', key, errors)
 
     return body
+

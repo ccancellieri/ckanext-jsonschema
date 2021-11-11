@@ -12,15 +12,36 @@ PATH_ROOT=path.realpath(path.join(path.dirname(__file__),'..'))
 TYPE='jsonschema'
 
 # Schema keys will be part of the extras keys
-SCHEMA_OPT_KEY='_opt_'
+SCHEMA_OPT_KEY='##opt##'
 SCHEMA_OPT={} # TODO MAKE DEFAULT CONFIG CONFIGURABLE....
-SCHEMA_BODY_KEY='_body_'
+SCHEMA_BODY_KEY='##body##'
 # to mark a metadata as 
 # ckanext-jsonschema managed package
 SCHEMA_VERSION_KEY='##version##'
 SCHEMA_VERSION='1' # TODO MAKE DEFAULT VERSION CONFIGURABLE....
 # TODO schema Mapping
-SCHEMA_TYPE_KEY='_type_'
+SCHEMA_TYPE_KEY='##type##'
+
+# (Optional)
+# List of formats supported 
+# ckanext.jsonschema.dataset.formats = []
+SUPPORTED_DATASET_FORMATS = config.get('ckanext.jsonschema.dataset.formats', [])
+if isinstance(SUPPORTED_DATASET_FORMATS,str):
+   # log.debug("DEFAULT_FORMATS is still a string: {}".format(PATH_SCHEMA))
+   DEFAULT_FORMATS = json.loads(SUPPORTED_DATASET_FORMATS)
+if not isinstance(SUPPORTED_DATASET_FORMATS,list):
+   raise Exception('SUPPORTED_DATASET_FORMATS should be an array of valid format strings')
+
+# (Optional)
+# List of formats supported 
+# ckanext.jsonschema.dataset.formats = []
+SUPPORTED_RESOURCE_FORMATS = config.get('ckanext.jsonschema.resource.formats', ['dataset'])
+if isinstance(SUPPORTED_RESOURCE_FORMATS,str):
+   # log.debug("DEFAULT_FORMATS is still a string: {}".format(PATH_SCHEMA))
+   SUPPORTED_RESOURCE_FORMATS = json.loads(SUPPORTED_RESOURCE_FORMATS)
+if not isinstance(SUPPORTED_RESOURCE_FORMATS,list):
+   raise Exception('SUPPORTED_RESOURCE_FORMATS should be an array of valid format strings')
+
 
 # (Internal)
 ##############################

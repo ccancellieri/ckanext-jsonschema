@@ -43,8 +43,11 @@ import ckan.model as model
 TYPE_ONLINE_RESOURCE='online-resource'
 TYPE_ISO19139='iso19139'
 
+SUPPORTED_DATASET_FORMATS = [TYPE_ISO19139]
+SUPPORTED_RESOURCE_FORMATS = [TYPE_ONLINE_RESOURCE]
+
 class JsonschemaIso19139(p.SingletonPlugin):
-    p.implements(_i.IBinder)
+    p.implements(_i.IBinder, inherit=True)
 
         # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
         # # TODO DEBUG
@@ -57,18 +60,26 @@ class JsonschemaIso19139(p.SingletonPlugin):
         # namespaces = dict((v,k) for k,v in _namespaces.iteritems())
         # _u.json_to_xml()
         # _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'), True, namespaces)
-    def bind_with(self, body, opt, type, version):
+
+    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
         if version != _c.SCHEMA_VERSION:
             # when version is not the default one we don't touch
-            return False
+            return []
 
-        if type == TYPE_ISO19139:
-            return True
-        if type == TYPE_ONLINE_RESOURCE:
-            raise Exception('should only bind to package types')
-        
+        if dataset_type in SUPPORTED_DATASET_FORMATS:
+            #TODO should be a dic binding set of resources to dataset types 
+            return SUPPORTED_RESOURCE_FORMATS
 
-    def extract_from_json(self, body, opt, type, version, key, data, errors, context):
+        return []
+
+    def supported_dataset_types(self, opt, version):
+        if version != _c.SCHEMA_VERSION:
+            # when version is not the default one we don't touch
+            return []
+
+        return SUPPORTED_DATASET_FORMATS
+
+    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
         # TODO which type schema or dataset?
         
         if key==('name',):
