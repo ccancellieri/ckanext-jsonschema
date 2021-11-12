@@ -84,8 +84,6 @@ def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
 
     return supported_dataset_types
 
-
-
 TYPE_JSONSCHEMA='jsonschema'
 
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
@@ -394,7 +392,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # schema.update({
         #     '__extras': [_v.serializer]
         # })
-        # schema.get('resources', []).schema.get('__extras', []).append(_v.serializer)
+        # schema.get('resources', []).append(_v.serializer)
         schema.get('name', []).append(_v.serializer)
         schema.get('__extras', []).append(_v.serializer)
         return schema
@@ -416,7 +414,18 @@ def _modify_package_schema(schema):
     #         _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
     #         })
     # schema.get('resources', []).schema.get('__extras', []).append(_v.serializer)
-    schema.get('name', []).insert(0,_v.extractor)
-    schema.get('__extras', []).insert(0,_v.extractor)
-    schema.get('__extras', []).insert(0,_v.schema_check)
+    # resources = schema.get('resources')
+    # if resources:
+    #     resources_extras = resources.get('__extras')
+    #     if not resources_extras:
+    #         resources_extras = resources['__extras'] = []
+    # else:
+    #     schema['resources'] = resources = []
+    #     resources_extras = resources['__extras'] = []
+    schema['resources'][_c.SCHEMA_BODY_KEY]= [  not_missing, _v.schema_check, _v.extractor ]
+    # resources_extras.insert(0, _v.extractor)
+    # resources_extras.insert(0, _v.schema_check)
+    schema.get('name').insert(0, _v.extractor)
+    schema.get('__extras').insert(0, _v.extractor)
+    schema.get('__extras').insert(0, _v.schema_check)
     return schema

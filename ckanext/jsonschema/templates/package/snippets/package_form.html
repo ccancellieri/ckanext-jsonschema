@@ -49,11 +49,11 @@
       {% set schema = h.jsonschema_get_schema(schema_type) %}
       
       <div class="input-group">
-        <input id="field-extras-0-key" name="extras__1__key" value="{{BODY_KEY}}" type="hidden" />
-        <input id="field-extras-0-value" name="extras__1__value" value="{{body}}" type="hidden" class="form-control"/>
+        <input id="field-extras-0-key" name="extras__0__key" value="{{BODY_KEY}}" type="hidden" />
+        <input id="field-extras-0-value" name="extras__0__value" value="{{body}}" type="hidden" class="form-control"/>
       
-        <input id="field-extras-1-key" name="extras__0__key" value="{{TYPE_KEY}}" type="hidden" />
-        <input id="field-extras-1-value" name="extras__0__value" value={{schema_type}} type="hidden" class="form-control"/>
+        <input id="field-extras-1-key" name="extras__1__key" value="{{TYPE_KEY}}" type="hidden" />
+        <input id="field-extras-1-value" name="extras__1__value" value={{schema_type}} type="hidden" class="form-control"/>
       
         <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
         <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="hidden" class="form-control"/>

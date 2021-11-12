@@ -1,76 +1,72 @@
 
   {% ckan_extends %}
   
-    {% if dataset_type is defined %}
-        {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
-        {% if resource_types is defined and resource_types | length > 0 %}
-            {% set jsonschema = resource_types[0] %}
-        {% endif %}
+{% if dataset_type is defined %}
+    {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
+    {% if resource_types is defined and resource_types | length > 0 %}
+        {% set jsonschema = true %}
     {% endif %}
+{% endif %}
 
-    {% block basic_fields %}
-        {% block scripts %}
-            {# which is the jsonschema type in this context/environment #}
-            {% if jsonschema is defined %}
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
+{% block basic_fields %}
+  {% if jsonschema is undefined %}
+    {{super()}}
+  {% else %}
+    {% block scripts %}
+        {# which is the jsonschema type in this context/environment #}
+        {% if jsonschema is defined %}
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+            <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
 
-                <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
-                <!-- Markdown -->
-                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+            <!-- Markdown -->
+            <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 
-                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ace.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-markdown.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-javascript.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-json.js"></script>
-                <!-- <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-css.js"></script> -->
-                <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ext-beautify.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ace.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-markdown.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-javascript.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-json.js"></script>
+            <!-- <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-css.js"></script> -->
+            <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ext-beautify.js"></script>
 
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                <!-- autocomplete -->
-                <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
-            {% endif %}
-        {% endblock %}
-        {% block basic_fields_url %}
-            {{super()}}
-        {% endblock %}
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            <!-- autocomplete -->
+            <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
+        {% endif %}
+    {% endblock %}
+    {% block basic_fields_url %}
+        {{super()}}
+    {% endblock %}
 
-
-        {% block basic_fields_format %}
-            {{super()}}
-        {% endblock %}
+    {% block basic_fields_format %}
+        {{super()}}
+    {% endblock %}
+  {% endif %}
 {% endblock %}
 
 {% block metadata_fields %}
   {% if jsonschema is defined %}
-
-    {% set extras = h.jsonschema_resolve_extras(data) %}
 
     {% set TYPE_KEY = h.jsonschema_get_type_key() %}
     {% set BODY_KEY = h.jsonschema_get_body_key() %}
     {% set OPT_KEY = h.jsonschema_get_opt_key() %}
     {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
-
-    {% set schema_type = extras[TYPE_KEY] %}
-    {% set body = extras[BODY_KEY] %}
-    {% set opt = extras[OPT_KEY] %}
-    {% set version = extras[VERSION_KEY] %}
+    {% set schema_type = data[TYPE_KEY] or resource_types[0] %}
+    {% set body = data[BODY_KEY] or h.jsonschema_get_template(schema_type) %}
+    {% set opt = data[OPT_KEY] %}
+    {% set version = data[VERSION_KEY] %}
 
     {% set schema = h.jsonschema_get_schema(schema_type) %}
     
     <div class="input-group">
-      <input id="field-extras-0-key" name="extras__1__key" value="{{BODY_KEY}}" type="hidden" />
-      <input id="field-extras-0-value" name="extras__1__value" value="{{body}}" type="hidden" class="form-control"/>
+      <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>
     
-      <input id="field-extras-1-key" name="extras__0__key" value="{{TYPE_KEY}}" type="hidden" />
-      <input id="field-extras-1-value" name="extras__0__value" value={{schema_type}} type="hidden" class="form-control"/>
+      <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/>
     
-      <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
-      <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="hidden" class="form-control"/>
+      <input id="field-extras-2-value" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
     
-      <input id="field-extras-3-key" name="extras__3__key" value="{{VERSION_KEY}}" type="hidden" />
-      <input id="field-extras-3-value" name="extras__3__value" value="{{version}}" type="hidden" class="form-control"/>
+      <input id="field-extras-3-value" name="{{VERSION_KEY}}" value="{{version}}" type="hidden" class="form-control"/>
     </div>
 
 

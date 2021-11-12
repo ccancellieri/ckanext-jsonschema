@@ -25,7 +25,7 @@ SCHEMA_TYPE_KEY='##type##'
 # (Optional)
 # List of formats supported 
 # ckanext.jsonschema.dataset.formats = []
-SUPPORTED_DATASET_FORMATS = config.get('ckanext.jsonschema.dataset.formats', [])
+SUPPORTED_DATASET_FORMATS = config.get('ckanext.jsonschema.dataset.formats', ['jsonschema'])
 if isinstance(SUPPORTED_DATASET_FORMATS,str):
    # log.debug("DEFAULT_FORMATS is still a string: {}".format(PATH_SCHEMA))
    DEFAULT_FORMATS = json.loads(SUPPORTED_DATASET_FORMATS)
