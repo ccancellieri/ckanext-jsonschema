@@ -62,13 +62,18 @@
     <div class="input-group">
       <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>
     
-      <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/>
+      <label for="field-{{TYPE_KEY}}">Which type: </label>
+      <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value);">
+        {% for resource_type in resource_types %}
+          <option value="{{ resource_type }}" >{{ resource_type }}</option>
+        {% endfor %}
+      </select>
+      <!-- <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/> -->
     
-      <input id="field-extras-2-value" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
+      <input id="field-{{OPT_KEY}}" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
     
-      <input id="field-extras-3-value" name="{{VERSION_KEY}}" value="{{version}}" type="hidden" class="form-control"/>
+      <input id="field-{{VERSION_KEY}}" name="{{VERSION_KEY}}" value="{{version}}" type="hidden" class="form-control"/>
     </div>
-
 
     <div id="jsonschema-config-form" data-module="jsonschema"
       data-module-opt="{{ opt }}"
@@ -76,14 +81,13 @@
       data-module-body="{{ body }}"
       data-module-type="{{ schema_type }}"
       data-module-ckan-url="{{ h.url_for('/',_external=True) }}"/>
-
-    <!--  -->
+    
     <div id="editor">
       <p>
           <div style="display: inline-block;">
-              <button class="btn btn-primary" id="editor-editor" onclick="javascript:jsonschema.wrap(jsonschema.getEditorAce);">Editor</button>
-              <button class="btn btn-primary" id="editor-howto" onclick="javascript:jsonschema.wrap(jsonschema.getEditor);">HowTo</button>
-              <button class="btn btn-primary" id="editor-toggle" onclick="javascript:jsonschema.wrap(jsonschema.editorToggle);"></button>
+              <button class="btn btn-primary" id="editor-editor" onclick="jsonschema.getEditorAce();">Editor</button>
+              <button class="btn btn-primary" id="editor-howto" onclick="jsonschema.getEditor();">HowTo</button>
+              <button class="btn btn-primary" id="editor-toggle" onclick="jsonschema.editorToggle();"></button>
           </div>
       </p>
       <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->

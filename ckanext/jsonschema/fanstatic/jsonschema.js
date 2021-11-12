@@ -41,7 +41,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 return get(retry,uri);
             } else {
                 //reject(new Error(`could not locate ${uri}`));
-                return get(retry,new URL('jsonschema/schema/'+uri, jsonschema.ckan_url));
+                return get(retry,new URL(jsonschema.schema_file+uri, jsonschema.ckan_url));
             }
         });
     };
@@ -88,47 +88,101 @@ ckan.module('jsonschema', function (jQuery, _) {
         jsonschema_schema: undefined,
         jsonschema_body: undefined,
         editor: undefined,
+        reload: function (jsonschema_type, editor = true, keep_old = true) {
+            
+            if (!keep_old){
+                jsonschema.jsonschema_type = jsonschema_type;
+                const promises = [
+                    jsonschema.fetch('jsonschema/schema/'+jsonschema_type),
+                    jsonschema.fetch('jsonschema/template/'+jsonschema_type),
+                    jsonschema.fetch('jsonschema/options/'+jsonschema_type)];
+                Promise.allSettled(promises).
+                    then((results) => {
+                        results.forEach((result) => console.log(result.status))
+                        jsonschema.jsonschema_schema = results[0].value;
+                        jsonschema.jsonschema_body = results[1].value;
+                        jsonschema.jsonschema_opt = results[2].value;
+                            // todo check returns
+                    }
+                );
+            }
+            if (editor){
+                jsonschema.getEditor(keep_old);
+            } else {
+                jsonschema.getEditorAce(keep_old);
+            }
+        },
+        fetch: function (path) {
+            var url = new URL(encodeURI(path),jsonschema.ckan_url);
+            if (url.length < 2) {
+                return [];
+            }
+            return fetch(url).then(function (request) {
+                    if (request.status === 200) {
+                        return request.json();
+                    } else {
+                        return [""];
+                    }
+                }).catch(function (err) {
+                    console.error(err);
+                    return "";
+                });
+        },
         initialize: function () {
             var self = this;
 
             jsonschema.ckan_url = self.options.ckanUrl;
-            jsonschema.jsonschema_schema = self.options.schema;
-            jsonschema.jsonschema_body = self.options.body;
-            jsonschema.jsonschema_opt = self.options.opt;
-            jsonschema.jsonschema_type = self.options.type;
-
+            jsonschema.schema_file = 'jsonschema/schema_file/';
+            jsonschema.reload=this.reload.bind(jsonschema);
             jsonschema.getEditor=this.getEditor.bind(jsonschema);
             jsonschema.getEditorAce=this.getEditorAce.bind(jsonschema);
             jsonschema.editorReady=this.editorReady.bind(jsonschema);
             jsonschema.editorValidate=this.editorReady.bind(jsonschema);
             jsonschema.editorToggle=this.editorToggle.bind(jsonschema);
 
-            jsonschema.wrap=this.wrap.bind(jsonschema);
-
 //jsonschema.onSubmit
             $('.dataset-form').find('button[type=submit]').each(
                 function (){$(this).on('click', jsonschema.onSubmit.bind(jsonschema));});
 
-            // jsonschema.getEditorAce();
-            jsonschema.getEditor();
-        },
-        getEditorAce: function (){
+            // initialize previous value (from jinja2)
+            jsonschema.jsonschema_schema = self.options.schema;
+            jsonschema.jsonschema_body = self.options.body;
+            jsonschema.jsonschema_opt = self.options.opt;
+            jsonschema.jsonschema_type = self.options.type;
 
+            jsonschema.reload(jsonschema.jsonschema_type, editor = true, keep_old = true);
+            // jsonschema.getEditor();
+        },
+        getEditorAce: function (keep_old = true){
+            //let schema = jsonschema.jsonschema_schema;
             let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
-                // save changes in local context
-                value=jsonschema.asString(this.editor.getValue());
+                if (keep_old){
+                    value = this.editor.getValue();
+                }
                 this.editor.destroy();
-            } else {
-                // save changes in local context
-                value=jsonschema.asString(jsonschema.jsonschema_body);
             }
+            value = jsonschema.asString(value || jsonschema.jsonschema_body);
+            
+            
+            //old_body=jsonschema.asString(body);
+            
+            let opt = jsonschema.jsonschema_opt;
+            // ##################################################
+            // TODO 
+            // ##################################################
+
+            // OPTS WILL BE USED TO PLUG IN FORM SPECIFIC JS FUNCTION
+            // LOADED HERE ON THE FLY
+
+            // ##################################################
+
             this.isHowto=false
 
             let schema={
               "type": "string",
               "format": "json",
-              "title": "Terria configuration",
+              "title": "Body",
               "options": {
                     "ace": {
                       //"theme": "ace/theme/tailwind",
@@ -145,7 +199,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             this.editor = new JSONEditor(document.getElementById('editor-jsonschema-config'),{
                 // Enable fetching schemas via ajax
                 ajax: true,
-                ajaxBase: new URL('jsonschema/schema/', jsonschema.ckan_url),
+                ajaxBase: new URL(jsonschema.schema_file, jsonschema.ckan_url),
 //                ajaxCredentials: true
 
                 // The schema for the editor
@@ -242,22 +296,26 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
 
         },
-        getEditor: function (_schema){
-            let schema;
-            if (_schema){
-                schema = _schema;
-            }
-            schema = jsonschema.jsonschema_schema;
-
+        getEditor: function (keep_old = true){
+            let schema = jsonschema.jsonschema_schema;
             let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
-                // save changes in local context
-                value=jsonschema.asObject(this.editor.getValue());
+                if (keep_old){
+                    value = this.editor.getValue();
+                }
                 this.editor.destroy();
-            } else {
-                // save changes in local context
-                value=jsonschema.asObject(jsonschema.jsonschema_body);
             }
+            value = jsonschema.asObject(value || jsonschema.jsonschema_body);
+            
+            let opt = jsonschema.jsonschema_opt; 
+            // ##################################################
+            // TODO 
+            // ##################################################
+
+            // OPTS WILL BE USED TO PLUG IN FORM SPECIFIC JS FUNCTION
+            // LOADED HERE ON THE FLY
+
+            // ##################################################
             this.isHowto=true
             
             // Initialize the editor
@@ -343,7 +401,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             this.editor = new JSONEditor(document.getElementById('editor-jsonschema-config'),{
                 // Enable fetching schemas via ajax
                 ajax: true,
-                ajaxBase: new URL('jsonschema/schema/', jsonschema.ckan_url),
+                ajaxBase: new URL(jsonschema.schema_file, jsonschema.ckan_url),
 //                ajaxCredentials: true
 
                 // The schema for the editor
@@ -449,16 +507,6 @@ ckan.module('jsonschema', function (jQuery, _) {
               status.css("color","red");
               status.html("locked");
             }
-
-      },
-      wrap: function(func){
-          try {
-                func(arguments);
-          } catch(err) {
-            console.log(err.stack);
-          } finally {
-            event.preventDefault();
-          }
       },
       editorReady: function () {
             jsonschema.editor && jsonschema.editor.ready && jsonschema.editor.validate();

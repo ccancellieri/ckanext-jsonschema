@@ -30,12 +30,33 @@ jsonschema = Blueprint(_c.TYPE, __name__)
 ########################################
 ## Schema proxy
 
-def read_schema(filename):
+def read_schema(schema_type):
+    '''
+    Dumps the content of a local schema file.
+    The file resolution is based on the configured schema folder and the (argument) json file name
+    '''
+    return json.dumps(_t.get_schema_of(schema_type))
+
+jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_SCHEMA_PATH), view_func=read_schema, endpoint='schema', methods=[u'GET'])
+
+def read_schema_file(filename):
     '''
     Dumps the content of a local schema file.
     The file resolution is based on the configured schema folder and the (argument) json file name
     '''
     import os
-    return json.dumps(_t.get_schema_of(os.path.splitext(filename)[0]))
+    return read_schema(os.path.splitext(filename)[0])
 
-jsonschema.add_url_rule('{}/<filename>'.format(_c.REST_SCHEMA_PATH), view_func=read_schema, endpoint='schema', methods=[u'GET'])
+
+jsonschema.add_url_rule('{}/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='schema_file', methods=[u'GET'])
+
+
+def read_template(schema_type):
+    '''
+    Dumps the content of a local schema file.
+    The file resolution is based on the configured schema folder and the (argument) json file name
+    '''
+    import os
+    return json.dumps(_t.get_template_of(schema_type))
+
+jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_TEMPLATE_PATH), view_func=read_template, endpoint='template', methods=[u'GET'])

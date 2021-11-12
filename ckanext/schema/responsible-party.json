@@ -2,6 +2,7 @@
     "type": "object",
     "properties":{
         "responsibleParty":{
+            "title": "Responsible",
             "type":"array",
             "items":{
                 "type":"object",
@@ -14,7 +15,8 @@
                     },
                     "role":{
                         "type":"string",
-                        "enum": ["author","TODO","http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_RoleCode"]
+                        "enum": ["author","TODO"],
+                        "description": "http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_RoleCode"
                     },
                     "contactInfo": {
                         "type":"object",

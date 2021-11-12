@@ -6,8 +6,14 @@
         "characterSet"
     ],
     "properties":{
-        "language": {
+        "dataIdentification":{
+            "$ref":"data-identification.json"
+        },
+        "language":{
             "$ref":"language.json"
+        },
+        "contact":{
+            "$ref":"responsible-party.json"
         },
         "parentIdentifier":{
             "type":"string",
@@ -33,12 +39,6 @@
             ]
         },
         "responsibleParty":{
-            "$ref":"responsible-party.json"
-        },
-        "identificationInfo":{
-            "$ref":"identification-info.json"
-        },
-        "contact":{
             "$ref":"responsible-party.json"
         },
         "metadataStandardVersion":{

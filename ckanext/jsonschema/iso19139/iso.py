@@ -47,7 +47,7 @@ TYPE_ISO_ONLINE_RESOURCE='online-resource'
 
 SUPPORTED_DATASET_FORMATS = [TYPE_ISO]
 
-SUPPORTED_ISO_RESOURCE_FORMATS = [TYPE_ISO_ONLINE_RESOURCE]
+SUPPORTED_ISO_RESOURCE_FORMATS = [TYPE_ISO_ONLINE_RESOURCE,'resource-dataset']
 
 class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)

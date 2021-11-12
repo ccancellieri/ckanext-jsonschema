@@ -35,7 +35,7 @@ if not isinstance(SUPPORTED_DATASET_FORMATS,list):
 # (Optional)
 # List of formats supported 
 # ckanext.jsonschema.dataset.formats = []
-SUPPORTED_RESOURCE_FORMATS = config.get('ckanext.jsonschema.resource.formats', ['dataset'])
+SUPPORTED_RESOURCE_FORMATS = config.get('ckanext.jsonschema.resource.formats', ['resource-dataset'])
 if isinstance(SUPPORTED_RESOURCE_FORMATS,str):
    # log.debug("DEFAULT_FORMATS is still a string: {}".format(PATH_SCHEMA))
    SUPPORTED_RESOURCE_FORMATS = json.loads(SUPPORTED_RESOURCE_FORMATS)
@@ -70,8 +70,9 @@ PATH_SCHEMA=path.realpath(config.get('ckanext.jsonschema.path.schema', path.join
 PATH_TEMPLATE=path.realpath(config.get('ckanext.jsonschema.path.template', path.join(PATH_ROOT,'template')))
 
 # REST paths
-REST_MAPPING_PATH='/{}/mapping'.format(TYPE)
+REST_TEMPLATE_PATH='/{}/template'.format(TYPE)
 REST_SCHEMA_PATH='/{}/schema'.format(TYPE)
+REST_SCHEMA_FILE_PATH='/{}/schema_file'.format(TYPE)
 
 
 
