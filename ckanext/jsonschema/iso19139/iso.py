@@ -40,15 +40,27 @@ from jsonschema import validate,RefResolver,Draft4Validator,Draft7Validator
 import json
 import ckan.model as model
 
+import ckan.lib.navl.dictization_functions as df
+import uuid
 config = toolkit.config
 
-TYPE_ISO='iso'
-TYPE_ISO_ONLINE_RESOURCE='online-resource'
-TYPE_ISO_RESOURCE_DATASET='resource-dataset'
+TYPE_ISO = 'iso'
 
 SUPPORTED_DATASET_FORMATS = [TYPE_ISO]
 
-SUPPORTED_ISO_RESOURCE_FORMATS = [TYPE_ISO_ONLINE_RESOURCE,TYPE_ISO_RESOURCE_DATASET]
+TYPE_ISO_RESOURCE_DATASET = 'resource-dataset'
+TYPE_ISO_ONLINE_RESOURCE = 'online-resource'
+TYPE_ISO_RESOURCE_RESPONSIBLE = 'responsible'
+TYPE_ISO_RESOURCE_MAINTENANCE = 'resource-maintenance'
+TYPE_ISO_RESOURCE_POINT_OF_CONTACT = 'point-of-contact'
+
+SUPPORTED_ISO_RESOURCE_FORMATS = [
+    TYPE_ISO_ONLINE_RESOURCE,
+    TYPE_ISO_RESOURCE_DATASET,
+    TYPE_ISO_RESOURCE_RESPONSIBLE,
+    TYPE_ISO_RESOURCE_MAINTENANCE,
+    TYPE_ISO_RESOURCE_POINT_OF_CONTACT
+    ]
 
 # ISO_OPT={}
 
@@ -63,13 +75,6 @@ class JsonschemaIso(p.SingletonPlugin):
         #TODO
 
     # IBinder
-
-    # def opt_map(self, dataset_type, opt, version):
-    #     ''''
-    #     returns a map of options (by type)
-    #     '''
-    #     opt.update({TYPE_ISO : ISO_OPT })
-    #     return opt
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
 
@@ -94,11 +99,21 @@ class JsonschemaIso(p.SingletonPlugin):
             self._extract_from_iso(body, type, opt, version, key, data, errors, context)
             return
         elif type == TYPE_ISO_ONLINE_RESOURCE:
-            self._extract_from_online_resource(body, type, opt, version, key, data, errors, context)
+            _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
             return
         elif type == TYPE_ISO_RESOURCE_DATASET:
-            self._extract_from_resource_dataset(body, type, opt, version, key, data, errors, context)
+            _extract_iso_resource_dataset(body, type, opt, version, key, data, errors, context)
             return
+        elif type == TYPE_ISO_RESOURCE_RESPONSIBLE:
+            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
+            return
+        elif type == TYPE_ISO_RESOURCE_MAINTENANCE:
+            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
+            return
+        elif type == TYPE_ISO_RESOURCE_POINT_OF_CONTACT:
+            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
+            return
+        
         
     def _extract_from_iso(self, body, type, opt, version, key, data, errors, context):
         # if key==('name',):
@@ -111,21 +126,18 @@ class JsonschemaIso(p.SingletonPlugin):
         data.update(df.flatten_dict(_data))
 
 
-    def _extract_from_online_resource(self, body, type, opt, version, key, data, errors, context):
-        # _data = df.unflatten(data)
-        _extract_iso_online_resource_name(body, type, opt, version, key, data, errors, context)
-        # TODO
-        # data.update(df.flatten_dict(_data))
+    # def _extract_from_online_resource(self, body, type, opt, version, key, data, errors, context):
+    #     # _data = df.unflatten(data)
+    #     _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
+    #     # TODO
+    #     # data.update(df.flatten_dict(_data))
 
-    def _extract_from_resource_dataset(self, body, type, opt, version, key, data, errors, context):
-        # _data = df.unflatten(data)
-        _extract_iso_resource_dataset_name(body, type, opt, version, key, data, errors, context)
-        # TODO
-        # data.update(df.flatten_dict(_data))
+    # def _extract_from_resource_dataset(self, body, type, opt, version, key, data, errors, context):
+    #     # _data = df.unflatten(data)
+    #     _extract_iso_resource_dataset_name(body, type, opt, version, key, data, errors, context)
+    #     # TODO
+    #     # data.update(df.flatten_dict(_data))
 
-
-import ckan.lib.navl.dictization_functions as df
-import uuid
 def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 
     # TODO generate if still none...
@@ -133,6 +145,7 @@ def _extract_iso_name(body, opt, type, version, key, data, errors, context):
     # name = str(uuid.UUID(body.get('fileIdentifier')))
     name = str(body.get('fileIdentifier',uuid.uuid4()))
     name = name or data.get('name') #TODO error if null...
+    # notes = str(body.get('description',''))
 
     if not name:
         _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
@@ -143,20 +156,25 @@ def _extract_iso_name(body, opt, type, version, key, data, errors, context):
     }
     data.update(_dict)
 
-def _extract_iso_online_resource_name(body, opt, type, version, key, data, errors, context):
+def _extract_iso_online_resource(body, opt, type, version, key, data, errors, context):
     # TODO
     name = str(body.get('name',uuid.uuid4()))
     name = name or data.get('name') #TODO error if null...
-
     if not name:
         _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
-        
+    
+    description = str(body.get('description',''))
+
+    protocol = str(body.get('protocol',''))
+
     _dict = {
-        'name': name
+        'name': name,
+        'description': description,
+        'protocol': protocol
     }
     data.update(_dict)
 
-def _extract_iso_resource_dataset_name(body, opt, type, version, key, data, errors, context):
+def _extract_iso_resource_dataset(body, opt, type, version, key, data, errors, context):
 
     name = str(body.get('name',uuid.uuid4()))
     name = name or data.get('name') #TODO error if null...
@@ -169,6 +187,21 @@ def _extract_iso_resource_dataset_name(body, opt, type, version, key, data, erro
     }
     data.update(_dict)
 
+def _extract_iso_resource_responsible(body, opt, type, version, key, data, errors, context):
+
+    name = str(body.get('individualName'))
+    name = name or data.get('name') #TODO error if null...
+    if not name:
+        _v.stop_with_error('Unable to obtain name', key, errors)
+    
+    description = str(body.get('role'))
+    description = data.get('description', description) #TODO error if null...
+
+    _dict = {
+        'name': name,
+        'description': description
+    }
+    data.update(_dict)
 
 
 

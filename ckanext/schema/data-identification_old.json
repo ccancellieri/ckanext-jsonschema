@@ -61,6 +61,9 @@
             "enum": ["completed"],
             "description": "http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode"
         },
+        "pointOfContact":{
+            "$ref":"responsible-party.json"
+        },
         "descriptiveKeywords":{
             "type":"object",
             "properties":{
@@ -99,6 +102,9 @@
                         "asNeeded"
                     ],
                     "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"
+                },
+                "contact":{
+                    "$ref":"responsible-party.json"
                 }
             }
         },

@@ -12,6 +12,18 @@
         "language":{
             "$ref":"language.json"
         },
+        "contact":{
+            "type": "object",
+            "properties":{
+                "responsibleParty":{
+                    "title": "Responsible",
+                    "type":"array",
+                    "items":{
+                        "$ref":"responsible.json"
+                    }
+                }
+            }
+        },
         "parentIdentifier":{
             "type":"string",
             "description": "uri or UUID of the metadata parent"
@@ -34,6 +46,9 @@
             "enum":[
                 "EPSG:4326 - WGS84"
             ]
+        },
+        "responsibleParty":{
+            "$ref":"responsible-party.json"
         },
         "metadataStandardVersion":{
             "type":"string",

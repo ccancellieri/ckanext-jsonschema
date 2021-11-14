@@ -1,0 +1,18 @@
+{
+    "individualName":"",
+    "organisationName":"",
+    "role":"maintainer",
+    "contactInfo": {
+        "address": {
+            "electronicMailAddress":"",
+            "country":"",
+            "deliveryPoint":"",
+            "postalCode":"",
+            "city": ""
+        },
+        "phone": {
+            "voice":"",
+            "facsimile": ""
+        }
+    }
+}
