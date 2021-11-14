@@ -84,33 +84,53 @@ ckan.module('jsonschema', function (jQuery, _) {
 
                 this.editorToggle(enable=false);
         },
+
         ckan_url: undefined,
         jsonschema_schema: undefined,
         jsonschema_body: undefined,
+        jsonschema_opt: undefined,
+
         editor: undefined,
-        reload: function (jsonschema_type, editor = true, keep_old = true) {
+        dynamic_module: async function (type){
+            let module;
+            try {
+                module = await import(jsonschema.ckan_url+'jsonschema/module/'+type);
+                if (module){
+                    module.initialize();   
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+            return  module
+        },
+        reload: async function (jsonschema_type, editor = true, keep_old = true) {
             
+            let module;
             if (!keep_old){
+                // TODO alert...
                 jsonschema.jsonschema_type = jsonschema_type;
                 const promises = [
                     jsonschema.fetch('jsonschema/schema/'+jsonschema_type),
-                    jsonschema.fetch('jsonschema/template/'+jsonschema_type),
-                    jsonschema.fetch('jsonschema/options/'+jsonschema_type)];
-                Promise.allSettled(promises).
+                    jsonschema.fetch('jsonschema/template/'+jsonschema_type)];
+                await Promise.allSettled(promises).
                     then((results) => {
                         results.forEach((result) => console.log(result.status))
+                        // TODO check returns
                         jsonschema.jsonschema_schema = results[0].value;
                         jsonschema.jsonschema_body = results[1].value;
-                        jsonschema.jsonschema_opt = results[2].value;
-                            // todo check returns
+                        // jsonschema.jsonschema_opt = results[2].value;
                     }
                 );
             }
+
+            module = await jsonschema.dynamic_module(jsonschema_type);
+            
             if (editor){
                 jsonschema.getEditor(keep_old);
             } else {
                 jsonschema.getEditorAce(keep_old);
             }
+        
         },
         fetch: function (path) {
             var url = new URL(encodeURI(path),jsonschema.ckan_url);
@@ -140,21 +160,40 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.editorValidate=this.editorReady.bind(jsonschema);
             jsonschema.editorToggle=this.editorToggle.bind(jsonschema);
 
-//jsonschema.onSubmit
+            // form onSubmit binding to json-editor submit event
             $('.dataset-form').find('button[type=submit]').each(
                 function (){$(this).on('click', jsonschema.onSubmit.bind(jsonschema));});
 
-            // initialize previous value (from jinja2)
+            // initialize previous value (from jinja2 dataset form)
             jsonschema.jsonschema_schema = self.options.schema;
             jsonschema.jsonschema_body = self.options.body;
-            jsonschema.jsonschema_opt = self.options.opt;
             jsonschema.jsonschema_type = self.options.type;
+            jsonschema.jsonschema_opt = self.options.option;
 
+            // initialize editor
             jsonschema.reload(jsonschema.jsonschema_type, editor = true, keep_old = true);
-            // jsonschema.getEditor();
         },
         getEditorAce: function (keep_old = true){
+            this.isHowto=false
+            
             //let schema = jsonschema.jsonschema_schema;
+            let schema={
+                "type": "string",
+                "format": "json",
+                "title": "Body",
+                "options": {
+                      "ace": {
+                        //"theme": "ace/theme/tailwind",
+                        "tabSize": 2,
+                        "useSoftTabs": true,
+                        "wrap": true,
+                        //"fontFamily": "tahoma",
+                        "fontSize": "14pt"
+                        //,"enableBasicAutocompletion": true
+                      }
+                 }
+            }
+
             let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
                 if (keep_old){
@@ -167,35 +206,13 @@ ckan.module('jsonschema', function (jQuery, _) {
             
             //old_body=jsonschema.asString(body);
             
-            let opt = jsonschema.jsonschema_opt;
             // ##################################################
+            let opt = jsonschema.jsonschema_opt;
             // TODO 
             // ##################################################
 
-            // OPTS WILL BE USED TO PLUG IN FORM SPECIFIC JS FUNCTION
-            // LOADED HERE ON THE FLY
 
-            // ##################################################
-
-            this.isHowto=false
-
-            let schema={
-              "type": "string",
-              "format": "json",
-              "title": "Body",
-              "options": {
-                    "ace": {
-                      //"theme": "ace/theme/tailwind",
-                      "tabSize": 2,
-                      "useSoftTabs": true,
-                      "wrap": true,
-                      //"fontFamily": "tahoma",
-                      "fontSize": "14pt"
-                      //,"enableBasicAutocompletion": true
-                    }
-               }
-              }
-        // Initialize the editor
+            // Initialize the editor
             this.editor = new JSONEditor(document.getElementById('editor-jsonschema-config'),{
                 // Enable fetching schemas via ajax
                 ajax: true,
@@ -297,7 +314,10 @@ ckan.module('jsonschema', function (jQuery, _) {
 
         },
         getEditor: function (keep_old = true){
+            this.isHowto=true
+
             let schema = jsonschema.jsonschema_schema;
+
             let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
                 if (keep_old){
@@ -307,97 +327,12 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
             value = jsonschema.asObject(value || jsonschema.jsonschema_body);
             
+            // ##################################################
             let opt = jsonschema.jsonschema_opt; 
             // ##################################################
-            // TODO 
-            // ##################################################
 
-            // OPTS WILL BE USED TO PLUG IN FORM SPECIFIC JS FUNCTION
-            // LOADED HERE ON THE FLY
-
-            // ##################################################
-            this.isHowto=true
             
             // Initialize the editor
-                        // window.JSONEditor.theme.options = {
-            //     "input_size": "small",
-            //     "custom_forms": true,
-            //     "object_indent": true,
-            //     "object_background": "bg-dark",
-            //     "table_border": true,
-            //     "table_zebrastyle": true
-            // }
-            
-            // window.JSONEditor.defaults.options.colorpicker = {
-            //         "editor": false, /* default no editor */
-            //         "alpha": false, /* default no alpha */
-            //         "editorFormat": "rgb", 
-            //         "popup": 'up' /*bottom show in the bottom */
-            // }
-            window.JSONEditor.defaults.callbacks = {
-                // "button":  function view_info(jseditor_editor, input){
-                //         console.log(input);
-                // },
-                "template": {
-                    "view_template": (jseditor,e) => {
-
-                        if (!e || !e.id || e.id == '' || !isValidUUID(e.id)) {
-                            return "Please set a view id";
-                        }
-                        
-                        var url = new URL('jsonschema/describe?view_id='+e.id, jsonschema.ckan_url);
-                        var request = new XMLHttpRequest();
-                        request.open('GET', url, false);  // `false` makes the request synchronous
-                        request.send(null);
-
-                        if (request.status === 200) {
-                            const res = JSON.parse(request.response);
-                            return res.resource_name+" - "+res.dataset_title;
-                        } else {
-                            console.error("Unable to resolve item: "+e.id+".\n Response: "+request.response);
-                            return "";
-                        }
-                        
-                        // asynch ???
-                        /*return fetch(url).then(function (response) {
-                                return response.json();
-                            }).then(function (data) {
-                                resolve(data);
-                            }).catch(function (err) {
-                                console.error(err);
-                                return "";
-                            });;*/
-                    }
-                },
-                "autocomplete": {
-                // This is callback functions for the "autocomplete" editor
-                // In the schema you refer to the callback function by key
-                // Note: 1st parameter in callback is ALWAYS a reference to the current editor.
-                // So you need to add a variable to the callback to hold this (like the
-                // "jseditor_editor" variable in the examples below.)
-        
-                // Setup API calls
-                    "view_search": function search(jseditor_editor, input) {
-                        var url = new URL('jsonschema/search?'+
-                                'resource_name='+ encodeURI(input)+
-                                '&dataset_title='+ encodeURI(input)+
-                                '&dataset_description='+ encodeURI(input),jsonschema.ckan_url);
-                        if (input.length < 2) {
-                            return [];
-                        }
-                        return fetch(url).then(function (request) {
-                                if (request.status === 200) {
-                                    return request.json();
-                                } else {
-                                    return [""];
-                                }
-                            }).catch(function (err) {
-                                console.error(err);
-                                return "";
-                            });
-                    }
-                }
-            };
             this.editor = new JSONEditor(document.getElementById('editor-jsonschema-config'),{
                 // Enable fetching schemas via ajax
                 ajax: true,

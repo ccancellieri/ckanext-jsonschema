@@ -29,6 +29,7 @@ def stop_with_error(message, key, errors):
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
+from ckan.plugins import PluginImplementations
 
 import logging
 log = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ import ckan.model as model
 
 _SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
 
+JSONSCHEMA_PLUGINS = PluginImplementations(_i.IBinder)
 
 def schema_check(key, data, errors, context):
     '''
@@ -85,6 +87,108 @@ def schema_check(key, data, errors, context):
         #TODO better message
         stop_with_error('Error validating:{}'.format(str(e)), key, errors)
 
+def resource_extractor(key, data, errors, context):
+    _data = df.unflatten(data)
+
+    resources = _data.get('resources')
+
+    if not resources:
+        return
+
+    for resource in resources:
+
+        extra = resolve_resource_extras(_data['type'], resource, True)
+        # resource.get('__extras')
+
+        body = extra.get(_c.SCHEMA_BODY_KEY)
+
+        type = extra.get(_c.SCHEMA_TYPE_KEY)
+
+        opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
+
+        version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
+
+        for plugin in JSONSCHEMA_PLUGINS:
+            try:
+                if type in plugin.supported_resource_types(_data['type'], opt, version):
+                    plugin.extract_from_json(body, type, opt, version, key, resource, errors, context)
+            except Exception as e:
+                log.error('Error extracting dataset type {}\
+                    from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+
+    data.update(df.flatten_dict(_data))
+
+def extractor(key, data, errors, context):
+
+    extra = resolve_extras(df.unflatten(data), True)
+
+    body = extra.get(_c.SCHEMA_BODY_KEY)
+
+    type = extra.get(_c.SCHEMA_TYPE_KEY)
+
+    opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
+
+    version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
+    
+    for plugin in JSONSCHEMA_PLUGINS:
+        try:
+            if type in plugin.supported_dataset_types(opt, version):
+                plugin.extract_from_json(body, type, opt, version, key, data, errors, context)
+        except Exception as e:
+            log.error('Error extracting dataset type {}\
+                from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+
+def resolve_resource_extras(dataset_type, resource, as_dict = False):
+    from ckanext.jsonschema.plugin import handled_resource_types
+    # Pre-setting defaults
+    resource_types = handled_resource_types(dataset_type)
+    if resource_types:
+        _type = resource_types[0]
+        body = _t.get_template_of(_type)
+    else:
+        _type = None
+        body = {}
+    
+    opt = _c.SCHEMA_OPT
+    version = _c.SCHEMA_VERSION
+
+    # Checking extra data content for extration
+    e = resource.get('__extras',{})
+    if not e:
+        # edit existing resource
+        e = resource
+
+    body = e.get(_c.SCHEMA_BODY_KEY, body)
+    _type = e.get(_c.SCHEMA_TYPE_KEY, _type)
+    version = e.get(_c.SCHEMA_VERSION_KEY, version)
+    opt = e.get(_c.SCHEMA_OPT_KEY, opt)
+    
+    # body = resource.get(_c.SCHEMA_BODY_KEY, body)
+    # _type = resource.get(_c.SCHEMA_TYPE_KEY, _type)
+    # version = resource.get(_c.SCHEMA_VERSION_KEY, version)
+    # opt = resource.get(_c.SCHEMA_OPT_KEY, opt)
+            
+    if as_dict:
+        if not isinstance(body, dict):
+            body = json.loads(body)
+        if not isinstance(opt, dict):
+            try:
+                opt = json.loads(opt)
+            except Exception as e:
+                log.error('Unable to properly deserialize \'opt\' it should be a json object...')
+    else:
+        if not isinstance(body, str):
+            body = json.dumps(body)
+        if not isinstance(opt, str):
+            opt = json.dumps(opt)
+    
+    return {
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY: _type,
+        _c.SCHEMA_VERSION_KEY: version
+    }
+
 def resolve_extras(data, as_dict = False):
     # Pre-setting defaults
     _type = get_dataset_type(data)
@@ -94,13 +198,16 @@ def resolve_extras(data, as_dict = False):
 
     # Checking extra data content for extration
     for e in data.get('extras',[]):
-        if e.get('key') == _c.SCHEMA_BODY_KEY:
+        key = e.get('key')
+        if not key:
+            raise Exception('Unable to resolve extras with an empty key')
+        if key == _c.SCHEMA_BODY_KEY:
             body = e['value']
-        elif e.get('key') == _c.SCHEMA_TYPE_KEY:
+        elif key == _c.SCHEMA_TYPE_KEY:
             _type = e['value']
-        elif e.get('key') == _c.SCHEMA_VERSION_KEY:
+        elif key == _c.SCHEMA_VERSION_KEY:
             version = e['value']
-        elif e.get('key') == _c.SCHEMA_OPT_KEY:
+        elif key == _c.SCHEMA_OPT_KEY:
             opt = e['value']
             
     if as_dict:
@@ -121,8 +228,12 @@ def resolve_extras(data, as_dict = False):
         _c.SCHEMA_VERSION_KEY: version
     }
 
-def extractor(key, data, errors, context):
 
+# TODO
+def resource_serializer(key, data, errors, context):
+    '''
+    serialize to body the data model in the desired form
+    '''
     extra = resolve_extras(df.unflatten(data), True)
 
     body = extra.get(_c.SCHEMA_BODY_KEY)
@@ -133,15 +244,7 @@ def extractor(key, data, errors, context):
 
     version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
 
-    from ckan.plugins import PluginImplementations
-    # del data_dict['_ckan_phase']
-    #             del data_dict['save']
-    for plugin in PluginImplementations(_i.IBinder):
-        try:
-            if type in plugin.supported_dataset_types(opt, version):
-                plugin.extract_from_json(body, type, opt, version, key, data, errors, context)
-        except Exception as e:
-            stop_with_error('Error extracting json model: {}'.format(str(e)), key, errors)
+    _serialize_with_plugin(body, type, opt, version, key, data, errors, context)
 
 def serializer(key, data, errors, context):
     '''
@@ -157,17 +260,25 @@ def serializer(key, data, errors, context):
 
     version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
 
-    from ckan.plugins import PluginImplementations
-    # from ckan.plugins.interfaces import IConfigurable
-    # for plugin in PluginImplementations(IConfigurable):
-    for plugin in PluginImplementations(_i.IBinder):
+    # if key[::2] == ('resources',_c.SCHEMA_BODY_KEY):
+    #     # TODO we are into resources
+    #    while data[key]
+
+    _serialize_with_plugin(body, type, opt, version, key, data, errors, context)
+
+# TODO SERIALIZER
+def _serialize_with_plugin(body, type, opt, version, key, data, errors, context):
+    for plugin in JSONSCHEMA_PLUGINS:
         try:
             if type in plugin.supported_dataset_types(opt, version):
+                # TODO SERIALIZER INTERFACE
                 plugin.extract_from_json(body, type, opt, version, key, data, errors, context)
         except Exception as e:
             log.error('Error extracting dataset type {}\
                 from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
+
+# TODO CKAN contribution
 def get_dataset_type(data = None):
     
     _type = data and data.get('type')
@@ -179,6 +290,13 @@ def get_dataset_type(data = None):
     path = c.environ['CKAN_CURRENT_URL']
     _type = path.split('/')[1]
     return _type
+
+
+
+
+
+
+
 
 
 ########### UNUSED

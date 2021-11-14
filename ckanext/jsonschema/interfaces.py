@@ -2,6 +2,18 @@ from ckan.plugins.interfaces import Interface
 
 class IBinder(Interface):
 
+    # def opt_map(self, dataset_type, opt, version):
+    #     ''''
+    #     returns a map of options (by type)
+    #     Each option will be passed as RUNTIME option
+    #     This is used by json-schema to pass js functions
+    #     to enrich the jsonschema editor capabilities with 
+    #     autocompletion and much more.
+    #     NOTE: thise opt map will not be stored into the metadata
+
+    #     '''
+    #     return opt
+
     def supported_resource_types(self, dataset_type, opt, version):
         '''
         returns a list of supported resource type

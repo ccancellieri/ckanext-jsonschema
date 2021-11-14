@@ -47,15 +47,37 @@
 {% block metadata_fields %}
   {% if jsonschema is defined %}
 
+{#
+<!-- 
     {% set TYPE_KEY = h.jsonschema_get_type_key() %}
     {% set BODY_KEY = h.jsonschema_get_body_key() %}
     {% set OPT_KEY = h.jsonschema_get_opt_key() %}
     {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
-    {% set schema_type = data[TYPE_KEY] or resource_types[0] %}
-    {% set body = data[BODY_KEY] or h.jsonschema_get_template(schema_type) %}
+    {% if data[TYPE_KEY] is defined %}
+      {% set schema_type = data[TYPE_KEY] %}
+      {% set body = data[BODY_KEY] %}
+    {% else %}
+      {% set schema_type = resource_types[0] %}
+      {% set body = h.jsonschema_get_template(schema_type) %}
+    {% endif %}
+
     {% set opt = data[OPT_KEY] %}
-    {% set version = data[VERSION_KEY] %}
+    {% set version = data[VERSION_KEY] %} -->
+#}
+
+    {% set extras = h.jsonschema_resolve_resource_extras(dataset_type, data) %}
+
+    {% set TYPE_KEY = h.jsonschema_get_type_key() %}
+    {% set BODY_KEY = h.jsonschema_get_body_key() %}
+    {% set OPT_KEY = h.jsonschema_get_opt_key() %}
+    {% set VERSION_KEY = h.jsonschema_get_version_key() %}
+
+
+    {% set schema_type = extras[TYPE_KEY] %}
+    {% set body = extras[BODY_KEY] %}
+    {% set opt = extras[OPT_KEY] %}
+    {% set version = extras[VERSION_KEY] %}
 
     {% set schema = h.jsonschema_get_schema(schema_type) %}
     
@@ -63,9 +85,13 @@
       <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>
     
       <label for="field-{{TYPE_KEY}}">Which type: </label>
-      <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value);">
+      <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
         {% for resource_type in resource_types %}
-          <option value="{{ resource_type }}" >{{ resource_type }}</option>
+          {% if resource_type == schema_type %}
+            <option value="{{ resource_type }}" selected>{{ resource_type }}</option>
+          {% else %}
+            <option value="{{ resource_type }}" >{{ resource_type }}</option>
+          {% endif %}
         {% endfor %}
       </select>
       <!-- <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/> -->
@@ -74,13 +100,14 @@
     
       <input id="field-{{VERSION_KEY}}" name="{{VERSION_KEY}}" value="{{version}}" type="hidden" class="form-control"/>
     </div>
-
+    
     <div id="jsonschema-config-form" data-module="jsonschema"
-      data-module-opt="{{ opt }}"
-      data-module-schema="{{ schema }}"
-      data-module-body="{{ body }}"
-      data-module-type="{{ schema_type }}"
-      data-module-ckan-url="{{ h.url_for('/',_external=True) }}"/>
+      data-module-opt = "{{ opt }}"
+      data-module-schema = "{{ schema }}"
+      data-module-body = "{{ body }}"
+      data-module-version = "{{ version }}"
+      data-module-type = "{{ schema_type }}"
+      data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"/>
     
     <div id="editor">
       <p>

@@ -12,6 +12,9 @@ log = logging.getLogger(__name__)
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.utils as utils
 
+def read_all_module():
+    return utils._find_all_js(_c.PATH_MODULE)
+
 def read_all_template():
     return utils._read_all_json(_c.PATH_TEMPLATE)
 
@@ -41,6 +44,9 @@ def get_schema_of(type):
 
 def get_template_of(type):
     return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(type)
+
+def get_module_for(type):
+    return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(type)
 
 import six
 import jinja2

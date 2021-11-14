@@ -28,6 +28,7 @@ isodate = get_validator('isodate')
 convert_to_extras = toolkit.get_converter('convert_to_extras')
 convert_from_extras = toolkit.get_converter('convert_from_extras')
 
+
 import uuid
 import ckan.lib.navl.dictization_functions as df
 
@@ -44,9 +45,14 @@ log = logging.getLogger(__name__)
 
 from ckan.plugins import PluginImplementations
 
-def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+
+def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
+
+    if HANDLED_RESOURCES_TYPES and not renew:
+        return HANDLED_RESOURCES_TYPES.get(dataset_type)
+
     supported_resource_types = []
-    for plugin in PluginImplementations(_i.IBinder):
+    for plugin in _v.JSONSCHEMA_PLUGINS:
         try:
             supported_resource_types.extend(plugin.supported_resource_types(dataset_type, opt, version))
         except Exception as e:
@@ -56,10 +62,12 @@ def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VE
         if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
             raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
     
+    HANDLED_RESOURCES_TYPES.update({dataset_type:supported_resource_types})
+
     return supported_resource_types
 
 
-def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
     '''
     #TODO
     defines a list of dataset types that
@@ -69,10 +77,13 @@ def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
     we want our plugin to be the default handler, we update the plugin
     code to contain the following:
     '''
+    if HANDLED_DATASET_TYPES and not renew:
+        return HANDLED_DATASET_TYPES
+    
     # This plugin doesn't handle any special package types, it just
     # registers itself as the default (above).
     supported_dataset_types = []
-    for plugin in PluginImplementations(_i.IBinder):
+    for plugin in _v.JSONSCHEMA_PLUGINS:
         try:
             supported_dataset_types.extend(plugin.supported_dataset_types(opt, version))
         except Exception as e:
@@ -83,6 +94,11 @@ def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
             raise Exception('Error resolving dataset json schema for type:\n{}'.format(type))
 
     return supported_dataset_types
+
+
+# check IConfigurer
+HANDLED_DATASET_TYPES = []
+HANDLED_RESOURCES_TYPES = {}
 
 TYPE_JSONSCHEMA='jsonschema'
 
@@ -96,6 +112,10 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(_i.IBinder, inherit = True)
 
     # IBinder
+
+    def get_opt(self, dataset_type, opt, version):
+        opt.update(_c.SCHEMA_OPT)
+        return opt
 
     def extract_from_json(self, body, type, opt, version, key, data, errors, context):
         # TODO which type schema or dataset?
@@ -190,13 +210,19 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
             'jsonschema_get_dataset_type': _v.get_dataset_type,
             'jsonschema_resolve_extras': _v.resolve_extras,
+            'jsonschema_resolve_resource_extras': _v.resolve_resource_extras,
             'jsonschema_handled_resource_types': handled_resource_types,
             'jsonschema_handled_dataset_types': handled_dataset_types,
+            # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
         }
 
-# def _get_body (pkg): lambda pkg : pkg.get(_c.SCHEMA_BODY_KEY)
-# def _get_type (pkg): lambda pkg : pkg.get(_c.SCHEMA_TYPE_KEY)
-# def _get_opts (pkg): lambda pkg : pkg.get(_c.SCHEMA_OPT_KEY)
+    # def _opt_map(self, opt = _c.SCHEMA_OPT, version = _c.SCHEMA_VERSION):
+    #     for plugin in _v.JSONSCHEMA_PLUGINS:
+    #         try:
+    #             opt.update(plugin.opt_map(opt, version))
+    #         except Exception as e:
+    #             log.error('Error resolving dataset types:\n{}'.format(str(e)))
+    #     return opt
     
     # IConfigurer
 
@@ -208,8 +234,15 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # Append all the rest of the available schemas
         _c.JSON_CATALOG.update({
                     _c.JSON_SCHEMA_KEY:_t.read_all_schema(),
-                    _c.JSON_TEMPLATE_KEY:_t.read_all_template()
+                    _c.JSON_TEMPLATE_KEY:_t.read_all_template(),
+                    _c.JS_MODULE_KEY:_t.read_all_module()
             })
+        
+        HANDLED_DATASET_TYPES = handled_dataset_types(renew = True)
+
+        HANDLED_RESOURCES_TYPES = {}
+        for dataset_type in HANDLED_DATASET_TYPES:
+            HANDLED_RESOURCES_TYPES.update({ dataset_type : handled_resource_types(dataset_type, renew = True) })
 
         # assert len(_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY])==\
         #     len(_c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY])
@@ -286,20 +319,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     # def setup_template_variables(self, context, data_dict):
         
-    #     super(toolkit.DefaultDatasetForm,self).setup_template_variables(self, context, data_dict)
-    #     pass
         # # TODO: https://github.com/ckan/ckan/issues/6518
         # path = c.environ['CKAN_CURRENT_URL']
         # type = path.split('/')[1]
 
-        
-        # # data_dict.update({
-        # #     _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
-        # # })
         # jsonschema = {
-        #     # 'data_dict' : data_dict,
-        #     _c.SCHEMA_TYPE_KEY : type,
-        #     _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
+        #     # 'data_dict' : data_dict
         # }
         # c.jsonschema = jsonschema
 
@@ -369,63 +394,20 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         '''
         schema = default_show_package_schema()
 
-        # schema.update({
-        #     _c.SCHEMA_OPT_KEY : [ convert_from_extras, ignore_missing ],
-        #     _c.SCHEMA_BODY_KEY: [ convert_from_extras, _v.serializer ],
-        #     _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
-        #     _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
-        # })
-
         # TODO why?!?!? this has been fixed in scheming 
         # but core now is broken... :(
         for field in schema['resources'].keys():
             if isodate in schema['resources'][field]:
                 schema['resources'][field].remove(isodate)
 
-        # Add our custom_resource_text metadata field to the schema
-        # schema['resources'].update({
-        #         _c.SCHEMA_BODY_KEY : [ convert_from_extras, ignore_missing ],
-        #         _c.SCHEMA_TYPE_KEY: [ convert_from_extras ],
-        #         _c.SCHEMA_VERSION_KEY: [ convert_from_extras, _v.default_version ]
-        #         })
-        
-        # schema.update({
-        #     '__extras': [_v.serializer]
-        # })
-        # schema.get('resources', []).append(_v.serializer)
-        schema.get('name', []).append(_v.serializer)
-        schema.get('__extras', []).append(_v.serializer)
+        # schema.get('__before').append(_v.resource_serializer)
+        # schema.get('__before', []).append(_v.serializer)
         return schema
         
 def _modify_package_schema(schema):
-    # our custom field
-    # not_missing, not_empty, resource_id_exists, package_id_exists, 
-    # ignore_missing, empty, boolean_validator, int_validator,  OneOf
-    # schema.update({
-    #     _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_extras ],
-    #     _c.SCHEMA_BODY_KEY: [ not_missing, _v.schema_check, _v.extractor, convert_to_extras ],
-    #     _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
-    #     _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
-    # })
-    # Add our custom_resource_text metadata field to the schema
-    # schema['resources'].update({
-    #         _c.SCHEMA_BODY_KEY : [ not_missing, _v.schema_check, convert_to_extras ],
-    #         _c.SCHEMA_TYPE_KEY: [ not_missing, convert_to_extras ],
-    #         _c.SCHEMA_VERSION_KEY: [ _v.default_version, convert_to_extras ]
-    #         })
-    # schema.get('resources', []).schema.get('__extras', []).append(_v.serializer)
-    # resources = schema.get('resources')
-    # if resources:
-    #     resources_extras = resources.get('__extras')
-    #     if not resources_extras:
-    #         resources_extras = resources['__extras'] = []
-    # else:
-    #     schema['resources'] = resources = []
-    #     resources_extras = resources['__extras'] = []
-    schema['resources'][_c.SCHEMA_BODY_KEY]= [  not_missing, _v.schema_check, _v.extractor ]
-    # resources_extras.insert(0, _v.extractor)
-    # resources_extras.insert(0, _v.schema_check)
-    schema.get('name').insert(0, _v.extractor)
-    schema.get('__extras').insert(0, _v.extractor)
-    schema.get('__extras').insert(0, _v.schema_check)
+    # insert in front
+    schema.get('__before').insert(0, _v.resource_extractor)
+    schema.get('__before').insert(0, _v.extractor)
+    # the following will be the first...
+    schema.get('__before').insert(0, _v.schema_check)
     return schema

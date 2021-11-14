@@ -49,9 +49,11 @@ if not isinstance(SUPPORTED_RESOURCE_FORMATS,list):
 #  Will contain the schema and template defined with the type-mapping
 JSON_SCHEMA_KEY = 'schema'
 JSON_TEMPLATE_KEY = 'template'
+JS_MODULE_KEY = 'module'
 JSON_CATALOG = {
    JSON_SCHEMA_KEY: {},
-   JSON_TEMPLATE_KEY: {}
+   JSON_TEMPLATE_KEY: {},
+   JS_MODULE_KEY: {}
 }
 
 #############################
@@ -63,16 +65,24 @@ JSON_CATALOG = {
 # (Optional)
 # SERVER LOCAL PATH FOLDER WHERE JSON-SCHEMA are located.
 PATH_SCHEMA=path.realpath(config.get('ckanext.jsonschema.path.schema', path.join(PATH_ROOT,'schema')))
+REST_SCHEMA_PATH='/{}/schema'.format(TYPE)
+REST_SCHEMA_FILE_PATH='/{}/schema_file'.format(TYPE)
 
 # (Optional)
 # Used as jinja template to initialize the items values, it's name is by convention the type
 # same type may also be located under mapping
 PATH_TEMPLATE=path.realpath(config.get('ckanext.jsonschema.path.template', path.join(PATH_ROOT,'template')))
-
-# REST paths
 REST_TEMPLATE_PATH='/{}/template'.format(TYPE)
-REST_SCHEMA_PATH='/{}/schema'.format(TYPE)
-REST_SCHEMA_FILE_PATH='/{}/schema_file'.format(TYPE)
+
+# (Optional)
+# Used as options
+PATH_OPT=path.realpath(config.get('ckanext.jsonschema.path.opt', path.join(PATH_ROOT,'opt')))
+REST_OPT_PATH='/{}/opt'.format(TYPE)
+
+# (Optional)
+# Used as json-editor modules to initialize the UI with js extension points
+PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join(PATH_ROOT,'module')))
+REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
 
 
