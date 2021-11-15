@@ -52,21 +52,24 @@ export const initialize = () => {
         // Note: 1st parameter in callback is ALWAYS a reference to the current editor.
         // So you need to add a variable to the callback to hold this (like the
         // "jseditor_editor" variable in the examples below.)
-
-            "tag_autocomplete": (jseditor_editor, input) => {
+            "tag_keywords_autocomplete": (jseditor_editor, input) => {
 
                 let _url = 'api/3/action/tag_autocomplete?query='+encodeURI(input)
-                
+                tag_keywords_autocomplete
                 let vocab_name = jseditor_editor.parent.parent.getValue().type
                 if (vocab_name){
                     // TODO document python code vocab name convention
-                    vocab_name='iso_'+vocab_name
+                    vocab_name='iso__keywords__'+vocab_name
                     // TODO escape with keywords
                     _url = _url +'&vocabulary_id=' + encodeURI(vocab_name)
                 }
 
                 let url = new URL(_url, jsonschema.ckan_url);
                 
+                return tag_autocomplete(jseditor_editor, url);
+            },
+            // TODO keywords match into json schema
+            "tag_autocomplete": (jseditor_editor, url) => {
                 if (input.length < 2) {
                     return [];
                 }

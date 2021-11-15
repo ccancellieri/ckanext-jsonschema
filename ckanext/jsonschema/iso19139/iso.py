@@ -83,16 +83,16 @@ class JsonschemaIso(p.SingletonPlugin):
             self.ISO_VOCABULARY = {
                     # topic category:
                     # ---------------
-                    'creation' : _vocabulary_setup('iso_creation'),
-                    'publication' : _vocabulary_setup('iso_publication'),
-                    'revision' : _vocabulary_setup('iso_revision'),
-                    # MD_KeywordTypeCode:
+                    'creation' : _vocabulary_setup('iso__keywords__creation'),
+                    'publication' : _vocabulary_setup('iso__keywords__publication'),
+                    'revision' : _vocabulary_setup('iso__keywords__revision'),
+                    # MD__KeywordTypeCode:
                     # -------------------
-                    'discipline' : _vocabulary_setup('iso_discipline'),
-                    'place' : _vocabulary_setup('iso_place'),
-                    'stratum' : _vocabulary_setup('iso_stratum'),
-                    'temporal' : _vocabulary_setup('iso_temporal'),
-                    'theme' : _vocabulary_setup('iso_theme')
+                    'discipline' : _vocabulary_setup('iso__keywords__discipline'),
+                    'place' : _vocabulary_setup('iso__keywords__place'),
+                    'stratum' : _vocabulary_setup('iso__keywords__stratum'),
+                    'temporal' : _vocabulary_setup('iso__keywords__temporal'),
+                    'theme' : _vocabulary_setup('iso__keywords__theme')
                 }
         return self.ISO_VOCABULARY
         
