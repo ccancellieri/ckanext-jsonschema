@@ -64,35 +64,38 @@ SUPPORTED_ISO_RESOURCE_FORMATS = [
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE
     ]
 
-# ISO_VOCABULARY={}
-
 # ISO_OPT={}
 
 class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
 
+
+    ISO_VOCABULARY = None
     # IConfigurer
 
     def update_config(self, config_):
-        # ISO_VOCABULARY = {
-        #     # topic category:
-        #     # ---------------
-        #     'creation' : _vocabulary_setup('iso_creation'),
-        #     'publication' : _vocabulary_setup('iso_publication'),
-        #     'revision' : _vocabulary_setup('iso_revision'),
-        #     # MD_KeywordTypeCode:
-        #     # -------------------
-        #     'discipline' : _vocabulary_setup('iso_discipline'),
-        #     'place' : _vocabulary_setup('iso_place'),
-        #     'stratum' : _vocabulary_setup('iso_stratum'),
-        #     'temporal' : _vocabulary_setup('iso_temporal'),
-        #     'theme' : _vocabulary_setup('iso_theme')
-        # }
-        
         pass
         #TODO
 
+    def _get_vocabularies(self):
+        if not self.ISO_VOCABULARY:
+            self.ISO_VOCABULARY = {
+                    # topic category:
+                    # ---------------
+                    'creation' : _vocabulary_setup('iso_creation'),
+                    'publication' : _vocabulary_setup('iso_publication'),
+                    'revision' : _vocabulary_setup('iso_revision'),
+                    # MD_KeywordTypeCode:
+                    # -------------------
+                    'discipline' : _vocabulary_setup('iso_discipline'),
+                    'place' : _vocabulary_setup('iso_place'),
+                    'stratum' : _vocabulary_setup('iso_stratum'),
+                    'temporal' : _vocabulary_setup('iso_temporal'),
+                    'theme' : _vocabulary_setup('iso_theme')
+                }
+        return self.ISO_VOCABULARY
+        
     # IBinder
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
@@ -144,6 +147,32 @@ class JsonschemaIso(p.SingletonPlugin):
 
         _extract_iso_name(body, type, opt, version, key, _data, errors, context)
         
+        data_identification = body.get('dataIdentification')
+        if data_identification:
+            abstract = data_identification.get('abstract')
+            if abstract:
+                _data['notes'] = abstract
+
+            descriptive_keywords = data_identification.get('descriptiveKeywords')
+            if descriptive_keywords:
+                dk_type = descriptive_keywords.get('type')
+                vocab_id = None
+                if dk_type:
+                    # do we have a dictionary matching?
+                    # we should
+                    vocab = self._get_vocabularies().get(dk_type)
+                    if vocab:
+                        vocab_id = vocab.get('id')
+
+                keywords = descriptive_keywords.get('keywords')
+                
+                if keywords:
+                    tags = []
+                    for k in keywords:
+                        tags.append({'name': k, 'vocabulary_id': vocab_id})
+                    _data['tags'] = tags
+
+                # {'name': geo_tag, 'vocabulary_id': vocab_id}
         # TODO
 
         data.update(df.flatten_dict(_data))
@@ -334,7 +363,6 @@ def _get_format(protocol = None, url = None):
 #######################################
 ## UNUSED
 #######################################
-
 
 def _vocabulary_setup(vocab_name, tags=[], context={}):
     # user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
