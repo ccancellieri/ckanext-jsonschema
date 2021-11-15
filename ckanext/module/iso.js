@@ -54,7 +54,19 @@ export const initialize = () => {
         // "jseditor_editor" variable in the examples below.)
 
             "tag_autocomplete": (jseditor_editor, input) => {
-                var url = new URL('api/3/action/tag_autocomplete?query='+encodeURI(input), jsonschema.ckan_url);
+
+                let _url = 'api/3/action/tag_autocomplete?query='+encodeURI(input)
+                
+                let vocab_name = jseditor_editor.parent.parent.getValue().type
+                if (vocab_name){
+                    // TODO document python code vocab name convention
+                    vocab_name='iso_'+vocab_name
+                    // TODO escape with keywords
+                    _url = _url +'&vocabulary_id=' + encodeURI(vocab_name)
+                }
+
+                let url = new URL(_url, jsonschema.ckan_url);
+                
                 if (input.length < 2) {
                     return [];
                 }
