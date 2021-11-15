@@ -124,7 +124,9 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
 
             module = await jsonschema.dynamic_module(jsonschema_type);
-            
+            // if (module){
+            //     module.initialize()
+            // }
             if (editor){
                 jsonschema.getEditor(keep_old);
             } else {

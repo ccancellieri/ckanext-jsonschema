@@ -20,6 +20,7 @@
         "characterSet": {
             "propertyOrder": 30,
             "title": "Character Set",
+            "description": "Character coding standard used for the metadata set",
             "$ref": "character-set.json"
         },
         "metadataStandardName": {
@@ -40,7 +41,7 @@
             "propertyOrder": 60,
             "title": "Parent identifier",
             "type": "string",
-            "description": "uri or UUID of the metadata parent"
+            "description": "URI or UUID of the metadata to which this metadata is a subset (child)"
         },
         "dataIdentification": {
             "propertyOrder": 70,
@@ -64,10 +65,14 @@
             "propertyOrder": 100,
             "title": "Data quality info",
             "type": "object",
+            "required": [
+                "scope"
+            ],
             "properties": {
                 "scope": {
                     "propertyOrder": 1,
                     "title": "Scope",
+                    "description": "class of information to which the referencing entity applies",
                     "type": "string",
                     "enum": [
                         "dataset",
@@ -86,39 +91,37 @@
                         "service",
                         "model",
                         "tile"
-                    ],
-                    "description": "class of information to which the referencing entity applies http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
+                    ]
                 },
                 "lineage": {
                     "propertyOrder": 10,
                     "title": "Lineage",
+                    "description": "Information about the events or source data used in constructing the data specified by the scope",
                     "type": "object",
                     "properties": {
                         "statement": {
                             "propertyOrder": 1,
                             "title": "Statement",
+                            "description": "General explanation of the data producer about the lineage of the dataset",
                             "type": "string"
                         },
                         "source": {
                             "propertyOrder": 10,
                             "title": "Source",
+                            "description": "Information about the source data used in creating the data specified by the scope",
                             "type": "array",
                             "format": "table",
                             "items": {
-                                "title": "Metadata source",
+                                "title": "URI or UUID of the source metadata",
                                 "type": "string"
-                            },
-                            "description": "Source metadata"
+                            }
                         }
                     },
                     "required": [
                         "statement"
                     ]
                 }
-            },
-            "required": [
-                "scope"
-            ]
+            }
         }
     }
 }

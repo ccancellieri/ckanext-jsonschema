@@ -74,7 +74,16 @@
                 "keywords": {
                     "type":"array",
                     "items":{
-                        "type":"string"
+                        "type":"string",
+                        "format": "autocomplete",
+                        "options": {            
+                            "autocomplete": {
+                                "search": "tag_autocomplete",
+                                "getResultValue": "tag_getResultValue",
+                                "renderResult": "tag_render",
+                                "autoSelect": true
+                            }
+                        }
                     },
                     "description":"In case of Type: temporal you may define keywords like: Daily or Monthly"
                 }
@@ -83,9 +92,27 @@
         "topicCategory":{
             "type":"string",
             "enum": [
-                "climatologyMeteorologyAtmosphere"
+                "farming",
+                "biota",
+                "boundaries",
+                "climatologyMeteorologyAtmosphere",
+                "economy",
+                "elevation",
+                "environment",
+                "geoscientificInformation",
+                "health",
+                "imageryBaseMapsEarthCover",
+                "intelligenceMilitary",
+                "inlandWaters",
+                "location",
+                "oceans",
+                "planningCadastre",
+                "society",
+                "structure",
+                "transportation",
+                "utilitiesCommunication"
             ],
-            "description": "https://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"
+            "description": "https://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_TopicCategoryCode"
         },
         "resourceMaintenance":{
             "type":"object",
@@ -156,7 +183,7 @@
         },
         "spatialResolution":{
             "type":"object",
-            "oneOf":[
+            "anyOf":[
                 {
                     "title":"Distance",
                     "properties":{

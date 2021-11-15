@@ -64,7 +64,7 @@ SUPPORTED_ISO_RESOURCE_FORMATS = [
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE
     ]
 
-ISO_VOCABULARY={}
+# ISO_VOCABULARY={}
 
 # ISO_OPT={}
 
@@ -75,22 +75,22 @@ class JsonschemaIso(p.SingletonPlugin):
     # IConfigurer
 
     def update_config(self, config_):
-        ISO_VOCABULARY = {
-            # topic category:
-            # ---------------
-            'creation' : _vocabulary_setup('iso_creation'),
-            'publication' : _vocabulary_setup('iso_publication'),
-            'revision' : _vocabulary_setup('iso_revision'),
-            # MD_KeywordTypeCode:
-            # -------------------
-            'discipline' : _vocabulary_setup('iso_discipline'),
-            'place' : _vocabulary_setup('iso_place'),
-            'stratum' : _vocabulary_setup('iso_stratum'),
-            'temporal' : _vocabulary_setup('iso_temporal'),
-            'theme' : _vocabulary_setup('iso_theme')
-        }
+        # ISO_VOCABULARY = {
+        #     # topic category:
+        #     # ---------------
+        #     'creation' : _vocabulary_setup('iso_creation'),
+        #     'publication' : _vocabulary_setup('iso_publication'),
+        #     'revision' : _vocabulary_setup('iso_revision'),
+        #     # MD_KeywordTypeCode:
+        #     # -------------------
+        #     'discipline' : _vocabulary_setup('iso_discipline'),
+        #     'place' : _vocabulary_setup('iso_place'),
+        #     'stratum' : _vocabulary_setup('iso_stratum'),
+        #     'temporal' : _vocabulary_setup('iso_temporal'),
+        #     'theme' : _vocabulary_setup('iso_theme')
+        # }
         
-        
+        pass
         #TODO
 
     # IBinder
@@ -149,18 +149,6 @@ class JsonschemaIso(p.SingletonPlugin):
         data.update(df.flatten_dict(_data))
 
 
-    # def _extract_from_online_resource(self, body, type, opt, version, key, data, errors, context):
-    #     # _data = df.unflatten(data)
-    #     _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
-    #     # TODO
-    #     # data.update(df.flatten_dict(_data))
-
-    # def _extract_from_resource_dataset(self, body, type, opt, version, key, data, errors, context):
-    #     # _data = df.unflatten(data)
-    #     _extract_iso_resource_dataset_name(body, type, opt, version, key, data, errors, context)
-    #     # TODO
-    #     # data.update(df.flatten_dict(_data))
-
 def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 
     # TODO generate if still none...
@@ -178,6 +166,10 @@ def _extract_iso_name(body, opt, type, version, key, data, errors, context):
         'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
     }
     data.update(_dict)
+
+######################################################
+## RESOURCES
+######################################################
 
 def _extract_iso_online_resource(body, opt, type, version, key, data, errors, context):
     # TODO
@@ -223,8 +215,6 @@ def _extract_iso_resource_responsible(body, opt, type, version, key, data, error
         'description': description
     }
     data.update(_dict)
-
-
 
 def _get_format(protocol = None, url = None):
     
@@ -332,6 +322,16 @@ def _get_format(protocol = None, url = None):
             extension = splitted_url[1][1:]
             if extension:
                 return file_types.get(extension)
+
+
+
+
+
+
+#######################################
+## UNUSED
+#######################################
+
 
 def _vocabulary_setup(vocab_name, tags=[], context={}):
     # user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})

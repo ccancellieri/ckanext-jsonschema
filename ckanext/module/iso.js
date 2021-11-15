@@ -53,26 +53,34 @@ export const initialize = () => {
         // So you need to add a variable to the callback to hold this (like the
         // "jseditor_editor" variable in the examples below.)
 
-        // Setup API calls
-            "view_search": function search(jseditor_editor, input) {
-                var url = new URL('jsonschema/search?'+
-                        'resource_name='+ encodeURI(input)+
-                        '&dataset_title='+ encodeURI(input)+
-                        '&dataset_description='+ encodeURI(input),jsonschema.ckan_url);
+            "tag_autocomplete": (jseditor_editor, input) => {
+                var url = new URL('/api/3/action/tag_autocomplete?query='+encodeURI(input), jsonschema.ckan_url);
                 if (input.length < 2) {
                     return [];
                 }
-                return fetch(url).then(function (request) {
-                        if (request.status === 200) {
-                            return request.json();
-                        } else {
-                            return [""];
-                        }
-                    }).catch(function (err) {
-                        console.error(err);
-                        return "";
-                    });
-            }
+                return fetch(url)
+                        .then((request)=>{
+                            if (request.status === 200) {
+                                return request.json();
+                            } else {
+                                return [];
+                            }
+                        }).catch((err)=>{
+                            console.error(err);
+                            return [];
+                        }).then(result=>{
+                            if (result.success===true){
+                                return result.result;
+                            }
+                            return [];
+                        });
+            },
+            "tag_render": (jseditor_editor, result, props) => {
+                return ['<li ' + props + '>',
+                    '<div>' + result + '</div>',
+                    '</li>'].join('');
+            },
+            "tag_getResultValue": (jseditor_editor, result)=>result
         }
     }
 }
