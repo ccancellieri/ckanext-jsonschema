@@ -406,6 +406,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         
 def _modify_package_schema(schema):
     # insert in front
+
+    before = schema.get('__before')
+    if not before:
+        schema['__before']=[]
+        
     schema.get('__before').insert(0, _v.resource_extractor)
     schema.get('__before').insert(0, _v.extractor)
     # the following will be the first...

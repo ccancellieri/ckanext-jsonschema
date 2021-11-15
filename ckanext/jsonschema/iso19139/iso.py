@@ -152,8 +152,11 @@ class JsonschemaIso(p.SingletonPlugin):
 def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 
     # TODO generate if still none...
-   
-    # name = str(uuid.UUID(body.get('fileIdentifier')))
+    # munge title to package name
+    # For taking a title of a package and munging it to a readable and valid dataset id. Symbols and whitespeace are converted into dashes, with multiple dashes collapsed. Ensures that long titles with a year at the end preserves the year should it need to be shortened. Example:
+
+    # /api/util/dataset/munge_title_to_name?title=police:%20spending%20figures%202009
+    
     name = str(body.get('fileIdentifier',uuid.uuid4()))
     name = name or data.get('name') #TODO error if null...
     # notes = str(body.get('description',''))

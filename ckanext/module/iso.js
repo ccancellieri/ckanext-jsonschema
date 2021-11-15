@@ -54,7 +54,7 @@ export const initialize = () => {
         // "jseditor_editor" variable in the examples below.)
 
             "tag_autocomplete": (jseditor_editor, input) => {
-                var url = new URL('/api/3/action/tag_autocomplete?query='+encodeURI(input), jsonschema.ckan_url);
+                var url = new URL('api/3/action/tag_autocomplete?query='+encodeURI(input), jsonschema.ckan_url);
                 if (input.length < 2) {
                     return [];
                 }
