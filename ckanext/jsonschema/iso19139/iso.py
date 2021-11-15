@@ -53,13 +53,15 @@ TYPE_ISO_ONLINE_RESOURCE = 'online-resource'
 TYPE_ISO_RESOURCE_RESPONSIBLE = 'responsible'
 TYPE_ISO_RESOURCE_MAINTENANCE = 'resource-maintenance'
 TYPE_ISO_RESOURCE_POINT_OF_CONTACT = 'point-of-contact'
+TYPE_ISO_RESOURCE_CITED_RESPONSIBLE = 'cited-responsible'
 
 SUPPORTED_ISO_RESOURCE_FORMATS = [
     TYPE_ISO_ONLINE_RESOURCE,
     TYPE_ISO_RESOURCE_DATASET,
     TYPE_ISO_RESOURCE_RESPONSIBLE,
     TYPE_ISO_RESOURCE_MAINTENANCE,
-    TYPE_ISO_RESOURCE_POINT_OF_CONTACT
+    TYPE_ISO_RESOURCE_POINT_OF_CONTACT,
+    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE
     ]
 
 # ISO_OPT={}
@@ -113,6 +115,10 @@ class JsonschemaIso(p.SingletonPlugin):
         elif type == TYPE_ISO_RESOURCE_POINT_OF_CONTACT:
             _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
             return
+        elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE:
+            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
+            return
+        
         
         
     def _extract_from_iso(self, body, type, opt, version, key, data, errors, context):
@@ -163,7 +169,7 @@ def _extract_iso_online_resource(body, opt, type, version, key, data, errors, co
     if not name:
         _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
     
-    description = str(body.get('description',''))
+    description = str(body.get('role',''))
 
     _dict = {
         'name': name,

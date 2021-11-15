@@ -6,13 +6,18 @@
         "characterSet"
     ],
     "properties":{
-        "dataIdentification":{
-            "$ref":"data-identification.json"
+        "fileIdentifier":{
+            "propertyOrder": 1,
+            "title":"Metadata name",
+            "type":"string",
+            "description": "UUID of the metadata"
         },
         "language":{
+            "propertyOrder": 20,
             "$ref":"language.json"
         },
         "parentIdentifier":{
+            "propertyOrder": 30,
             "type":"string",
             "description": "uri or UUID of the metadata parent"
         },
@@ -21,10 +26,6 @@
             "enum":[
                 "ISO 19115:2003/19139"
             ]
-        },
-        "fileIdentifier":{
-            "type":"string",
-            "description": "UUID of the metadata"
         },
         "characterSet":{
             "$ref":"character-set.json"
@@ -39,10 +40,18 @@
             "type":"string",
             "default":"1"
         },
+        "dataIdentification":{
+            "propertyOrder": 80,
+            "$ref":"data-identification.json"
+        },
+        "spatialRepresentationInfo":{
+            "$ref":"spatial-representation-info.json"
+        },
         "dataQualityInfo":{
             "type":"object",
             "properties":{
                 "scope":{
+                    "propertyOrder": 1,
                     "type":"string",
                     "enum":[
                         "dataset",
@@ -65,6 +74,7 @@
                     "description":"class of information to which the referencing entity applies http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
                 },
                 "lineage":{
+                    "propertyOrder": 10,
                     "type":"object",
                     "properties":{
                         "statement":{
@@ -79,13 +89,9 @@
                         }
                     },
                     "required":["statement"]
-    
                 }
             },
             "required":["scope"]
-        },
-        "spatialRepresentationInfo":{
-            "$ref":"spatial-representation-info.json"
         }
     }
 

@@ -12,6 +12,9 @@
         "organisationName":{
             "type":"string"
         },
+        "positionName": {
+            "type":"string"
+        },
         "role":{
             "type":"string",
             "enum": ["author","TODO"],
@@ -27,7 +30,8 @@
                             "type":"string"
                         },
                         "protocol": {
-                            "type":"string"
+                            "type":"string",
+                            "enum": ["http"]
                         },
                         "name": {
                             "type":"string"
