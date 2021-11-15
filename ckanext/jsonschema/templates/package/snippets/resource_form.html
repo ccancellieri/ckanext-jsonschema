@@ -84,7 +84,7 @@
     <div class="input-group">
       <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>
     
-      <label for="field-{{TYPE_KEY}}">Which type: </label>
+      <label for="field-{{TYPE_KEY}}">Which type </label>
       <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
         {% for resource_type in resource_types %}
           {% if resource_type == schema_type %}
