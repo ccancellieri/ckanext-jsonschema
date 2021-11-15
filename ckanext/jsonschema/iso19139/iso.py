@@ -64,6 +64,8 @@ SUPPORTED_ISO_RESOURCE_FORMATS = [
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE
     ]
 
+ISO_VOCABULARY={}
+
 # ISO_OPT={}
 
 class JsonschemaIso(p.SingletonPlugin):
@@ -73,7 +75,22 @@ class JsonschemaIso(p.SingletonPlugin):
     # IConfigurer
 
     def update_config(self, config_):
-        pass
+        ISO_VOCABULARY = {
+            # topic category:
+            # ---------------
+            'creation' : _vocabulary_setup('iso_creation'),
+            'publication' : _vocabulary_setup('iso_publication'),
+            'revision' : _vocabulary_setup('iso_revision'),
+            # MD_KeywordTypeCode:
+            # -------------------
+            'discipline' : _vocabulary_setup('iso_discipline'),
+            'place' : _vocabulary_setup('iso_place'),
+            'stratum' : _vocabulary_setup('iso_stratum'),
+            'temporal' : _vocabulary_setup('iso_temporal'),
+            'theme' : _vocabulary_setup('iso_theme')
+        }
+        
+        
         #TODO
 
     # IBinder
@@ -315,6 +332,23 @@ def _get_format(protocol = None, url = None):
             extension = splitted_url[1][1:]
             if extension:
                 return file_types.get(extension)
+
+def _vocabulary_setup(vocab_name, tags=[], context={}):
+    # user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+    # context = {'user': user['name']}
+    context.update({'ignore_auth': True})
+    try:
+        data = {'id': vocab_name}
+        return toolkit.get_action('vocabulary_show')(context, data)
+    except Exception as e:
+        log.warn('Error getting vocabulary: {}'.format(str(e)))
+    # toolkit.ObjectNotFound:
+        data = {'name': vocab_name}
+        vocab = toolkit.get_action('vocabulary_create')(context, data)
+        for tag in tags:
+            data = {'name': tag, 'vocabulary_id': vocab['id']}
+            toolkit.get_action('tag_create')(context, data)
+        return vocab
 
 
 

@@ -1,59 +1,75 @@
 {
     "type": "object",
-    "required":[
+    "required": [
         "metadataStandardName",
         "fileIdentifier",
         "characterSet"
     ],
-    "properties":{
-        "fileIdentifier":{
+    "properties": {
+        "fileIdentifier": {
             "propertyOrder": 1,
-            "title":"Metadata name",
-            "type":"string",
+            "title": "Metadata identifier",
+            "type": "string",
             "description": "UUID of the metadata"
         },
-        "language":{
+        "language": {
             "propertyOrder": 20,
-            "$ref":"language.json"
+            "title": "Metadata language",
+            "$ref": "language.json"
         },
-        "parentIdentifier":{
+        "characterSet": {
             "propertyOrder": 30,
-            "type":"string",
-            "description": "uri or UUID of the metadata parent"
+            "title": "Character Set",
+            "$ref": "character-set.json"
         },
-        "metadataStandardName":{
-            "type":"string",
-            "enum":[
+        "metadataStandardName": {
+            "propertyOrder": 40,
+            "title": "Metadata standard name",
+            "type": "string",
+            "enum": [
                 "ISO 19115:2003/19139"
             ]
         },
-        "characterSet":{
-            "$ref":"character-set.json"
+        "metadataStandardVersion": {
+            "propertyOrder": 50,
+            "title": "Metadata standard version",
+            "type": "string",
+            "default": "1"
         },
-        "referenceSystemIdentifier":{
-            "type":"string",
-            "enum":[
+        "parentIdentifier": {
+            "propertyOrder": 60,
+            "title": "Parent identifier",
+            "type": "string",
+            "description": "uri or UUID of the metadata parent"
+        },
+        "dataIdentification": {
+            "propertyOrder": 70,
+            "title": "Data identification info",
+            "$ref": "data-identification.json"
+        },
+        "referenceSystemIdentifier": {
+            "propertyOrder": 80,
+            "title": "Reference System",
+            "type": "string",
+            "enum": [
                 "EPSG:4326 - WGS84"
             ]
         },
-        "metadataStandardVersion":{
-            "type":"string",
-            "default":"1"
+        "spatialRepresentationInfo": {
+            "propertyOrder": 90,
+            "title": "Spatial representation info",
+            "$ref": "spatial-representation-info.json"
         },
-        "dataIdentification":{
-            "propertyOrder": 80,
-            "$ref":"data-identification.json"
-        },
-        "spatialRepresentationInfo":{
-            "$ref":"spatial-representation-info.json"
-        },
-        "dataQualityInfo":{
-            "type":"object",
-            "properties":{
-                "scope":{
+        "dataQualityInfo": {
+            "propertyOrder": 100,
+            "title": "Data quality info",
+            "type": "object",
+            "properties": {
+                "scope": {
                     "propertyOrder": 1,
-                    "type":"string",
-                    "enum":[
+                    "title": "Scope",
+                    "type": "string",
+                    "enum": [
                         "dataset",
                         "series",
                         "attribute",
@@ -71,28 +87,38 @@
                         "model",
                         "tile"
                     ],
-                    "description":"class of information to which the referencing entity applies http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
+                    "description": "class of information to which the referencing entity applies http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"
                 },
-                "lineage":{
+                "lineage": {
                     "propertyOrder": 10,
-                    "type":"object",
-                    "properties":{
-                        "statement":{
-                            "type":"string"
+                    "title": "Lineage",
+                    "type": "object",
+                    "properties": {
+                        "statement": {
+                            "propertyOrder": 1,
+                            "title": "Statement",
+                            "type": "string"
                         },
-                        "source":{
-                            "type":"array",
-                            "items":{
-                                "type":"string"
+                        "source": {
+                            "propertyOrder": 10,
+                            "title": "Source",
+                            "type": "array",
+                            "format": "table",
+                            "items": {
+                                "title": "Metadata source",
+                                "type": "string"
                             },
-                            "description":"Source metadata"
+                            "description": "Source metadata"
                         }
                     },
-                    "required":["statement"]
+                    "required": [
+                        "statement"
+                    ]
                 }
             },
-            "required":["scope"]
+            "required": [
+                "scope"
+            ]
         }
     }
-
 }

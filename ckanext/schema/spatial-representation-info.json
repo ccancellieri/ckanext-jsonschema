@@ -3,6 +3,7 @@
     "anyOf": [
         {
             "type": "object",
+            "title": "Raster spatial representation",
             "description":"GridSpatialRepresentation",
             "properties":{
                 "numberOfDimensions":{
@@ -51,6 +52,7 @@
         },
         {
             "type": "object",
+            "title": "Vector spatial representation",
             "description":"VectorSpatialRepresentation",
             "properties":{
                 "topologyLevel":{
