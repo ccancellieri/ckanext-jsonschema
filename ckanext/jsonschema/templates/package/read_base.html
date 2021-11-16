@@ -1,0 +1,7 @@
+{% ckan_extends %}
+{% block content_action %}
+{% set dataset_type = dataset_type if dataset_type else 'dataset' %}
+  {% if h.check_access('package_update', {'id':pkg.id }) %}
+    {% link_for _('Manage'), controller='package', action='edit', named_route=dataset_type + '_edit', id=pkg.name, class_='btn btn-default', icon='wrench' %}
+  {% endif %}
+{% endblock %}
