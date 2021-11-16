@@ -302,14 +302,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # package types not handled by any other IDatasetForm plugin.
         return False
 
-    # def _resource_types(self, dataset_type):
-    #     '''
-    #     returns a list of supported resource based on the dataset_type
-    #     '''
-    #     # TODO
-
-    #     return self.package_types()
-
 
     # IDatasetForm
     ##############
@@ -409,10 +401,11 @@ def _modify_package_schema(schema):
 
     before = schema.get('__before')
     if not before:
-        schema['__before']=[]
-        
-    schema.get('__before').insert(0, _v.resource_extractor)
-    schema.get('__before').insert(0, _v.extractor)
+        before = []
+        schema['__before'] = before
+
+    before.insert(0, _v.resource_extractor)
+    before.insert(0, _v.extractor)
     # the following will be the first...
-    schema.get('__before').insert(0, _v.schema_check)
+    before.insert(0, _v.schema_check)
     return schema

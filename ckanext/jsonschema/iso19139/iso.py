@@ -224,12 +224,14 @@ def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 
     # /api/util/dataset/munge_title_to_name?title=police:%20spending%20figures%202009
     
-    name = str(body.get('fileIdentifier',uuid.uuid4()))
-    name = name or data.get('name') #TODO error if null...
-    # notes = str(body.get('description',''))
+    name = body.get('fileIdentifier')
 
     if not name:
-        _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+        name = str(uuid.uuid4())
+        # if we are here we are creating/updating a metadata without file identifier
+        # let's port back to body the new identifier ...
+        body['fileIdentifier'] = name
+        # _v.stop_with_error('Unable to obtain {}'.format('fileIdentifier'), 'fileIdentifier', errors)
         
     _dict = {
         'name': name,
@@ -242,26 +244,25 @@ def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 ######################################################
 
 def _extract_iso_online_resource(body, opt, type, version, key, data, errors, context):
-    # TODO
-    name = str(body.get('name',uuid.uuid4()))
-    name = name or data.get('name') #TODO error if null...
-    if not name:
-        _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
     
-    description = str(body.get('role',''))
+    name = body.get('name')
+    if not name:
+        name = 'Online resource'
+    # if not name:
+    #     _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+    
+    description = body.get('role','')
 
     _dict = {
         'name': name,
         'description': description,
-        'format': _get_format(str(body.get('protocol','')), data.get('url',''))
+        'format': _get_format(body.get('protocol',''), data.get('url',''))
     }
     data.update(_dict)
 
 def _extract_iso_resource_dataset(body, opt, type, version, key, data, errors, context):
 
-    name = str(body.get('name',uuid.uuid4()))
-    name = name or data.get('name') #TODO error if null...
-
+    name = body.get('name')
     if not name:
         _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
         
@@ -272,13 +273,15 @@ def _extract_iso_resource_dataset(body, opt, type, version, key, data, errors, c
 
 def _extract_iso_resource_responsible(body, opt, type, version, key, data, errors, context):
 
-    name = str(body.get('individualName','Contact'))
-    # if not name:
-    #     _v.stop_with_error('Unable to obtain name', key, errors)
+    name = body.get('individualName')
+    if not name:
+        name = 'Contact'
     
-    role = str(body.get('role',''))
-    organisationName = body.get('organisationName','') #TODO error if null...
+    role = body.get('role','')
+    if not role:
+        _v.stop_with_error('Unable to obtain role', 'role', errors)
 
+    organisationName = body.get('organisationName','') #TODO error if null...
     _dict = {
         'name': name,
         'description': 'Role: {}\nOrganisation: {}'.format(role, organisationName)
