@@ -1,7 +1,7 @@
 {
     "individualName":"",
     "organisationName":"",
-    "role":"maintainer",
+    "role":"owner",
     "contactInfo": {
         "address": {
             "electronicMailAddress":"",
@@ -11,8 +11,7 @@
             "city": ""
         },
         "phone": {
-            "voice":"",
-            "facsimile": ""
+            "voice":""
         }
     }
 }

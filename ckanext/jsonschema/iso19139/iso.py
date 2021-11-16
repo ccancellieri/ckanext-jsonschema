@@ -46,22 +46,30 @@ config = toolkit.config
 
 TYPE_ISO = 'iso'
 
-SUPPORTED_DATASET_FORMATS = [TYPE_ISO]
+SUPPORTED_DATASET_FORMATS = [ TYPE_ISO ]
 
 TYPE_ISO_RESOURCE_DATASET = 'resource-dataset'
-TYPE_ISO_ONLINE_RESOURCE = 'online-resource'
-TYPE_ISO_RESOURCE_RESPONSIBLE = 'responsible'
-TYPE_ISO_RESOURCE_MAINTENANCE = 'resource-maintenance'
+TYPE_ISO_RESOURCE_ONLINE_RESOURCE = 'online-resource'
+TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW = 'graphic-overview'
+
+
+TYPE_ISO_RESOURCE_METADATA_CONTACT = 'metadata-contact'
+TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY = 'responsible-party'
+TYPE_ISO_RESOURCE_MAINTAINER = 'resource-maintainer'
 TYPE_ISO_RESOURCE_POINT_OF_CONTACT = 'point-of-contact'
-TYPE_ISO_RESOURCE_CITED_RESPONSIBLE = 'cited-responsible'
+TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY = 'cited-responsible-party'
+
 
 SUPPORTED_ISO_RESOURCE_FORMATS = [
-    TYPE_ISO_ONLINE_RESOURCE,
+    TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
     TYPE_ISO_RESOURCE_DATASET,
-    TYPE_ISO_RESOURCE_RESPONSIBLE,
-    TYPE_ISO_RESOURCE_MAINTENANCE,
+    TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW,
+
+    TYPE_ISO_RESOURCE_METADATA_CONTACT,
+    TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY,
+    TYPE_ISO_RESOURCE_MAINTAINER,
     TYPE_ISO_RESOURCE_POINT_OF_CONTACT,
-    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE
+    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
     ]
 
 # ISO_OPT={}
@@ -70,36 +78,31 @@ class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
 
-
-    ISO_VOCABULARY = None
     # IConfigurer
-
     def update_config(self, config_):
         pass
         #TODO
 
-    def _get_vocabularies(self):
-        if not self.ISO_VOCABULARY:
-            self.ISO_VOCABULARY = {
-                    # topic category:
-                    # ---------------
-                    'creation' : _vocabulary_setup('iso__keywords__creation'),
-                    'publication' : _vocabulary_setup('iso__keywords__publication'),
-                    'revision' : _vocabulary_setup('iso__keywords__revision'),
-                    # MD__KeywordTypeCode:
-                    # -------------------
-                    'discipline' : _vocabulary_setup('iso__keywords__discipline'),
-                    'place' : _vocabulary_setup('iso__keywords__place'),
-                    'stratum' : _vocabulary_setup('iso__keywords__stratum'),
-                    'temporal' : _vocabulary_setup('iso__keywords__temporal'),
-                    'theme' : _vocabulary_setup('iso__keywords__theme')
-                }
-        return self.ISO_VOCABULARY
+    # ISO_VOCABULARY = None
+    # def _get_vocabularies(self):
+    #     if not self.ISO_VOCABULARY:
+    #         self.ISO_VOCABULARY = {
+    #                 # topic category:
+    #                 # ---------------
+    #                 # ....
+    #                 # MD__KeywordTypeCode:
+    #                 # -------------------
+    #                 'discipline' : _vocabulary_setup('iso__keywords__discipline'),
+    #                 'place' : _vocabulary_setup('iso__keywords__place'),
+    #                 'stratum' : _vocabulary_setup('iso__keywords__stratum'),
+    #                 'temporal' : _vocabulary_setup('iso__keywords__temporal'),
+    #                 'theme' : _vocabulary_setup('iso__keywords__theme')
+    #             }
+    #     return self.ISO_VOCABULARY
         
     # IBinder
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
-
         if version != _c.SCHEMA_VERSION:
             log.warn('Version: \'{}\' is not supported by this plugin ({})'.format(version, __name__))
             # when version is not the default one we don't touch
@@ -113,69 +116,104 @@ class JsonschemaIso(p.SingletonPlugin):
         if version != _c.SCHEMA_VERSION:
             # when version is not the default one we don't touch
             return []
-
         return SUPPORTED_DATASET_FORMATS
 
     def extract_from_json(self, body, type, opt, version, key, data, errors, context):
+        
         if type == TYPE_ISO:
             self._extract_from_iso(body, type, opt, version, key, data, errors, context)
             return
-        elif type == TYPE_ISO_ONLINE_RESOURCE:
+
+        # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
+        # TYPE_ISO_RESOURCE_DATASET,
+
+        elif type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
             _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
             return
         elif type == TYPE_ISO_RESOURCE_DATASET:
             _extract_iso_resource_dataset(body, type, opt, version, key, data, errors, context)
             return
-        elif type == TYPE_ISO_RESOURCE_RESPONSIBLE:
+        elif type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
+            _extract_iso_resource_dataset(body, type, opt, version, key, data, errors, context)
+            return
+        
+        elif type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
             _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
             return
-        elif type == TYPE_ISO_RESOURCE_MAINTENANCE:
+        elif type == TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY:
+            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
+            return
+        elif type == TYPE_ISO_RESOURCE_MAINTAINER:
             _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
             return
         elif type == TYPE_ISO_RESOURCE_POINT_OF_CONTACT:
             _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
             return
-        elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE:
+        elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
             _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
             return
-        
-        
+
+
+# TYPE_ISO_RESOURCE_METADATA_CONTACT,
+# TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY,
+# TYPE_ISO_RESOURCE_MAINTAINER,
+# TYPE_ISO_RESOURCE_POINT_OF_CONTACT,
+# TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
         
     def _extract_from_iso(self, body, type, opt, version, key, data, errors, context):
         # if key==('name',):
-        _data = df.unflatten(data)
 
-        _extract_iso_name(body, type, opt, version, key, _data, errors, context)
+        try:
+            _extract_iso_name(body, type, opt, version, key, data, errors, context)
+        except Exception as e:
+            _v.stop_with_error('Error decoding metadata identification: {}'.format(str(e)), 'metadata identifier', errors)
         
-        data_identification = body.get('dataIdentification')
-        if data_identification:
-            abstract = data_identification.get('abstract')
-            if abstract:
-                _data['notes'] = abstract
+        try:
+            _extract_iso_data_identification(body, type, opt, version, key, data, errors, context)
+        except Exception as e:
+            _v.stop_with_error('Error decoding data identification: {}'.format(str(e)), 'data identification', errors)
+        # TODO
 
-            descriptive_keywords = data_identification.get('descriptiveKeywords')
-            if descriptive_keywords:
-                dk_type = descriptive_keywords.get('type')
-                vocab_id = None
-                if dk_type:
-                    # do we have a dictionary matching?
-                    # we should
-                    vocab = self._get_vocabularies().get(dk_type)
-                    if vocab:
-                        vocab_id = vocab.get('id')
 
-                keywords = descriptive_keywords.get('keywords')
+
+def _extract_iso_data_identification(body, type, opt, version, key, _data, errors, context):
+    # _data = df.unflatten(data)
+
+    data_identification = body.get('dataIdentification')
+    if data_identification:
+        citation = data_identification.get('citation')
+        if citation:
+            # TODO creation time, period, etc
+            title = citation.get('title')
+            if title:
+                _data['title'] = title
+
+        abstract = data_identification.get('abstract')
+        if abstract:
+            _data['notes'] = abstract
+
+        _data['tags'] = []
+        descriptive_keywords = data_identification.get('descriptiveKeywords')
+        if descriptive_keywords:
+            for dk in descriptive_keywords:
+                # vocab_id = None
+                # dk_type = descriptive_keywords.get('type')
+                # if dk_type:
+                #     # do we have a dictionary matching?
+                #     # we should
+                #     vocab = self._get_vocabularies().get(dk_type)
+                #     if vocab:
+                #         vocab_id = vocab.get('id')
+
+                keywords = dk.get('keywords')
                 
                 if keywords:
                     tags = []
                     for k in keywords:
-                        tags.append({'name': k, 'vocabulary_id': vocab_id})
-                    _data['tags'] = tags
+                        _data['tags'].append({'name': k})
+                        # tags.append({'name': k, 'vocabulary_id': vocab_id})
 
                 # {'name': geo_tag, 'vocabulary_id': vocab_id}
-        # TODO
-
-        data.update(df.flatten_dict(_data))
 
 
 def _extract_iso_name(body, opt, type, version, key, data, errors, context):
@@ -234,17 +272,16 @@ def _extract_iso_resource_dataset(body, opt, type, version, key, data, errors, c
 
 def _extract_iso_resource_responsible(body, opt, type, version, key, data, errors, context):
 
-    name = str(body.get('individualName'))
-    name = name or data.get('name') #TODO error if null...
-    if not name:
-        _v.stop_with_error('Unable to obtain name', key, errors)
+    name = str(body.get('individualName','Contact'))
+    # if not name:
+    #     _v.stop_with_error('Unable to obtain name', key, errors)
     
-    description = str(body.get('role'))
-    description = data.get('description', description) #TODO error if null...
+    role = str(body.get('role',''))
+    organisationName = body.get('organisationName','') #TODO error if null...
 
     _dict = {
         'name': name,
-        'description': description
+        'description': 'Role: {}\nOrganisation: {}'.format(role, organisationName)
     }
     data.update(_dict)
 
@@ -354,9 +391,6 @@ def _get_format(protocol = None, url = None):
             extension = splitted_url[1][1:]
             if extension:
                 return file_types.get(extension)
-
-
-
 
 
 

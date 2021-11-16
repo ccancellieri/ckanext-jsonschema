@@ -1,0 +1,117 @@
+{
+    "title": "Responsible party",
+    "type": "object",
+    "required": [
+        "individualName",
+        "organisationName",
+        "role"
+    ],
+    "properties": {
+        "individualName": {
+            "propertyOrder": 1,
+            "title": "Individual name",
+            "type": "string"
+        },
+        "organisationName": {
+            "propertyOrder": 10,
+            "title": "Organisation name",
+            "type": "string"
+        },
+        "positionName": {
+            "propertyOrder": 20,
+            "title": "Position name",
+            "type": "string"
+        },
+        "role": {
+            "propertyOrder": 30,
+            "title": "Role",
+            "type": "string",
+            "enum": [
+                "author",
+                "resourceProvider",
+                "custodian",
+                "owner",
+                "user",
+                "distributor",
+                "originator",
+                "pointOfContact",
+                "principalInvestigator",
+                "processor",
+                "publisher"
+            ]
+        },
+        "contactInfo": {
+            "propertyOrder": 40,
+            "title": "Contact info",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "propertyOrder": 1,
+                    "title": "Address",
+                    "type": "object",
+                    "properties": {
+                        "electronicMailAddress": {
+                            "propertyOrder": 1,
+                            "title": "E-Mail",
+                            "type": "string"
+                        },
+                        "country": {
+                            "propertyOrder": 40,
+                            "title": "Country",
+                            "type": "string"
+                        },
+                        "deliveryPoint": {
+                            "propertyOrder": 10,
+                            "title": "Delivery point",
+                            "type": "string"
+                        },
+                        "postalCode": {
+                            "propertyOrder": 30,
+                            "title": "Postal code",
+                            "type": "string"
+                        },
+                        "city": {
+                            "propertyOrder": 20,
+                            "title": "City",
+                            "type": "string"
+                        }
+                    }
+                },
+                "phone": {
+                    "propertyOrder": 10,
+                    "type": "object",
+                    "properties": {
+                        "voice": {
+                            "type": "string"
+                        },
+                        "facsimile": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "onlineResource": {
+                    "propertyOrder": 20,
+                    "title": "Web link",
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                            "type": "string"
+                        },
+                        "protocol": {
+                            "type": "string",
+                            "enum": [
+                                "http"
+                            ]
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "linkage": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,109 +1,85 @@
 {
-    "type": "object",
-    "extent":{
-        "type":"array",
-        "items":{
-            "oneOf":[
-                {
-                    "description":"temporal extent",
-                    "properties":{
-                        "beginPosition":{
-                            "type":"string"
-                        },
-                        "endPosition":{
-                            "type":"string"
-                        }
-                    }
-                },
-                {
-                    "description":"vertical extent",
-                    "properties":{
-                        "description":{
-                            "type":"string"
-                        },
-                        "minimumValue":{
-                            "type":"string"
-                        },
-                        "maximumValue":{
-                            "type":"string"
-                        }
-                    }
-                },
-                {
-                    "type":"object",
-                    "oneOf": [
-                        {
-                            "description":"bbox geographic extent",
-                            "properties":{
-                                "east":{
-                                    "type":"string"
-                                },
-                                "south":{
-                                    "type":"string"
-                                },
-                                "west":{
-                                    "type":"string"
-                                },
-                                "north":{
-                                    "type":"string"
-                                }
-                            }
-                        },
-                        {
-                            "description":"polygon geographic extent",
-                            "properties":{
-                                "geospatial":{
-                                    "type":"string"
-                                }
-                            }
-                        },
-                        {
-                            "description":"geographic extent",
-                            "properties":{
-                                "extentTypeCode":{
-                                    "type":"boolean"
-                                },
-                                "code":{
-                                    "type":"object",
-                                    "oneOf":[
-                                        {
-                                            "description":"filename",
-                                            "properties":{
-                                                "src": {
-                                                    "type":"string",
-                                                    "description":"code // TODO"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description":"anchor",
-                                            "properties":{
-                                                "uri": {
-                                                    "type":"string",
-                                                    "description":"TODO"
-                                                },
-                                                "url": {
-                                                    "type":"string",
-                                                    "description":"TODO"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "description":"text",
-                                            "properties":{
-                                                "code": {
-                                                    "type":"string",
-                                                    "description":"TODO"
-                                                }
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    ]
-                }
-            ]
+  "title": "Extent",
+  "type": "array",
+  "items": {
+    "anyOf": [
+      {
+        "type": "object",
+        "title": "Temporal extent",
+        "properties": {
+          "beginDate": {
+            "propertyOrder": 1,
+            "title": "Begin date",
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "propertyOrder": 10,
+            "title": "End date",
+            "type": "string",
+            "format": "date"
+          }
         }
-    }
+      },
+      {
+        "type": "object",
+        "title": "Vertical extent",
+        "properties": {
+          "minimumValue": {
+            "propertyOrder": 10,
+            "title": "Minimum value",
+            "type": "string"
+          },
+          "maximumValue": {
+            "propertyOrder": 20,
+            "title": "Maximum value",
+            "type": "string"
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Geographic extent",
+        "oneOf": [
+          {
+            "title": "Geografic bounding box",
+            "description": "bbox geographic extent",
+            "properties": {
+              "east": {
+                "propertyOrder": 10,
+                "title": "East",
+                "type": "string"
+              },
+              "south": {
+                "propertyOrder": 20,
+                "title": "South",
+                "type": "string"
+              },
+              "west": {
+                "propertyOrder": 30,
+                "title": "West",
+                "type": "string"
+              },
+              "north": {
+                "propertyOrder": 1,
+                "title": "North",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "Geographic bounding polygon",
+            "description": "polygon geographic extent",
+            "properties": {
+              "geospatial": {
+                "propertyOrder": 1,
+                "title": "Geospatial",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -1,6 +1,5 @@
 {
-    "metadataStandardName": "ISO 19115:2003/19139",
     "fileIdentifier":"",
-    "characterSet": "",
-    "referenceSystemIdentifier": "EPSG:4326 - WGS84"
+    "metadataStandardName": "ISO 19115:2003/19139",
+    "characterSet": "utf-8"
 }

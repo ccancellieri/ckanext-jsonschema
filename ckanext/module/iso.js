@@ -53,9 +53,11 @@ export const initialize = () => {
         // So you need to add a variable to the callback to hold this (like the
         // "jseditor_editor" variable in the examples below.)
             "tag_keywords_autocomplete": (jseditor_editor, input) => {
-
+                if (input.length < 2) {
+                    return [];
+                }
                 let _url = 'api/3/action/tag_autocomplete?query='+encodeURI(input)
-                tag_keywords_autocomplete
+                
                 let vocab_name = jseditor_editor.parent.parent.getValue().type
                 if (vocab_name){
                     // TODO document python code vocab name convention
@@ -65,14 +67,12 @@ export const initialize = () => {
                 }
 
                 let url = new URL(_url, jsonschema.ckan_url);
-                
-                return tag_autocomplete(jseditor_editor, url);
+
+                return window.JSONEditor.defaults.callbacks.autocomplete.jsonschema_fetch(jseditor_editor, url);
             },
             // TODO keywords match into json schema
-            "tag_autocomplete": (jseditor_editor, url) => {
-                if (input.length < 2) {
-                    return [];
-                }
+            "jsonschema_fetch": (jseditor_editor, url) => {
+                
                 return fetch(url)
                         .then((request)=>{
                             if (request.status === 200) {

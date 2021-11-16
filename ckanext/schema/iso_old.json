@@ -19,7 +19,7 @@
                     "title": "Responsible",
                     "type":"array",
                     "items":{
-                        "$ref":"responsible.json"
+                        "$ref":"responsible-party.json"
                     }
                 }
             }

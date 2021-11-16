@@ -6,13 +6,19 @@
   ],
   "properties":{   
     "name":{
-      "type":"string"
+      "propertyOrder": 10,
+      "type":"string",
+      "title": "Name"
      },
     "description":{
-      "type":"string"
+      "propertyOrder": 30,
+      "type":"string",
+      "title": "Description"
     },
     "protocol":{
+      "propertyOrder": 1,
       "type":"string",
+      "title": "Protocol",
       "enum":[
         "www:link-1.0-http-link",
         "www:download-1.0-http-download",
@@ -31,24 +37,26 @@
         "ogc:wps",
         "ogc:csw"
       ],
-      "enum_titles": [
-        "http (web address url)",
-        "http (file for download)",
-        "ftp (file for download through ftp)",
-        "wms (ogc web map service ver 1.1.1)",
-        "wms (ogc web map service ver 1.3.0)",
-        "wms (ogc-wms capabilities service ver 1.1.1)",
-        "wms (ogc-wms capabilities service ver 1.3.0)",
-        "wfs (ogc-wfs web feature service)",
-        "wcs (ogc-wcs web coverage service)",
-        "wmts (ogc-wmts web map tiled service)",
-        "tms (tiled map service)",
-        "kml (ogc-kml keyhole markup language)",
-        "kml (google earth kml service (ver 2.0)",
-        "gml (ogc-gml geography markup language)",
-        "wps (ogc-wps web processing service)",
-        "csw (ogc-csw catalogue service for the web)"
-      ]
+      "options":{
+        "enum_titles": [
+          "http (web address url)",
+          "http (file for download)",
+          "ftp (file for download through ftp)",
+          "wms (ogc web map service ver 1.1.1)",
+          "wms (ogc web map service ver 1.3.0)",
+          "wms (ogc-wms capabilities service ver 1.1.1)",
+          "wms (ogc-wms capabilities service ver 1.3.0)",
+          "wfs (ogc-wfs web feature service)",
+          "wcs (ogc-wcs web coverage service)",
+          "wmts (ogc-wmts web map tiled service)",
+          "tms (tiled map service)",
+          "kml (ogc-kml keyhole markup language)",
+          "kml (google earth kml service (ver 2.0)",
+          "gml (ogc-gml geography markup language)",
+          "wps (ogc-wps web processing service)",
+          "csw (ogc-csw catalogue service for the web)"
+        ]
+      }
     }
   }
 }
