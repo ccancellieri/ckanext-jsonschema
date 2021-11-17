@@ -28,6 +28,7 @@ import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
+from ckanext.jsonschema.iso19139.logic.actions import importer
 
 import logging
 log = logging.getLogger(__name__)
@@ -48,6 +49,14 @@ SUPPORTED_RESOURCE_FORMATS = [TYPE_ONLINE_RESOURCE]
 
 class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder, inherit=True)
+    p.implements(p.IActions)
+
+    #IActions
+    def get_actions(self):
+        actions = {
+            'jsonschema_importer': importer
+        }
+        return actions
 
         # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
         # # TODO DEBUG
@@ -80,21 +89,18 @@ class JsonschemaIso19139(p.SingletonPlugin):
         return SUPPORTED_DATASET_FORMATS
 
     def extract_from_json(self, body, type, opt, version, key, data, errors, context):
-        # TODO which type schema or dataset?
         
-        if key==('name',):
+        if type == TYPE_ISO19139:
             extract_name(body, opt, type, version, key, data, errors, context)
-        else:
             _extract_iso(body, opt, type, version, key, data, errors, context)
-        # if type == TYPE_ONLINE_RESOURCE:
-        #     _create_online_resources(body, opt, type, version, key, data, errors, context)
+        if type == TYPE_ONLINE_RESOURCE:
+            extract_online_resource(body, opt, type, version, key, data, errors, context)
 
 
 import ckan.lib.navl.dictization_functions as df
 
 def extract_name(body, opt, type, version, key, data, errors, context):
 
-    _data = df.unflatten(data)
 
     # name:
     #<gmd:MD_Metadata 
@@ -105,7 +111,6 @@ def extract_name(body, opt, type, version, key, data, errors, context):
     name = body.get("gmd:MD_Metadata", {})\
                             .get('gmd:fileIdentifier', {})\
                                 .get('gco:CharacterString')
-    name = name or _data.get('name') #TODO error if null...
 
     if not name:
         _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
@@ -114,13 +119,12 @@ def extract_name(body, opt, type, version, key, data, errors, context):
         'name': name,
         'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
     }
-    data.update(df.flatten_dict(_dict))
+    data.update(_dict)
 
 def _extract_iso(body, opt, type, version, key, data, errors, context):
 
     # let's play with normal dict
     
-    _data = df.unflatten(data)
 
     identification = body.get("gmd:MD_Metadata", {})\
                             .get('gmd:identificationInfo',{})\
@@ -142,18 +146,17 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
     # <gmd:CI_Citation>
     # <gmd:title>
     # <gco:CharacterString>
-    title = _data.get('title','')
-    _title = citation.get('gmd:title', {}).get('gco:CharacterString')\
+    title = citation.get('gmd:title', {}).get('gco:CharacterString')\
             or\
             citation.get('gmd:alternateTitle', {}).get('gco:CharacterString')
-    title = title or _title
+    
 
     # <gmd:abstract>
     # <gco:CharacterString>
     abstract = identification.get('gmd:abstract', {}).get('gco:CharacterString')
         
     # description / notes / abstract
-    notes = abstract or _data.get('notes')
+    notes = abstract
 
     # <gmd:purpose>
     # <gco:CharacterString>
@@ -222,7 +225,7 @@ def _extract_iso(body, opt, type, version, key, data, errors, context):
 
     # context['defer_commit']=True# TODO #########################################CHECKME WHY??
     # let's return flatten dict as per specifications
-    data.update(df.flatten_dict(_dict))
+    data.update(_dict)
 
 def pop_online(online_resource, opt, type, version, key, data, errors, context):
     if isinstance(online_resource, list):
@@ -241,7 +244,7 @@ def pop_online_resource(resource, opt, type, version, key, data, errors, context
 def extract_online_resource(body, opt, type, version, key, data, errors, context):
     
     # let's play with normal dict
-    _data = df.unflatten(data)
+    
 
     # we assume:
     # - body is an gmd:CI_OnlineResource
@@ -257,13 +260,13 @@ def extract_online_resource(body, opt, type, version, key, data, errors, context
         # _c.SCHEMA_TYPE_KEY: type,
     }
     protocol = body.get('gmd:protocol', {}).get('gco:CharacterString')
-    new_resource.update({
-        'format': _get_type_from(protocol, new_resource.get('url')) or ''
-    })
+    # new_resource.update({
+    #     'format': _get_type_from(protocol, new_resource.get('url')) or ''
+    # })
 
-    resources = _data.get('resources', [])
+    resources = data.get('resources', [])
     resources.append(new_resource)
-    data.update(df.flatten_dict({'resources': resources}))
+    data.update({'resources': resources})
 
     # TODO remove from body what is not managed by json
     

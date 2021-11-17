@@ -191,11 +191,11 @@ def resolve_resource_extras(dataset_type, resource, as_dict = False):
                 opt = json.loads(opt)
             except Exception as e:
                 log.error('Unable to properly deserialize \'opt\' it should be a json object...')
-    else:
-        if not isinstance(body, str):
-            body = json.dumps(body)
-        if not isinstance(opt, str):
-            opt = json.dumps(opt)
+    # else:
+    #     if not isinstance(body, str):
+    #         body = json.dumps(body)
+    #     if not isinstance(opt, str):
+    #         opt = json.dumps(opt)
     
     return {
         _c.SCHEMA_OPT_KEY : opt,
@@ -245,11 +245,19 @@ def resolve_extras(data, as_dict = False):
             body = json.loads(body)
         if not isinstance(opt, dict):
             opt = json.loads(opt)
-    else:
-        if not isinstance(body, str):
-            body = json.dumps(body)
-        if not isinstance(opt, str):
-            opt = json.dumps(opt)
+        # if not isinstance(_type, dict):
+        #     _type = json.loads(_type)
+        # if not isinstance(version, dict):
+        #     version = json.loads(version)
+    # else:
+        # if not isinstance(body, str):
+        #     body = json.dumps(body)
+        # if not isinstance(opt, str):
+        #     opt = json.dumps(opt)
+        # if not isinstance(_type, str):
+        #     _type = json.dumps(_type)
+        # if not isinstance(version, str):
+        #     version = json.dumps(version)
     
     return {
         _c.SCHEMA_OPT_KEY : opt,

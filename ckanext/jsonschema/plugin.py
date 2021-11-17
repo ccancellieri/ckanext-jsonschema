@@ -111,6 +111,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IBlueprint)
     plugins.implements(_i.IBinder, inherit = True)
 
+    # IBlueprint
+    
+    def get_blueprint(self):
+        return _b.jsonschema
+
     # IBinder
 
     def get_opt(self, dataset_type, opt, version):
@@ -164,9 +169,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             return []
         return _c.SUPPORTED_DATASET_FORMATS
 
-    # IBlueprint
-    def get_blueprint(self):
-        return _b.jsonschema
+
+
+
 
     # IPackageController
 

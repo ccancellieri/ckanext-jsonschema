@@ -53,13 +53,17 @@ def xml_to_json_from_file(xml_file, namespaces = None):
     with open(xml_file) as fd:
         return xml_to_json(fd, namespaces = namespaces)
 
+def xml_to_dict(xml_doc, namespaces = None):
+    return xmltodict.parse(xml_doc, namespaces = namespaces)
+
+
 def xml_to_json(xml_doc, namespaces = None):
-    doc = xmltodict.parse(xml_doc, namespaces = namespaces)
     # doc = xmltodict.parse(xml_doc, process_namespaces=with_namespace)
-    return json.dumps(doc)
+    return json.dumps(xml_to_dict(xml_doc, namespaces))
 
     # pp = pprint.PrettyPrinter(indent=4)
     # return pp.pprint(json.dumps(doc))
+    
 
 def json_to_xml(json):
     return xmltodict.unparse(json, pretty=True)
