@@ -115,7 +115,11 @@ def resource_extractor(key, data, errors, context):
             except Exception as e:
                 log.error('Error extracting dataset type {}\
                     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+        
+        # port back changes from body (and other extras) to the data model
+        update_resource_extras(_data, extra)
 
+    # persist changes to the data model
     data.update(df.flatten_dict(_data))
 
 def extractor(key, data, errors, context):
@@ -145,13 +149,26 @@ def extractor(key, data, errors, context):
     # update datamodel
     data.update(df.flatten_dict(_data))
 
-
 def update_resource_extras(resource, extras):
     resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
     resource[_c.SCHEMA_TYPE_KEY]=extras.get(_c.SCHEMA_TYPE_KEY)
     resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
     resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
+def update_extras(data, extras):
+    # Checking extra data content for extration
+    for e in data.get('extras',[]):
+        key = e.get('key')
+        if not key:
+            raise Exception('Unable to resolve extras with an empty key')
+        if key == _c.SCHEMA_BODY_KEY:
+            e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+        elif key == _c.SCHEMA_TYPE_KEY:
+            e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
+        elif key == _c.SCHEMA_VERSION_KEY:
+            e['value'] = extras.get(_c.SCHEMA_VERSION_KEY)
+        elif key == _c.SCHEMA_OPT_KEY:
+            e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
 def resolve_resource_extras(dataset_type, resource, as_dict = False):
     from ckanext.jsonschema.plugin import handled_resource_types
@@ -203,21 +220,6 @@ def resolve_resource_extras(dataset_type, resource, as_dict = False):
         _c.SCHEMA_TYPE_KEY: _type,
         _c.SCHEMA_VERSION_KEY: version
     }
-
-def update_extras(data, extras):
-    # Checking extra data content for extration
-    for e in data.get('extras',[]):
-        key = e.get('key')
-        if not key:
-            raise Exception('Unable to resolve extras with an empty key')
-        if key == _c.SCHEMA_BODY_KEY:
-            e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-        elif key == _c.SCHEMA_TYPE_KEY:
-            e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
-        elif key == _c.SCHEMA_VERSION_KEY:
-            e['value'] = extras.get(_c.SCHEMA_VERSION_KEY)
-        elif key == _c.SCHEMA_OPT_KEY:
-            e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
 def resolve_extras(data, as_dict = False):
     # Pre-setting defaults

@@ -28,7 +28,6 @@ import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
-from ckanext.jsonschema.iso19139.logic.actions import importer
 
 import logging
 log = logging.getLogger(__name__)
@@ -49,14 +48,6 @@ SUPPORTED_RESOURCE_FORMATS = [TYPE_ONLINE_RESOURCE]
 
 class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder, inherit=True)
-    p.implements(p.IActions)
-
-    #IActions
-    def get_actions(self):
-        actions = {
-            'jsonschema_importer': importer
-        }
-        return actions
 
         # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
         # # TODO DEBUG
@@ -270,56 +261,3 @@ def extract_online_resource(body, opt, type, version, key, data, errors, context
 
     # TODO remove from body what is not managed by json
     
-
-
-def default_lon_e(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=180
-        return
-    try:
-        if float(data[key])>180:
-            data[key]=180
-    except ValueError:
-        data[key]=180
-
-def default_lon_w(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=-180
-        return
-    try:
-        if float(data[key])<-180:
-            data[key]=-180
-    except ValueError:
-        data[key]=-180
-
-def default_lat_n(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=90
-        return
-    try:
-        if float(data[key])>90:
-            data[key]=90
-    except ValueError:
-        data[key]=90
-
-def default_lat_s(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=-90
-        return
-    try:
-        if float(data[key])<-90:
-            data[key]=-90
-    except ValueError:
-        data[key]=-90

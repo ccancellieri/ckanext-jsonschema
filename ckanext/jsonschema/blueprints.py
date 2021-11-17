@@ -29,12 +29,7 @@ jsonschema = Blueprint(_c.TYPE, __name__)
 
 def importer_view():
     try:
-        # context = {'model': model, 'user': toolkit.c.user}
-        # toolkit.check_access('importer', context, {'id': id})
-        # harvest_source = toolkit.get_action('harvest_source_show')(context, {
-        #     'id': id
-        # })
-        return toolkit.render('source/importer.html', extra_vars={'data':{}, 'errors': {}})
+        return toolkit.render('source/importer.html')
     except toolkit.ObjectNotFound:
         return toolkit.abort(404, _('Harvest source not found'))
     except toolkit.NotAuthorized:

@@ -46,6 +46,10 @@ log = logging.getLogger(__name__)
 from ckan.plugins import PluginImplementations
 
 
+# check IConfigurer
+HANDLED_DATASET_TYPES = []
+HANDLED_RESOURCES_TYPES = {}
+
 def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
 
     if HANDLED_RESOURCES_TYPES and not renew:
@@ -65,7 +69,6 @@ def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VE
     HANDLED_RESOURCES_TYPES.update({dataset_type:supported_resource_types})
 
     return supported_resource_types
-
 
 def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
     '''
@@ -95,11 +98,6 @@ def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = 
 
     return supported_dataset_types
 
-
-# check IConfigurer
-HANDLED_DATASET_TYPES = []
-HANDLED_RESOURCES_TYPES = {}
-
 TYPE_JSONSCHEMA='jsonschema'
 
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
@@ -110,11 +108,38 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(_i.IBinder, inherit = True)
+    plugins.implements(plugins.IActions)
+
+    #IActions
+    def get_actions(self):
+        from ckanext.jsonschema.logic.actions import importer
+        actions = {
+            'jsonschema_importer': importer
+        }
+        return actions
 
     # IBlueprint
     
     def get_blueprint(self):
         return _b.jsonschema
+    
+    # ITemplateHelpers
+
+    def get_helpers(self):
+        return {
+            'jsonschema_get_body_key': lambda : _c.SCHEMA_BODY_KEY,
+            'jsonschema_get_type_key': lambda : _c.SCHEMA_TYPE_KEY,
+            'jsonschema_get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
+            'jsonschema_get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
+            'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
+            'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
+            'jsonschema_get_dataset_type': _v.get_dataset_type,
+            'jsonschema_resolve_extras': _v.resolve_extras,
+            'jsonschema_resolve_resource_extras': _v.resolve_resource_extras,
+            'jsonschema_handled_resource_types': handled_resource_types,
+            'jsonschema_handled_dataset_types': handled_dataset_types,
+            # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
+        }
 
     # IBinder
 
@@ -169,10 +194,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             return []
         return _c.SUPPORTED_DATASET_FORMATS
 
-
-
-
-
     # IPackageController
 
     # def before_index(self, pkg_dict):
@@ -203,23 +224,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #     '''
     #     pass
 
-    # ITemplateHelpers
-
-    def get_helpers(self):
-        return {
-            'jsonschema_get_body_key': lambda : _c.SCHEMA_BODY_KEY,
-            'jsonschema_get_type_key': lambda : _c.SCHEMA_TYPE_KEY,
-            'jsonschema_get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
-            'jsonschema_get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
-            'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
-            'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
-            'jsonschema_get_dataset_type': _v.get_dataset_type,
-            'jsonschema_resolve_extras': _v.resolve_extras,
-            'jsonschema_resolve_resource_extras': _v.resolve_resource_extras,
-            'jsonschema_handled_resource_types': handled_resource_types,
-            'jsonschema_handled_dataset_types': handled_dataset_types,
-            # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
-        }
 
     # def _opt_map(self, opt = _c.SCHEMA_OPT, version = _c.SCHEMA_VERSION):
     #     for plugin in _v.JSONSCHEMA_PLUGINS:
@@ -256,46 +260,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # IValidators
 
     def get_validators(self):
-
-        '''
-        Validators that need access to the database or information 
-        about the user may be written as a callable taking two 
-        parameters. context['session'] is the sqlalchemy session 
-        object and context['user'] is the username of the logged-in 
-        user:
-
-        from ckan.plugins.toolkit import Invalid
-
-        validator(key, flattened_data, errors, context)
-
-        Validators that need to access or update multiple fields 
-        may be written as a callable taking four parameters.
-
-        All fields and errors in a flattened form are passed to 
-        the validator. The validator must fetch values from 
-        flattened_data and may replace values in flattened_data. 
-        The return value from this function is ignored.
-
-        key is the flattened key for the field to which this 
-        validator was applied. For example ('notes',) for the 
-        dataset notes field or ('resources', 0, 'url') for the 
-        url of the first resource of the dataset. These flattened 
-        keys are the same in both the flattened_data and errors 
-        dicts passed.
-
-        errors contains lists of validation errors for each field.
-
-        context is the same value passed to the two-parameter 
-        form above.
-
-        Note that this form can be tricky to use because some 
-        of the values in flattened_data will have had validators 
-        applied but other fields won't. You may add this type of 
-        validator to the special schema fields __before or 
-        __after to have them run before or after all the other 
-        validation takes place to avoid the problem of working 
-        with partially-validated data.
-        '''
 
         return {
             # u'equals_to_zero': lambda x : x==0,
@@ -353,13 +317,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     # Updating the CKAN schema
     def create_package_schema(self):
-        '''
-        The create_package_schema() function is used whenever
-        a new dataset is created, we'll want update the default 
-        schema and insert our custom field here. 
-        We will fetch the default schema defined in default_create_package_schema() 
-        by running create_package_schema()'s super function and update it.
-        '''
 
         # schema = super(toolkit.DefaultDatasetForm, self).create_package_schema()
         schema = default_create_package_schema()
@@ -367,28 +324,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         return _modify_package_schema(schema)
 
     def update_package_schema(self):
-        '''
-        The CKAN schema is a dictionary where the key is the name of the field
-        and the value is a list of validators and converters.
-        Here we have a validator to tell CKAN to not raise a validation error if
-        the value is missing and a converter to convert the value to and save
-        as an extra. 
-        We will want to change the update_package_schema() function with the
-        same update code.
-        '''
+
         schema = default_update_package_schema()
 
         return _modify_package_schema(schema)
 
     def show_package_schema(self):
-        '''
-        The show_package_schema() is used when the package_show() action is 
-        called, we want the default_show_package_schema to be updated to 
-        include our custom field. 
-        This time, instead of converting to an extras field, we want our 
-        field to be converted from an extras field.
-        So we want to use the convert_from_extras() converter.
-        '''
         schema = default_show_package_schema()
 
         # TODO why?!?!? this has been fixed in scheming 

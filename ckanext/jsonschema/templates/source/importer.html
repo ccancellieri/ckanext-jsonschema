@@ -7,41 +7,49 @@
 {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
 <form id="importer" action="/api/action/jsonschema_importer" class="form-horizontal dataset-form" method="post">
+    <p>
+        <span class="info-block">
+            {{ _('This should include the http:// part of the URL') }}
+        </span>
+        {% call form.input('url', id='field-url', label=_('URL'), value="", classes=['control-full','control-large']) %}
+        {% endcall %}
+    </p>
 
-    {% block errors %}{{ form.errors(error_summary) }}{% endblock %}
+    <p>
+        <label for="field-{{TYPE_KEY}}">{{_('Which destination type')}}</label>
+        <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}">
+            {% for dataset_type in dataset_types %}
+                <option value="{{ dataset_type }}">{{ dataset_type }}</option>
+            {% endfor %}
+        </select>
+    </p>
 
-    {% call form.input('url', id='field-url', label=_('URL'), value="", error=errors.url, classes=['control-full',
-    'control-large']) %}
-    <span class="info-block">
-        {{ _('This should include the http:// part of the URL') }}
-    </span>
-    {% endcall %}
-
-    <label for="field-{{TYPE_KEY}}">Which type</label>
-    <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}">
-        {% for dataset_type in dataset_types %}
-            <option value="{{ dataset_type }}">{{ dataset_type }}</option>
-        {% endfor %}
-    </select>
+    <p>
+        <label for="field-format">{{_('Source format is')}}</label>
+        <select id="field-format" name="from_xml">
+            <option value={{True}} selected>xml</option>
+            <option value={{False}}>json</option>
+        </select>
+    </p>
 
     {% set organizations_available = h.organizations_available('create_dataset') %}
-
-    <div class="control-group form-group">
-        <label for="field-organizations" class="control-label">{{ _('Organization') }}</label>
-        <div class="controls">
-            <select id="field-organizations" name="owner_org" data-module="autocomplete">
-                {% for organization in organizations_available %}
-                <option value="{{ organization.id }}">{{ organization.name }}</option>
-                {% endfor %}
-            </select>
+    <p>
+        <div class="control-group form-group">
+            <label for="field-organizations" class="control-label">{{ _('Organization') }}</label>
+            <div class="controls">
+                <select id="field-organizations" name="owner_org" data-module="autocomplete">
+                    {% for organization in organizations_available %}
+                    <option value="{{ organization.id }}">{{ organization.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-    </div>
+    </p>
 
+    {% if h.check_access('package_create', {'owner_org': owner_org}) %}
     <button value="import" name="import" class="btn btn-primary pull-right"
         href="{% url_for 'jsonschema_importer', type=schema_type, body=body %}">
         {{_('Import')}}
     </button>
-    {% if h.check_access('package_create', {'owner_org': owner_org}) %}
-    'OK'
     {% endif %}
 </form>

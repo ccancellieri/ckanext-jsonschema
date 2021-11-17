@@ -1,5 +1,6 @@
 from sqlalchemy.sql.operators import as_
 from sqlalchemy.sql.sqltypes import ARRAY, TEXT
+from ckan.logic import ValidationError
 import ckan.plugins as plugins
 import ckanext.terriajs.constants as constants
 
@@ -13,11 +14,16 @@ from sqlalchemy.sql.expression import cast
 from sqlalchemy import func, Integer
 from sqlalchemy.sql import select
 
+import ckanext.jsonschema.utils as _u
+import ckanext.jsonschema.constants as _c
+import json
 
 import ckan.plugins.toolkit as toolkit
 _ = toolkit._
 h = toolkit.h
 
+import logging
+log = logging.getLogger(__name__)
 
 import ckan.logic as logic
 
@@ -40,28 +46,49 @@ def importer(context, data_dict):
     import requests
     response = requests.get(url, stream=True)
     if response.status_code != 200:
-        print("failed to fetch %s (code %s)" % (url,
-                                                response.status_code))
-        return
+        print("failed to fetch %s (code %s)" % (url, response.status_code))
+        return #TODO exception
 
+    # body is supposed to be json, if true a  1:1 conversion is provided
+    from_xml = data_dict.get('from_xml', False)
+    try:
+        if from_xml:
+            body = _u.xml_to_json(response.text)
+        else:
+            body = response.json() #TODO as json check 
+    except Exception as e:
+        message = str(e)
+        log.error(message)
+        # e.error_summary = json.dumps(message)
+        raise ValidationError(message)
 
-    import ckanext.jsonschema.utils as _u
-    import ckanext.jsonschema.constants as _c
 
     package_dict={}
-    # IMPORTER_TYPE = 'iso19139'
+    # IMPORTER_TYPE = 'iso19139'old
     _type = data_dict.get(_c.SCHEMA_TYPE_KEY)
     package_dict['type'] = _type
     package_dict['owner_org'] = data_dict.get('owner_org')
 
-    import json
+    opt = dict(_c.SCHEMA_OPT)
+    opt.update({
+        'imported' : True,
+        'source_format':'xml' if from_xml else 'json',
+        'source_url': url})
     extras = []
     package_dict['extras'] = extras
-    extras.append({ 'key': _c.SCHEMA_BODY_KEY, 'value' : json.dumps(_u.xml_to_dict(response.text)) })
+    extras.append({ 'key': _c.SCHEMA_BODY_KEY, 'value' : body })
     extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : _type })
-    extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' : json.dumps({'imported' : True}) })
+    extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' :  opt })
     extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })    
 
-    return toolkit.get_action('package_create')(context, package_dict)
+    #TODO resources store back to the package_dict
+    try:
+        return toolkit.get_action('package_create')(context, package_dict)
+    except Exception as e:
+        message = str(e)
+        log.error(message)
+        # e.error_summary = json.dumps(message)
+        raise ValidationError(message)
+    
     
     # next_action(context,data_dict)
