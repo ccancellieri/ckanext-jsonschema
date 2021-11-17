@@ -34,16 +34,6 @@ export const initialize = () => {
                     console.error("Unable to resolve item: "+e.id+".\n Response: "+request.response);
                     return "";
                 }
-                
-                // asynch ???
-                /*return fetch(url).then(function (response) {
-                        return response.json();
-                    }).then(function (data) {
-                        resolve(data);
-                    }).catch(function (err) {
-                        console.error(err);
-                        return "";
-                    });;*/
             }
         },
         "autocomplete": {
@@ -53,6 +43,16 @@ export const initialize = () => {
         // So you need to add a variable to the callback to hold this (like the
         // "jseditor_editor" variable in the examples below.)
             "tag_keywords_autocomplete": (jseditor_editor, input) => {
+                if (input.length < 2) {
+                    return [];
+                }
+                let _url = 'api/3/action/tag_autocomplete?query='+encodeURI(input)
+
+                let url = new URL(_url, jsonschema.ckan_url);
+
+                return window.JSONEditor.defaults.callbacks.autocomplete.jsonschema_fetch(jseditor_editor, url);
+            },
+            "tag_specialized_keywords_autocomplete": (jseditor_editor, input) => {
                 if (input.length < 2) {
                     return [];
                 }
