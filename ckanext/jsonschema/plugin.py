@@ -294,8 +294,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # def new_template(self):
     #     return 'package/new.html'
 
-    # def read_template(self):
-    #     return 'package/read.html'
+    def read_template(self):
+        return 'source/read.html'
 
     # def edit_template(self):
     #     return 'package/edit.html'
@@ -329,18 +329,18 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         return _modify_package_schema(schema)
 
-    def show_package_schema(self):
-        schema = default_show_package_schema()
+    # def show_package_schema(self):
+    #     schema = default_show_package_schema()
 
-        # TODO why?!?!? this has been fixed in scheming 
-        # but core now is broken... :(
-        for field in schema['resources'].keys():
-            if isodate in schema['resources'][field]:
-                schema['resources'][field].remove(isodate)
+    #     # TODO why?!?!? this has been fixed in scheming 
+    #     # but core now is broken... :(
+    #     for field in schema['resources'].keys():
+    #         if isodate in schema['resources'][field]:
+    #             schema['resources'][field].remove(isodate)
 
-        # schema.get('__before').append(_v.resource_serializer)
-        # schema.get('__before', []).append(_v.serializer)
-        return schema
+    #     # schema.get('__before').append(_v.resource_serializer)
+    #     schema.get('__after', []).append(_v.serializer)
+    #     return schema
         
 def _modify_package_schema(schema):
     # insert in front

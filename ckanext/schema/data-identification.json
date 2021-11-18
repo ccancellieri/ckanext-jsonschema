@@ -25,6 +25,7 @@
           "propertyOrder": 10,
           "title": "Date",
           "type": "array",
+          "format": "table",
           "items": {
             "type": "object",
             "properties": {
@@ -56,6 +57,7 @@
           "propertyOrder": 30,
           "title": "Presentation form",
           "type": "array",
+          "format": "table",
           "items": {
             "type": "string",
             "enum": [
@@ -140,6 +142,7 @@
       "propertyOrder": 30,
       "title": "Descriptive keywords",
       "type": "array",
+      "format": "table",
       "items": {
         "type": "object",
         "properties": {
@@ -159,6 +162,7 @@
             "propertyOrder": 1,
             "title": "Keywords",
             "type": "array",
+            "format": "table",
             "items": {
               "type": "string",
               "format": "autocomplete",
@@ -177,30 +181,34 @@
       }
     },
     "topicCategory": {
-      "propertyOrder": 40,
       "title": "Topic category",
-      "type": "string",
-      "enum": [
-        "farming",
-        "biota",
-        "boundaries",
-        "climatologyMeteorologyAtmosphere",
-        "economy",
-        "elevation",
-        "environment",
-        "geoscientificInformation",
-        "health",
-        "imageryBaseMapsEarthCover",
-        "intelligenceMilitary",
-        "inlandWaters",
-        "location",
-        "oceans",
-        "planningCadastre",
-        "society",
-        "structure",
-        "transportation",
-        "utilitiesCommunication"
-      ]
+      "propertyOrder": 40,
+      "type": "array",
+      "format": "table",
+      "items": {
+        "type": "string",
+        "enum": [
+          "farming",
+          "biota",
+          "boundaries",
+          "climatologyMeteorologyAtmosphere",
+          "economy",
+          "elevation",
+          "environment",
+          "geoscientificInformation",
+          "health",
+          "imageryBaseMapsEarthCover",
+          "intelligenceMilitary",
+          "inlandWaters",
+          "location",
+          "oceans",
+          "planningCadastre",
+          "society",
+          "structure",
+          "transportation",
+          "utilitiesCommunication"
+        ]
+      }
     },
     "resourceMaintenance": {
       "propertyOrder": 50,

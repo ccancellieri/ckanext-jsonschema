@@ -127,16 +127,17 @@ class JsonschemaIso(p.SingletonPlugin):
         # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
         # TYPE_ISO_RESOURCE_DATASET,
 
-        elif type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
-            _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
-            return
         elif type == TYPE_ISO_RESOURCE_DATASET:
             _extract_iso_resource_dataset(body, type, opt, version, key, data, errors, context)
             return
-        elif type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
-            _extract_iso_resource_dataset(body, type, opt, version, key, data, errors, context)
+
+
+        elif type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
+            _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
             return
-        
+        elif type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
+            _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
+            return
         elif type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
             _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
             return
@@ -251,7 +252,7 @@ def _extract_iso_online_resource(body, opt, type, version, key, data, errors, co
     # if not name:
     #     _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
     
-    description = body.get('role','')
+    description = body.get('description','')
 
     _dict = {
         'name': name,

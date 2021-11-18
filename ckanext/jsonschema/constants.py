@@ -12,15 +12,15 @@ PATH_ROOT=path.realpath(path.join(path.dirname(__file__),'..'))
 TYPE='jsonschema'
 
 # Schema keys will be part of the extras keys
-SCHEMA_OPT_KEY='##opt##'
+SCHEMA_OPT_KEY='jsonschema_opt'
 SCHEMA_OPT={} # TODO MAKE DEFAULT CONFIG CONFIGURABLE....
-SCHEMA_BODY_KEY='##body##'
+SCHEMA_BODY_KEY='jsonschema_body'
 # to mark a metadata as 
 # ckanext-jsonschema managed package
-SCHEMA_VERSION_KEY='##version##'
+SCHEMA_VERSION_KEY='jsonschema_version'
 SCHEMA_VERSION="1" # TODO MAKE DEFAULT VERSION CONFIGURABLE....
 # TODO schema Mapping
-SCHEMA_TYPE_KEY='##type##'
+SCHEMA_TYPE_KEY='jsonschema_type'
 
 # (Optional)
 # List of formats supported 

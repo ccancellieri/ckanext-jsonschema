@@ -39,7 +39,6 @@ jsonschema.add_url_rule(
     "/{}/importer".format(_c.TYPE),
     view_func=importer_view
 )
-#url_prefix=constants.TYPE)
 
 ########################################
 ## Schema proxy

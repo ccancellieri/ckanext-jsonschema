@@ -1,3 +1,4 @@
+from six import binary_type
 from sqlalchemy.sql.expression import true
 
 import ckan.lib.helpers as h
@@ -170,6 +171,43 @@ def update_extras(data, extras):
         elif key == _c.SCHEMA_OPT_KEY:
             e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
+
+
+def _as_dict(field):
+    value = field
+    if isinstance(field, unicode):
+        value = value.encode('utf-8')
+    if isinstance(value, dict) or isinstance(value, binary_type):
+        try: 
+            return json.loads(value)
+        except:
+            pass
+    elif isinstance(value, str):
+        try: 
+            return json.loads(value)
+        except:
+            pass
+    return value
+    
+def _as_json(field):
+    value = field
+    if isinstance(field, unicode):
+        value = value.encode('utf-8')
+    if isinstance(value, dict):
+        try: 
+            return json.dumps(value)
+        except:
+            pass
+    elif isinstance(value, str):
+        try: 
+            return json.dumps(json.loads(value))
+        except:
+            pass
+    return value
+        
+    isinstance(value, str)
+    return value
+
 def resolve_resource_extras(dataset_type, resource, as_dict = False):
     from ckanext.jsonschema.plugin import handled_resource_types
     # Pre-setting defaults
@@ -181,7 +219,7 @@ def resolve_resource_extras(dataset_type, resource, as_dict = False):
         _type = None
         body = {}
     
-    opt = _c.SCHEMA_OPT
+    opt = dict(_c.SCHEMA_OPT)
     version = _c.SCHEMA_VERSION
 
     # Checking extra data content for extration
@@ -201,17 +239,23 @@ def resolve_resource_extras(dataset_type, resource, as_dict = False):
     # opt = resource.get(_c.SCHEMA_OPT_KEY, opt)
             
     if as_dict:
-        if not isinstance(body, dict):
-            body = json.loads(body)
-        if not isinstance(opt, dict):
-            try:
-                opt = json.loads(opt)
-            except Exception as e:
-                log.error('Unable to properly deserialize \'opt\' it should be a json object...')
+        body = _as_dict(body)
+        opt = _as_dict(opt)
+    else:
+        body = _as_json(body)
+        opt = _as_json(opt)
+
+    #     if not isinstance(body, dict):
+    #         body = json.loads(body)
+    #     if not isinstance(opt, dict):
+    #         try:
+    #             opt = json.loads(opt)
+    #         except Exception as e:
+    #             log.error('Unable to properly deserialize \'opt\' it should be a json object...')
     # else:
-    #     if not isinstance(body, str):
+    #     if not isinstance(body, binary_type):
     #         body = json.dumps(body)
-    #     if not isinstance(opt, str):
+    #     if not isinstance(opt, binary_type):
     #         opt = json.dumps(opt)
     
     return {
@@ -221,11 +265,12 @@ def resolve_resource_extras(dataset_type, resource, as_dict = False):
         _c.SCHEMA_VERSION_KEY: version
     }
 
+
 def resolve_extras(data, as_dict = False):
     # Pre-setting defaults
     _type = get_dataset_type(data)
     body = _t.get_template_of(_type)
-    opt = _c.SCHEMA_OPT
+    opt = dict(_c.SCHEMA_OPT)
     version = _c.SCHEMA_VERSION
 
     # Checking extra data content for extration
@@ -241,20 +286,24 @@ def resolve_extras(data, as_dict = False):
             version = e['value']
         elif key == _c.SCHEMA_OPT_KEY:
             opt = e['value']
-            
+    
     if as_dict:
-        if not isinstance(body, dict):
-            body = json.loads(body)
-        if not isinstance(opt, dict):
-            opt = json.loads(opt)
+        body = _as_dict(body)
+        opt = _as_dict(opt)
+        # if not isinstance(body, dict):
+        #     body = json.loads(body)
+        # if not isinstance(opt, dict):
+        #     opt = json.loads(opt)
         # if not isinstance(_type, dict):
         #     _type = json.loads(_type)
         # if not isinstance(version, dict):
         #     version = json.loads(version)
-    # else:
-        # if not isinstance(body, str):
+    else:
+        body = _as_json(body)
+        opt = _as_json(opt)
+        # if not isinstance(body, binary_type):
         #     body = json.dumps(body)
-        # if not isinstance(opt, str):
+        # if not isinstance(opt, binary_type):
         #     opt = json.dumps(opt)
         # if not isinstance(_type, str):
         #     _type = json.dumps(_type)
@@ -267,6 +316,25 @@ def resolve_extras(data, as_dict = False):
         _c.SCHEMA_TYPE_KEY: _type,
         _c.SCHEMA_VERSION_KEY: version
     }
+
+def serializer(key, data, errors, context):
+
+    # fd = df.flatten_dict(data)
+    fd = data
+
+    for key in fd.keys():
+        value = fd[key]
+        if isinstance(fd[key], unicode):
+            value = value.encode('utf-8')
+
+        if isinstance(value, binary_type) or isinstance(value, str):
+            try: 
+                fd[key] = json.loads(value)
+            except:
+                fd[key] =  value
+
+    # pkg = df.unflatten(fd)
+
 
 # TODO CKAN contribution
 def get_dataset_type(data = None):
