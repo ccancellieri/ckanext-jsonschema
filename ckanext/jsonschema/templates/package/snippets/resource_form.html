@@ -1,9 +1,9 @@
 
   {% ckan_extends %}
   
-{% if dataset_type is defined %}
+{% if dataset_type %}
     {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
-    {% if resource_types is defined and resource_types | length > 0 %}
+    {% if resource_types and resource_types | length > 0 %}
         {% set jsonschema = true %}
     {% endif %}
 {% endif %}
