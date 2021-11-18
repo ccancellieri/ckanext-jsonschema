@@ -22,6 +22,8 @@ import ckan.plugins.toolkit as toolkit
 _ = toolkit._
 h = toolkit.h
 
+from paste.deploy.converters import asbool
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -43,14 +45,19 @@ def importer(context, data_dict):
 
     _check_access('package_create', context, data_dict)
     
-    import requests
-    response = requests.get(url, stream=True)
-    if response.status_code != 200:
-        print("failed to fetch %s (code %s)" % (url, response.status_code))
-        return #TODO exception
+    try:
+        import requests
+        response = requests.get(url, stream=True)
+        if response.status_code != 200:
+            raise Exception('Unable to fetch data, response status is {}'.format(response.status_code))
+    except Exception as e:
+        message = str(e)
+        log.error(message)
+        # e.error_summary = json.dumps(message)
+        raise ValidationError(message)
 
     # body is supposed to be json, if true a  1:1 conversion is provided
-    from_xml = data_dict.get('from_xml', False)
+    from_xml = asbool(data_dict.get('from_xml', False))
     try:
         if from_xml:
             body = _u.xml_to_json(response.text)
