@@ -6,7 +6,7 @@
 {% set OPT_KEY = h.jsonschema_get_opt_key() %}
 {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
-<form id="importer" action="/api/action/jsonschema_importer" class="form-horizontal dataset-form" method="post">
+<form id="importer" action={{ h.url_for('/api/action/jsonschema_importer', _external=True }} class="form-horizontal dataset-form" method="post">
     <p>
         <span class="info-block">
             {{ _('This should include the http:// part of the URL') }}
@@ -47,8 +47,7 @@
     </p>
 
     {% if h.check_access('package_create', {'owner_org': owner_org}) %}
-    <button value="import" name="import" class="btn btn-primary pull-right"
-        href="{% url_for 'jsonschema_importer', type=schema_type, body=body %}">
+    <button value="import" name="import" class="btn btn-primary pull-right">
         {{_('Import')}}
     </button>
     {% endif %}
