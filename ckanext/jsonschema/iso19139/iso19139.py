@@ -1,4 +1,5 @@
 from sqlalchemy.sql.expression import true
+from sqlalchemy.sql.sqltypes import ARRAY
 
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
@@ -33,6 +34,9 @@ import logging
 log = logging.getLogger(__name__)
 
 
+import ckan.lib.navl.dictization_functions as df
+
+
 #############################################
 
 import jsonschema
@@ -44,7 +48,7 @@ TYPE_ONLINE_RESOURCE='online-resource'
 TYPE_ISO19139='iso19139'
 
 SUPPORTED_DATASET_FORMATS = [TYPE_ISO19139]
-SUPPORTED_RESOURCE_FORMATS = [TYPE_ONLINE_RESOURCE]
+SUPPORTED_RESOURCE_FORMATS = []
 
 class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder, inherit=True)
@@ -82,181 +86,233 @@ class JsonschemaIso19139(p.SingletonPlugin):
     def extract_from_json(self, body, type, opt, version, key, data, errors, context):
         
         if type == TYPE_ISO19139:
-            extract_name(body, opt, type, version, key, data, errors, context)
-            _extract_iso(body, opt, type, version, key, data, errors, context)
-        if type == TYPE_ONLINE_RESOURCE:
-            extract_online_resource(body, opt, type, version, key, data, errors, context)
+            _extract_iso(body, opt, version, key, data, errors, context)
+        # if type == TYPE_ONLINE_RESOURCE:
+            # _extract_transfer_options(body, opt, type, version, key, data, errors, context)
 
 
-import ckan.lib.navl.dictization_functions as df
-
-def extract_name(body, opt, type, version, key, data, errors, context):
 
 
-    # name:
-    #<gmd:MD_Metadata 
-    #<gmd:fileIdentifier>
-    #<gco:CharacterString>c26de669-90f9-43a1-ae4d-6b1b9660f5e0</gco:CharacterString>
-    # TODO generate if still none...
 
-    name = body.get("gmd:MD_Metadata", {})\
-                            .get('gmd:fileIdentifier', {})\
-                                .get('gco:CharacterString')
+# def append_nested(_dict, tuple, value = {}):
+#     try:
+#         d = _dict
+#         for k in tuple[:-1]:
+#             v = d.get(k)
+#             if not v:
+#                 d = d.setdefault(k,{})
+#             elif isinstance(v, list):
+#                 d = {}
+#                 v.append(d)
+#             elif isinstance(v, dict):
+#                 d = d[k]
 
-    if not name:
-        _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+#         d.update({tuple[-1:][0]:value})
+#     except:
+#         return None
+#     return _dict
+
+def set_nested(dict, tuple, value):
+    try:
+        d = dict
+        for k in tuple[:-1]:
+            d = d.setdefault(k,{})
+        d.update({tuple[-1:][0]:value})
+    except:
+        return None
+    return dict
+
+def pop_nested(dict, tuple):
+    d = dict
+    for k in tuple[:-1]:
+        try:
+            d = d[k]
+        except:
+            return
+    return d.pop(tuple[-1:][0])
+
+def get_nested(dict, tuple):
+    d = dict
+    for k in tuple[:-1]:
+        try:
+            d = d[k]
+        except:
+            return
+    # return d.get(tuple[-1:])
+    return d.get(tuple[-1:][0])
+
+# https://github.com/jab/bidict/blob/0.18.x/bidict/__init__.py#L90
+#from bidict import FrozenOrderedBidict, bidict, inverted 
+# OVERWRITE
+# OnDup, RAISE, DROP_OLD
+# bidict, inverted, 
+# class RelaxBidict(FrozenOrderedBidict):
+    # __slots__ = ()
+    # on_dup = OnDup(key=RAISE, val=DROP_OLD, kv=RAISE)
+    # on_dup = OVERWRITE
+
+
+def map_to(from_dict, map, to_dict):
+    errors=[]
+    for (k,v) in map.items():
+        if not set_nested(to_dict, v, get_nested(from_dict, k)):
+            errors.append({k,v})
+    return errors
+
+# def map_inverse(to_dict, map, from_dict):
+#     errors=[]
+#     for (k,v) in inverted(map):
+#         if not set_nested(to_dict, v, get_nested(from_dict, k)):
+#             errors.append({k,v})
+#     return errors
+
+# context = {
+#         _c.SCHEMA_OPT_KEY : opt,
+#         _c.SCHEMA_VERSION_KEY : version
+#     }
+# def _extract_iso(body, type, data, context):        
+def _extract_iso(body, opt, version, key, data, errors, context):
+
+    
+    # DATA translation
+    # root_fields = FrozenOrderedBidict({
+    root_fields = {
         
-    _dict = {
-        'name': name,
-        'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
+        ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'):('fileIdentifier',),
+        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString'):('metadataStandardName',), # TODO this could be an array
+        ('gmd:MD_Metadata','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:language','gco:CharacterString',):('language',),
+        ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString'):('metadataStandardVersion',),
+        ('gmd:MD_Metadata','gco:CharacterString'):('parentIdentifier',),
+        # TODO dataIdentification
+        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString'):('referenceSystemIdentifier',),
+        # TODO spatialRepresentationInfo
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString'):('dataQualityInfo','lineage','statement',),
+        # TODO dataQualityInfo complete LI_Lineage gmd:source
+
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('title',),
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:abstract','gco:CharacterString'):('notes',),
+        
+        # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
+
+        # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):'alternateTitle'
     }
-    data.update(_dict)
+    _data = dict(data)
+    _body = dict(body)
 
-def _extract_iso(body, opt, type, version, key, data, errors, context):
+    # map body to ckan fields (_data)
+    errors = map_to(_body, root_fields, _data)
 
-    # let's play with normal dict
+
+    # complex_fields = FrozenOrderedBidict({
+        # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
+        # ('gmd:MD_Metadata','gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation', 'gmd:CI_Citation'):('identificationInfo'),
+    # })
+
+    # Extract resources from body (to _data)
+    _extract_transfer_options(_body, opt, version, key, _data, errors, context)
     
-
-    identification = body.get("gmd:MD_Metadata", {})\
-                            .get('gmd:identificationInfo',{})\
-                                .get('gmd:MD_DataIdentification')
-
-    if not identification:
-        _v.stop_with_error('Unable to find identification info', key, errors)
-            
-    citation = identification.get('gmd:citation', {})\
-                                .get('gmd:CI_Citation')
-
-    if not citation:
-        _v.stop_with_error('Unable to find citation info', key, errors)
-
-    # title:
-    # <gmd:identificationInfo xmlns:geonet="http://www.fao.org/geonetwork">
-    # <gmd:MD_DataIdentification>
-    # <gmd:citation>
-    # <gmd:CI_Citation>
-    # <gmd:title>
-    # <gco:CharacterString>
-    title = citation.get('gmd:title', {}).get('gco:CharacterString')\
-            or\
-            citation.get('gmd:alternateTitle', {}).get('gco:CharacterString')
     
+    # BODY: iso19139 to iso translation
 
-    # <gmd:abstract>
-    # <gco:CharacterString>
-    abstract = identification.get('gmd:abstract', {}).get('gco:CharacterString')
-        
-    # description / notes / abstract
-    notes = abstract
+    # body_fields = FrozenOrderedBidict({
+    #     ('gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',)
+    # })
+    # errors = map_to(_body, body_fields, _body)
 
-    # <gmd:purpose>
-    # <gco:CharacterString>
-    
-    # <gmd:credit>
-    # <gco:CharacterString>
+    body.update(_body)
+    # TODO if errors:
+    #     _v.stop_with_error('Unable to find citation info', key, errors)
 
 
-# name = body.get("gmd:MD_Metadata", {})\
-#                         .get('gmd:fileIdentifier', {})\
-#                             .get('gco:CharacterString')
-# name = name or _data.get('name') #TODO error if null...
-    # TODO generate if still none
+    # TODO the rest of the model
 
-    # version
-    # <gmd:MD_Metadata
-    # <gmd:metadataStandardVersion xmlns:geonet="http://www.fao.org/geonetwork">
-    # <gco:CharacterString>1.0</gco:CharacterString>
+    _data['url'] = h.url_for(controller = 'package', action = 'read', id = _data['name'], _external = True)
 
-    # type
-    # <gmd:MD_Metadata
-    # <gmd:metadataStandardName xmlns:geonet="http://www.fao.org/geonetwork">
-    # <gco:CharacterString>ISO 19115:2003/19139</gco:CharacterString>
-# body.get("gmd:MD_Metadata", {}).get('gmd:distributionInfo', {}).get('gmd:MD_Distribution', {})
-    transfer_options = body.get("gmd:MD_Metadata", {})\
-            .get('gmd:distributionInfo', {})\
-                .get('gmd:MD_Distribution', {})\
-                    .get('gmd:transferOptions')
+    # Update _data with changes
+    data.update(_data)
 
-    if transfer_options:
-        _transfer_options = transfer_options
-        if not isinstance(transfer_options, list):
-            _transfer_options = [ transfer_options ]
+
+def _extract_transfer_options(body, opt, version, key, data, errors, context):
+
+    # _body = dict(body)
+    _body = body
+    # _data = dict(data)
+    _transfer_options = get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',))
+    #  = _data.pop(('transferOptions',))
+    if _transfer_options:
+        if not isinstance(_transfer_options, list):
+            _transfer_options = [ _transfer_options ]
         for options in _transfer_options:
-            #"Geographic areas"
-            # if not options or not isinstance(options, dict):
-            #     continue
-            transfer_opts = options.get('gmd:MD_DigitalTransferOptions', {})
-            if not transfer_opts:
+
+            # units = get_nested(options, ('gmd:unitsOfDistribution', 'gco:CharacterString',)) 
+            # transferSize = get_nested(options, ('gmd:transferSize', 'gco:Real',))
+            
+            online = get_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
+            if not online:
                 continue
-                #TODO: LOGS
-                #_v.stop_with_error('Unable to find transfer options', key, errors)
-            
-            # transfer_opts.get('gmd:unitsOfDistribution', {}).get('gco:CharacterString') 
-            # transfer_opts.get('gmd:transferSize', {}).get('gco:Real') 
-            
-            online = transfer_opts.get('gmd:onLine', [])
             if isinstance(online, list):
                 for idx, online_resource in enumerate(list(online)):
-                    pop_online(online_resource, opt, type, version, key, data, errors, context)
+                    pop_online(online_resource, opt, TYPE_ONLINE_RESOURCE, version, key, data, errors, context)
                     online.remove(online_resource)
             else:
                 pop_online(online, opt, type, version, key, data, errors, context)
-                transfer_opts.pop('gmd:onLine')
-
-            
-                
-    _dict = {
-        'title': title,
-        'notes': notes,
-        # _c.SCHEMA_BODY_KEY: json.dumps(body),
-        # _c.SCHEMA_TYPE_KEY: type,
-        # _c.SCHEMA_OPT_KEY: json.dumps(opt),
-        # _c.SCHEMA_VERSION_KEY: json.dumps(_c.SCHEMA_VERSION),
-    }
-
-    # context['defer_commit']=True# TODO #########################################CHECKME WHY??
-    # let's return flatten dict as per specifications
-    data.update(_dict)
+                pop_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
 
 def pop_online(online_resource, opt, type, version, key, data, errors, context):
     if isinstance(online_resource, list):
             for resource in online_resource:
-                pop_online_resource(resource, opt, type, version, key, data, errors, context)
+                get_online_resource(resource, opt, type, version, key, data, errors, context)
     else:
-        pop_online_resource(online_resource, opt, type, version, key, data, errors, context)
+        get_online_resource(online_resource, opt, type, version, key, data, errors, context)
 
-def pop_online_resource(resource, opt, type, version, key, data, errors, context):
+def get_online_resource(resource, opt, type, version, key, data, errors, context):
     r = resource.pop('gmd:CI_OnlineResource', None)
-    if r:
-        extract_online_resource(r, opt, TYPE_ONLINE_RESOURCE, version, key, data, errors, context)
-    else:
-        _v.stop_with_error('Unable to extract online resource: '.format(str(resource)), key, errors)
-    
-def extract_online_resource(body, opt, type, version, key, data, errors, context):
-    
-    # let's play with normal dict
-    
+    if not r:
+        return
 
     # we assume:
-    # - body is an gmd:CI_OnlineResource
+    # - body is an instance of gmd:CI_OnlineResource
+    _body = dict(r)
+
+
+    new_resource_body_fields = {
+        # TODO otherwise do all here
+        ('gmd:name', 'gco:CharacterString') : ('name',),
+        ('gmd:description', 'gco:CharacterString') : ('description',),
+        ('gmd:protocol', 'gco:CharacterString',) : ('protocol',),
+        # ('gmd:linkage', 'gco:CharacterString') : ('linkage',),
+    }
+    _new_resource_body = {}
+    errors = map_to(_body, new_resource_body_fields, _new_resource_body)
+
 
     # TODO recursive validation triggered by resource_create action ?
-    new_resource= {
+    new_resource_dict_fields = {
         # TODO otherwise do all here
-        'title': body.get('gmd:name', {}).get('gco:CharacterString', ''),
-        'description': body.get('gmd:description', {}).get('gco:CharacterString', ''),
-        'url': body.get('gmd:linkage', {}).get('gmd:URL', ''),
-        # _c.SCHEMA_VERSION_KEY: json.dumps(version),
-        # _c.SCHEMA_BODY_KEY: json.dumps(body),
-        # _c.SCHEMA_TYPE_KEY: type,
+        ('gmd:name','gco:CharacterString',) : ('name',),
+        ('gmd:description','gco:CharacterString',) : ('description',),
+        ('gmd:linkage','gmd:URL') : ('url',)
     }
-    protocol = body.get('gmd:protocol', {}).get('gco:CharacterString')
+    
+    _new_resource_dict = {
+        _c.SCHEMA_OPT_KEY: json.dumps(opt),
+        _c.SCHEMA_VERSION_KEY: version,
+        _c.SCHEMA_BODY_KEY: json.dumps(_new_resource_body),
+        _c.SCHEMA_TYPE_KEY: type,
+        # TODO FORMAT
+    }
+    
+    errors = map_to(_body, new_resource_dict_fields, _new_resource_dict)
+
+
+    
     # new_resource.update({
     #     'format': _get_type_from(protocol, new_resource.get('url')) or ''
     # })
 
     resources = data.get('resources', [])
-    resources.append(new_resource)
+    resources.append(_new_resource_dict)
     data.update({'resources': resources})
 
     # TODO remove from body what is not managed by json
