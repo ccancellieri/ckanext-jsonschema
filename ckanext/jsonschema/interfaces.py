@@ -40,7 +40,7 @@ class IBinder(Interface):
         pass
 
 
-    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
+    def extract_from_json(self, body, type, opt, version, data, errors, context):
         '''
         create the data model from the incoming body
         modify body in a UI suitable form
@@ -48,5 +48,11 @@ class IBinder(Interface):
         which is used by the jsonschema plugin to validate the
         incoming content (body) from API/UI
         '''
-        pass
+        return body, type, opt, version, data
+
+    def before_extractor(self, body, type, opt, version, data, errors, context):
+        '''
+        Can be used as preprocessing step f.e. a transformation to a different jsonschema model
+        '''
+        return body, type, opt, version, data
 

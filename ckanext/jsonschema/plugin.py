@@ -98,8 +98,6 @@ def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = 
 
     return supported_dataset_types
 
-TYPE_JSONSCHEMA='jsonschema'
-
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IDatasetForm)
@@ -107,7 +105,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint)
-    plugins.implements(_i.IBinder, inherit = True)
     plugins.implements(plugins.IActions)
 
     #IActions
@@ -141,58 +138,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
         }
 
-    # IBinder
-
-    def get_opt(self, dataset_type, opt, version):
-        opt.update(_c.SCHEMA_OPT)
-        return opt
-
-    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
-        # TODO which type schema or dataset?
-        
-        _data = df.unflatten(data)
-        if key==('name',):
-            name = str(body.get('name', uuid.uuid4()))
-            name = name or _data.get('name') #TODO error if null...
-            if not name:
-                _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
-                    
-            _dict = {
-                'name': name,
-                'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
-            }
-            data.update(df.flatten_dict(_dict))
-
-        elif key==('title',):
-            title = str(body.get('title', uuid.uuid4()))
-            title = title or _data.get('title') #TODO error if null...
-            if not title:
-                _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
-                    
-            _dict = {
-                'title': title
-            }
-            data.update(df.flatten_dict(_dict))
-
-        # TODO notes
-
-        data.update(df.flatten_dict(_dict))
-
-    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
-        if version != _c.SCHEMA_VERSION:
-            # when version is not the default one we don't touch
-            return []
-
-        if dataset_type in _c.SUPPORTED_DATASET_FORMATS:
-            #TODO should be a dic binding set of resources to dataset types 
-            return _c.SUPPORTED_RESOURCE_FORMATS
-        return []
-
-    def supported_dataset_types(self, opt, version):
-        if version != _c.SCHEMA_VERSION:
-            # when version is not the default one we don't touch
-            return []
-        return _c.SUPPORTED_DATASET_FORMATS
+    # def get_opt(self, dataset_type, opt, version):
+    #     opt.update(_c.SCHEMA_OPT)
+    #     return opt
 
     # IPackageController
 
@@ -263,7 +211,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         return {
             # u'equals_to_zero': lambda x : x==0,
-            u'schema_is_valid': _v.schema_check,
+            u'jsonschema_is_valid': _v.schema_check,
         }
 
     def is_fallback(self):
@@ -294,8 +242,17 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # def new_template(self):
     #     return 'package/new.html'
 
+
+
     def read_template(self):
         return 'source/read.html'
+    # def read_template(self):
+        # for plugin in _v.JSONSCHEMA_PLUGINS:
+        #     try:
+        #         plugin.read_template()
+        #         return
+        #     except Exception as e:
+        #         log.error('Error resolving dataset types:\n{}'.format(str(e)))
 
     # def edit_template(self):
     #     return 'package/edit.html'
@@ -350,8 +307,8 @@ def _modify_package_schema(schema):
         before = []
         schema['__before'] = before
 
-    before.insert(0, _v.resource_extractor)
     before.insert(0, _v.extractor)
+    before.insert(0, _v.before_extractor)
     # the following will be the first...
     before.insert(0, _v.schema_check)
     return schema

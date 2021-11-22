@@ -29,6 +29,7 @@ import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
+from ckanext.jsonschema.iso19139.iso import TYPE_ISO
 
 import logging
 log = logging.getLogger(__name__)
@@ -39,8 +40,6 @@ import ckan.lib.navl.dictization_functions as df
 
 #############################################
 
-import jsonschema
-from jsonschema import validate,RefResolver,Draft4Validator,Draft7Validator
 import json
 import ckan.model as model
 
@@ -83,14 +82,15 @@ class JsonschemaIso19139(p.SingletonPlugin):
 
         return SUPPORTED_DATASET_FORMATS
 
-    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
-        
+
+    def before_extractor(self, body, type, opt, version, data, errors, context):
+            
         if type == TYPE_ISO19139:
-            _extract_iso(body, opt, version, key, data, errors, context)
+            return _extract_iso(body, opt, version, data, errors, context)
+
+        return body, type, opt, version, data
         # if type == TYPE_ONLINE_RESOURCE:
-            # _extract_transfer_options(body, opt, type, version, key, data, errors, context)
-
-
+            # _extract_transfer_options(body, opt, type, version, data, errors, context)
 
 
 
@@ -171,7 +171,7 @@ def map_to(from_dict, map, to_dict):
 #         _c.SCHEMA_VERSION_KEY : version
 #     }
 # def _extract_iso(body, type, data, context):        
-def _extract_iso(body, opt, version, key, data, errors, context):
+def _extract_iso(body, opt, version, data, errors, context):
 
     
     # DATA translation
@@ -190,8 +190,32 @@ def _extract_iso(body, opt, version, key, data, errors, context):
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString'):('dataQualityInfo','lineage','statement',),
         # TODO dataQualityInfo complete LI_Lineage gmd:source
 
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('title',),
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:abstract','gco:CharacterString'):('notes',),
+        ## DATA IDENTIFICATION
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('dataIdentification','abstract',),
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('dataIdentification','purpose',),
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('dataIdentification','status',),
+        # descriptiveKeywords
+        # topicCategory
+        # resourceMaintenance
+        # resourceConstraints
+        # spatialRepresentationType (string)
+        # spatialResolution
+        
+        ## DATA IDENTIFICATION ( citation )
+        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('dataIdentification','citation','title',),
+
+        ## DATA IDENTIFICATION (EXTENT)
+        # supplementalInformation (string)
+        # language (string)
+        # characterSet (string)
+        # aggregationInfo
+        
+        # TODO date
+        ## DATA IDENTIFICATION (CITATIONS)
+        # TODO (''):('dataIdentification','citation','edition',),
+        # TODO presentationForm
+        # TODO series
+        
         
         # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
 
@@ -199,9 +223,15 @@ def _extract_iso(body, opt, version, key, data, errors, context):
     }
     _data = dict(data)
     _body = dict(body)
-
+    _iso_profile = {}
     # map body to ckan fields (_data)
-    errors = map_to(_body, root_fields, _data)
+    errors = map_to(_body, root_fields, _iso_profile)
+
+
+    if errors:
+        # TODO map errors {key,error} to ckan errors 
+        # _v.stop_with_error('Unable to map to iso', errors)
+        log.error('unable to map')
 
 
     # complex_fields = FrozenOrderedBidict({
@@ -210,7 +240,7 @@ def _extract_iso(body, opt, version, key, data, errors, context):
     # })
 
     # Extract resources from body (to _data)
-    _extract_transfer_options(_body, opt, version, key, _data, errors, context)
+    _extract_transfer_options(_body, opt, version, _data, errors, context)
     
     
     # BODY: iso19139 to iso translation
@@ -220,20 +250,18 @@ def _extract_iso(body, opt, version, key, data, errors, context):
     # })
     # errors = map_to(_body, body_fields, _body)
 
-    body.update(_body)
-    # TODO if errors:
-    #     _v.stop_with_error('Unable to find citation info', key, errors)
-
-
     # TODO the rest of the model
 
-    _data['url'] = h.url_for(controller = 'package', action = 'read', id = _data['name'], _external = True)
-
+    
     # Update _data with changes
-    data.update(_data)
+    _data.update({
+        'type': TYPE_ISO
+    })
+
+    return _iso_profile, TYPE_ISO, opt, version, _data
 
 
-def _extract_transfer_options(body, opt, version, key, data, errors, context):
+def _extract_transfer_options(body, opt, version, data, errors, context):
 
     # _body = dict(body)
     _body = body
@@ -253,20 +281,20 @@ def _extract_transfer_options(body, opt, version, key, data, errors, context):
                 continue
             if isinstance(online, list):
                 for idx, online_resource in enumerate(list(online)):
-                    pop_online(online_resource, opt, TYPE_ONLINE_RESOURCE, version, key, data, errors, context)
+                    pop_online(online_resource, opt, TYPE_ONLINE_RESOURCE, version, data, errors, context)
                     online.remove(online_resource)
             else:
-                pop_online(online, opt, type, version, key, data, errors, context)
+                pop_online(online, opt, type, version, data, errors, context)
                 pop_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
 
-def pop_online(online_resource, opt, type, version, key, data, errors, context):
+def pop_online(online_resource, opt, type, version, data, errors, context):
     if isinstance(online_resource, list):
             for resource in online_resource:
-                get_online_resource(resource, opt, type, version, key, data, errors, context)
+                get_online_resource(resource, opt, type, version, data, errors, context)
     else:
-        get_online_resource(online_resource, opt, type, version, key, data, errors, context)
+        get_online_resource(online_resource, opt, type, version, data, errors, context)
 
-def get_online_resource(resource, opt, type, version, key, data, errors, context):
+def get_online_resource(resource, opt, type, version, data, errors, context):
     r = resource.pop('gmd:CI_OnlineResource', None)
     if not r:
         return

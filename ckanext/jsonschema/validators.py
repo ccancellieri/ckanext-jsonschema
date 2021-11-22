@@ -112,16 +112,45 @@ def resource_extractor(key, data, errors, context):
         for plugin in JSONSCHEMA_PLUGINS:
             try:
                 if type in plugin.supported_resource_types(_data['type'], opt, version):
-                    plugin.extract_from_json(body, type, opt, version, key, resource, errors, context)
+                    body, type, opt, version, __data = plugin.extract_from_json(body, type, opt, version, resource, errors, context)
+
+                    # port back changes from body (and other extras) to the data model
+                    update_extras(__data, body, type, opt, version)
+                    # persist changes to the data model
+                    data.update(df.flatten_dict(__data))
             except Exception as e:
                 log.error('Error extracting dataset type {}\
                     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
-        
-        # port back changes from body (and other extras) to the data model
-        update_resource_extras(_data, extra)
 
-    # persist changes to the data model
-    data.update(df.flatten_dict(_data))
+    
+
+def before_extractor(key, data, errors, context):
+
+    _data = df.unflatten(data)
+
+    extra = resolve_extras(_data, True)
+
+    body = extra.get(_c.SCHEMA_BODY_KEY)
+
+    type = extra.get(_c.SCHEMA_TYPE_KEY)
+
+    opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
+
+    version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
+    
+    for plugin in JSONSCHEMA_PLUGINS:
+        try:
+            if type in plugin.supported_dataset_types(opt, version):
+                body, type, opt, version, __data = plugin.before_extractor(body, type, opt, version, _data, errors, context)
+                 # port back changes from body (and other extras) to the data model
+                update_extras(__data, body, type, opt, version)
+                # update datamodel
+                data.update(df.flatten_dict(__data))
+        except Exception as e:
+            log.error('Error before extracting dataset type {}\
+                from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+
+   
 
 def extractor(key, data, errors, context):
 
@@ -140,15 +169,15 @@ def extractor(key, data, errors, context):
     for plugin in JSONSCHEMA_PLUGINS:
         try:
             if type in plugin.supported_dataset_types(opt, version):
-                plugin.extract_from_json(body, type, opt, version, key, _data, errors, context)
+                body, type, opt, version, __data = plugin.extract_from_json(body, type, opt, version, _data, errors, context)
+                # port back changes from body (and other extras) to the data model
+                update_extras(__data, body, type, opt, version)
+                # update datamodel
+                data.update(df.flatten_dict(_data))
         except Exception as e:
             log.error('Error extracting dataset type {}\
                 from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
-    # port back changes from body (and other extras) to the data model
-    update_extras(_data, extra)
-    # update datamodel
-    data.update(df.flatten_dict(_data))
 
 def update_resource_extras(resource, extras):
     resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
@@ -171,6 +200,21 @@ def update_extras(data, extras):
         elif key == _c.SCHEMA_OPT_KEY:
             e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
+
+def update_extras(data, body, type, opt, version):
+    # Checking extra data content for extration
+    for e in data.get('extras',[]):
+        key = e.get('key')
+        if not key:
+            raise Exception('Unable to resolve extras with an empty key')
+        if key == _c.SCHEMA_BODY_KEY:
+            e['value'] = json.dumps(body)
+        elif key == _c.SCHEMA_TYPE_KEY:
+            e['value'] = type
+        elif key == _c.SCHEMA_VERSION_KEY:
+            e['value'] = version
+        elif key == _c.SCHEMA_OPT_KEY:
+            e['value'] = json.dumps(opt)
 
 
 def _as_dict(field):

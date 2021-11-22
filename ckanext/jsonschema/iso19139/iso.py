@@ -78,6 +78,8 @@ class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
 
+
+
     # IConfigurer
     def update_config(self, config_):
         pass
@@ -102,6 +104,7 @@ class JsonschemaIso(p.SingletonPlugin):
         
     # IBinder
 
+
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
         if version != _c.SCHEMA_VERSION:
             log.warn('Version: \'{}\' is not supported by this plugin ({})'.format(version, __name__))
@@ -112,48 +115,47 @@ class JsonschemaIso(p.SingletonPlugin):
             return SUPPORTED_ISO_RESOURCE_FORMATS
         return []
         
-    def supported_dataset_types(self, opt, version):
+    def supported_dataset_types(self, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
         if version != _c.SCHEMA_VERSION:
             # when version is not the default one we don't touch
             return []
         return SUPPORTED_DATASET_FORMATS
 
-    def extract_from_json(self, body, type, opt, version, key, data, errors, context):
+    def extract_from_json(self, body, type, opt, version, data, errors, context):
         
         if type == TYPE_ISO:
-            self._extract_from_iso(body, type, opt, version, key, data, errors, context)
-            return
+            return self._extract_from_iso(body, type, opt, version, data, errors, context)
 
         # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
         # TYPE_ISO_RESOURCE_DATASET,
 
         elif type == TYPE_ISO_RESOURCE_DATASET:
-            _extract_iso_resource_dataset(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_resource_dataset(body, type, opt, version, data, errors, context)
+            
 
 
         elif type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
-            _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_online_resource(body, type, opt, version, data, errors, context)
+            
         elif type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
-            _extract_iso_online_resource(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_online_resource(body, type, opt, version, data, errors, context)
+            
         elif type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
-            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+            
         elif type == TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY:
-            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+            
         elif type == TYPE_ISO_RESOURCE_MAINTAINER:
-            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+            
         elif type == TYPE_ISO_RESOURCE_POINT_OF_CONTACT:
-            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
-            return
+            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+            
         elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
-            _extract_iso_resource_responsible(body, type, opt, version, key, data, errors, context)
-            return
-
+            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+            
+        return body, type, opt, version, data
 
 # TYPE_ISO_RESOURCE_METADATA_CONTACT,
 # TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY,
@@ -161,23 +163,25 @@ class JsonschemaIso(p.SingletonPlugin):
 # TYPE_ISO_RESOURCE_POINT_OF_CONTACT,
 # TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
         
-    def _extract_from_iso(self, body, type, opt, version, key, data, errors, context):
+    def _extract_from_iso(self, body, type, opt, version, data, errors, context):
         # if key==('name',):
 
         try:
-            _extract_iso_name(body, type, opt, version, key, data, errors, context)
+            _extract_iso_name(body, type, opt, version, data, errors, context)
         except Exception as e:
             _v.stop_with_error('Error decoding metadata identification: {}'.format(str(e)), 'metadata identifier', errors)
         
         try:
-            _extract_iso_data_identification(body, type, opt, version, key, data, errors, context)
+            _extract_iso_data_identification(body, type, opt, version, data, errors, context)
         except Exception as e:
             _v.stop_with_error('Error decoding data identification: {}'.format(str(e)), 'data identification', errors)
         # TODO
 
+        return body, type, opt, version, data
 
 
-def _extract_iso_data_identification(body, type, opt, version, key, _data, errors, context):
+
+def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
     # _data = df.unflatten(data)
 
     data_identification = body.get('dataIdentification')
@@ -217,7 +221,7 @@ def _extract_iso_data_identification(body, type, opt, version, key, _data, error
                 # {'name': geo_tag, 'vocabulary_id': vocab_id}
 
 
-def _extract_iso_name(body, opt, type, version, key, data, errors, context):
+def _extract_iso_name(body, opt, type, version, data, errors, context):
 
     # TODO generate if still none...
     # munge title to package name
@@ -244,13 +248,13 @@ def _extract_iso_name(body, opt, type, version, key, data, errors, context):
 ## RESOURCES
 ######################################################
 
-def _extract_iso_online_resource(body, opt, type, version, key, data, errors, context):
+def _extract_iso_online_resource(body, opt, type, version, data, errors, context):
     
     name = body.get('name')
     if not name:
         name = 'Online resource'
     # if not name:
-    #     _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+    #     _v.stop_with_error('Unable to obtain {}'.format(key), errors)
     
     description = body.get('description','')
 
@@ -261,18 +265,22 @@ def _extract_iso_online_resource(body, opt, type, version, key, data, errors, co
     }
     data.update(_dict)
 
-def _extract_iso_resource_dataset(body, opt, type, version, key, data, errors, context):
+    return body, type, opt, version, data
+
+def _extract_iso_resource_dataset(body, opt, type, version, data, errors, context):
 
     name = body.get('name')
     if not name:
-        _v.stop_with_error('Unable to obtain {}'.format(key), key, errors)
+        _v.stop_with_error('Unable to obtain \'name\'', 'name', errors)
         
     _dict = {
         'name': name
     }
     data.update(_dict)
 
-def _extract_iso_resource_responsible(body, opt, type, version, key, data, errors, context):
+    return body, type, opt, version, data
+
+def _extract_iso_resource_responsible(body, opt, type, version, data, errors, context):
 
     name = body.get('individualName')
     if not name:
@@ -288,6 +296,8 @@ def _extract_iso_resource_responsible(body, opt, type, version, key, data, error
         'description': 'Role: {}\nOrganisation: {}'.format(role, organisationName)
     }
     data.update(_dict)
+
+    return body, type, opt, version, data
 
 def _get_format(protocol = None, url = None):
     
@@ -421,7 +431,7 @@ def _vocabulary_setup(vocab_name, tags=[], context={}):
 
 
 
-def default_lon_e(key, data, errors, context):
+def default_lon_e(data, errors, context):
     '''
     Validator providing default values 
     '''
@@ -434,7 +444,7 @@ def default_lon_e(key, data, errors, context):
     except ValueError:
         data[key]=180
 
-def default_lon_w(key, data, errors, context):
+def default_lon_w(data, errors, context):
     '''
     Validator providing default values 
     '''
@@ -447,7 +457,7 @@ def default_lon_w(key, data, errors, context):
     except ValueError:
         data[key]=-180
 
-def default_lat_n(key, data, errors, context):
+def default_lat_n(data, errors, context):
     '''
     Validator providing default values 
     '''
@@ -460,7 +470,7 @@ def default_lat_n(key, data, errors, context):
     except ValueError:
         data[key]=90
 
-def default_lat_s(key, data, errors, context):
+def default_lat_s(data, errors, context):
     '''
     Validator providing default values 
     '''
