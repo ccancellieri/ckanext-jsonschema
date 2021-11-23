@@ -53,7 +53,7 @@
       {% set schema = h.jsonschema_get_schema(schema_type) %}
       
       <div class="input-group">
-        <input id="field-extras-0-value" name="{{BODY_KEY}}" value={{body}} type="hidden" class="form-control"/>
+        <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}"" type="hidden" class="form-control"/>
       
         <label for="field-{{TYPE_KEY}}">Which type </label>
         <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
@@ -67,9 +67,9 @@
         </select>
         <!-- <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/> -->
       
-        <input id="field-{{OPT_KEY}}" name="{{OPT_KEY}}" value={{opt}} type="hidden" class="form-control"/>
+        <input id="field-{{OPT_KEY}}" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
       
-        <input id="field-{{VERSION_KEY}}" name="{{VERSION_KEY}}" value={{version}} type="hidden" class="form-control"/>
+        <input id="field-{{VERSION_KEY}}" name="{{VERSION_KEY}}" value="{{version}}" type="hidden" class="form-control"/>
       </div>
       
       <div id="jsonschema-config-form" data-module="jsonschema"

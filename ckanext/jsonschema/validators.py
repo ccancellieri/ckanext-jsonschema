@@ -180,17 +180,22 @@ def extractor(key, data, errors, context):
                 from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
 
-def update_resource_extras(resource, extras):
-    resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-    resource[_c.SCHEMA_TYPE_KEY]=extras.get(_c.SCHEMA_TYPE_KEY)
-    resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
-    resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
+# def update_resource_extras(resource, extras):
+#     resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+#     resource[_c.SCHEMA_TYPE_KEY]=extras.get(_c.SCHEMA_TYPE_KEY)
+#     resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
+#     resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
 def update_resource_extras(resource, body, type, opt, version):
-    resource[_c.SCHEMA_BODY_KEY]=json.dumps(body)
-    resource[_c.SCHEMA_TYPE_KEY]=type
-    resource[_c.SCHEMA_VERSION_KEY]=version
-    resource[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
+    extras = resource.get('__extras')
+    if not extras:
+        extras = []
+        resource['__extras'] = extras
+    
+    extras[_c.SCHEMA_BODY_KEY]=json.dumps(body)
+    extras[_c.SCHEMA_TYPE_KEY]=type
+    extras[_c.SCHEMA_VERSION_KEY]=version
+    extras[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
 
 def update_extras(data, extras):
     # Checking extra data content for extration
@@ -331,20 +336,20 @@ def resolve_extras(data, as_dict = False):
         _c.SCHEMA_VERSION_KEY: version
     }
 
-def serializer(key, data, errors, context):
+# def serializer(key, data, errors, context):
 
-    fd = data
+#     fd = data
 
-    for key in fd.keys():
-        value = fd[key]
-        if isinstance(fd[key], unicode):
-            value = value.encode('utf-8')
+#     for key in fd.keys():
+#         value = fd[key]
+#         if isinstance(fd[key], unicode):
+#             value = value.encode('utf-8')
 
-        if isinstance(value, binary_type) or isinstance(value, str):
-            try: 
-                fd[key] = json.loads(value)
-            except:
-                fd[key] =  value
+#         if isinstance(value, binary_type) or isinstance(value, str):
+#             try: 
+#                 fd[key] = json.loads(value)
+#             except:
+#                 fd[key] =  value
 
 
 # TODO CKAN contribution
