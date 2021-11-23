@@ -111,7 +111,8 @@
                             "propertyOrder": 1,
                             "title": "Statement",
                             "description": "General explanation of the data producer about the lineage of the dataset",
-                            "type": "string"
+                            "type": "string",
+                            "format": "textarea"
                         },
                         "source": {
                             "propertyOrder": 10,

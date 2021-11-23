@@ -1,5 +1,6 @@
 from six import binary_type
 from sqlalchemy.sql.expression import true
+from ckan.migration import versions
 
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
@@ -91,38 +92,38 @@ def schema_check(key, data, errors, context):
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)
 
+    dataset_type = _data['type']
     resources = _data.get('resources')
-
     if not resources:
         return
-
+    
     for resource in resources:
-
-        extra = resolve_resource_extras(_data['type'], resource, True)
-        # resource.get('__extras')
-
-        body = extra.get(_c.SCHEMA_BODY_KEY)
+        extra = resolve_resource_extras(dataset_type, resource, True)
 
         type = extra.get(_c.SCHEMA_TYPE_KEY)
-
         opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
-
         version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
 
         for plugin in JSONSCHEMA_PLUGINS:
-            try:
-                if type in plugin.supported_resource_types(_data['type'], opt, version):
-                    body, type, opt, version, __data = plugin.extract_from_json(body, type, opt, version, resource, errors, context)
+            
+            if type in plugin.supported_resource_types(dataset_type, opt, version):
+                try:
+                    
+                    body = extra.get(_c.SCHEMA_BODY_KEY)
 
+                    # resource.get('__extras')
+                    body, type, opt, version, _r = plugin.extract_from_json(body, type, opt, version, resource, errors, context)
+
+                except Exception as e:
+                    log.error('Error extracting resource type {}\
+                        from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+                else:
                     # port back changes from body (and other extras) to the data model
-                    update_extras(__data, body, type, opt, version)
+                    update_resource_extras(_r, body, type, opt, version)
                     # persist changes to the data model
-                    data.update(df.flatten_dict(__data))
-            except Exception as e:
-                log.error('Error extracting dataset type {}\
-                    from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+                    resource.update(_r)
 
-    
+    data.update(df.flatten_dict(_data))
 
 def before_extractor(key, data, errors, context):
 
@@ -184,6 +185,12 @@ def update_resource_extras(resource, extras):
     resource[_c.SCHEMA_TYPE_KEY]=extras.get(_c.SCHEMA_TYPE_KEY)
     resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
     resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
+
+def update_resource_extras(resource, body, type, opt, version):
+    resource[_c.SCHEMA_BODY_KEY]=json.dumps(body)
+    resource[_c.SCHEMA_TYPE_KEY]=type
+    resource[_c.SCHEMA_VERSION_KEY]=version
+    resource[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
 
 def update_extras(data, extras):
     # Checking extra data content for extration
@@ -248,9 +255,6 @@ def _as_json(field):
         except:
             pass
     return value
-        
-    isinstance(value, str)
-    return value
 
 def resolve_resource_extras(dataset_type, resource, as_dict = False):
     from ckanext.jsonschema.plugin import handled_resource_types
@@ -277,30 +281,12 @@ def resolve_resource_extras(dataset_type, resource, as_dict = False):
     version = e.get(_c.SCHEMA_VERSION_KEY, version)
     opt = e.get(_c.SCHEMA_OPT_KEY, opt)
     
-    # body = resource.get(_c.SCHEMA_BODY_KEY, body)
-    # _type = resource.get(_c.SCHEMA_TYPE_KEY, _type)
-    # version = resource.get(_c.SCHEMA_VERSION_KEY, version)
-    # opt = resource.get(_c.SCHEMA_OPT_KEY, opt)
-            
     if as_dict:
         body = _as_dict(body)
         opt = _as_dict(opt)
     else:
         body = _as_json(body)
         opt = _as_json(opt)
-
-    #     if not isinstance(body, dict):
-    #         body = json.loads(body)
-    #     if not isinstance(opt, dict):
-    #         try:
-    #             opt = json.loads(opt)
-    #         except Exception as e:
-    #             log.error('Unable to properly deserialize \'opt\' it should be a json object...')
-    # else:
-    #     if not isinstance(body, binary_type):
-    #         body = json.dumps(body)
-    #     if not isinstance(opt, binary_type):
-    #         opt = json.dumps(opt)
     
     return {
         _c.SCHEMA_OPT_KEY : opt,
@@ -334,25 +320,9 @@ def resolve_extras(data, as_dict = False):
     if as_dict:
         body = _as_dict(body)
         opt = _as_dict(opt)
-        # if not isinstance(body, dict):
-        #     body = json.loads(body)
-        # if not isinstance(opt, dict):
-        #     opt = json.loads(opt)
-        # if not isinstance(_type, dict):
-        #     _type = json.loads(_type)
-        # if not isinstance(version, dict):
-        #     version = json.loads(version)
     else:
         body = _as_json(body)
         opt = _as_json(opt)
-        # if not isinstance(body, binary_type):
-        #     body = json.dumps(body)
-        # if not isinstance(opt, binary_type):
-        #     opt = json.dumps(opt)
-        # if not isinstance(_type, str):
-        #     _type = json.dumps(_type)
-        # if not isinstance(version, str):
-        #     version = json.dumps(version)
     
     return {
         _c.SCHEMA_OPT_KEY : opt,
@@ -363,7 +333,6 @@ def resolve_extras(data, as_dict = False):
 
 def serializer(key, data, errors, context):
 
-    # fd = df.flatten_dict(data)
     fd = data
 
     for key in fd.keys():
@@ -376,8 +345,6 @@ def serializer(key, data, errors, context):
                 fd[key] = json.loads(value)
             except:
                 fd[key] =  value
-
-    # pkg = df.unflatten(fd)
 
 
 # TODO CKAN contribution

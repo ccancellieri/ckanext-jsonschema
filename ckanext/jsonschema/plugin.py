@@ -138,16 +138,10 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
         }
 
-    # def get_opt(self, dataset_type, opt, version):
-    #     opt.update(_c.SCHEMA_OPT)
-    #     return opt
 
     # IPackageController
 
     # def before_index(self, pkg_dict):
-    #     '''
-    #     Extensions will receive what will be given to the solr for indexing. This is essentially a flattened dict (except for multli-valued fields such as tags) of all the terms sent to the indexer. The extension can modify this by returning an altered version.
-    #     '''
     #     # return pkg_dict
     #     # d=pkg_dict
 
@@ -210,7 +204,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def get_validators(self):
 
         return {
-            # u'equals_to_zero': lambda x : x==0,
             u'jsonschema_is_valid': _v.schema_check,
         }
 
@@ -227,23 +220,19 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         return handled_dataset_types()
 
     # def setup_template_variables(self, context, data_dict):
-        
         # # TODO: https://github.com/ckan/ckan/issues/6518
         # path = c.environ['CKAN_CURRENT_URL']
         # type = path.split('/')[1]
-
         # jsonschema = {
         #     # 'data_dict' : data_dict
         # }
         # c.jsonschema = jsonschema
-
         # return jsonschema
 
     # def new_template(self):
     #     return 'package/new.html'
 
-
-
+    # # TODO: https://github.com/ckan/ckan/issues/6518 (related but available on 2.9.x)
     def read_template(self):
         return 'source/read.html'
     # def read_template(self):
@@ -286,6 +275,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         return _modify_package_schema(schema)
 
+    # TODO presentation layer (solr also is related)
     # def show_package_schema(self):
     #     schema = default_show_package_schema()
 
@@ -307,6 +297,7 @@ def _modify_package_schema(schema):
         before = []
         schema['__before'] = before
 
+    before.insert(0, _v.resource_extractor)
     before.insert(0, _v.extractor)
     before.insert(0, _v.before_extractor)
     # the following will be the first...

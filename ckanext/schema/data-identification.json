@@ -117,6 +117,7 @@
       "propertyOrder": 10,
       "title": "Abstract",
       "type": "string",
+      "format": "textarea",
       "description": "Data description"
     },
     "purpose": {

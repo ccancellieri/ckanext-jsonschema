@@ -29,7 +29,7 @@ import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
-from ckanext.jsonschema.iso19139.iso import TYPE_ISO
+from ckanext.jsonschema.iso19139.iso import TYPE_ISO, get_format
 
 import logging
 log = logging.getLogger(__name__)
@@ -154,9 +154,10 @@ def get_nested(dict, tuple):
 
 def map_to(from_dict, map, to_dict):
     errors=[]
-    for (k,v) in map.items():
-        if not set_nested(to_dict, v, get_nested(from_dict, k)):
-            errors.append({k,v})
+    for (source_path, dest_path) in map.items():
+        value = get_nested(from_dict, source_path)
+        if value and not set_nested(to_dict, dest_path, value):
+            errors.append({source_path, dest_path})
     return errors
 
 # def map_inverse(to_dict, map, from_dict):
@@ -233,22 +234,14 @@ def _extract_iso(body, opt, version, data, errors, context):
         # _v.stop_with_error('Unable to map to iso', errors)
         log.error('unable to map')
 
-
-    # complex_fields = FrozenOrderedBidict({
-        # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
-        # ('gmd:MD_Metadata','gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation', 'gmd:CI_Citation'):('identificationInfo'),
-    # })
+    # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
+    # ('gmd:MD_Metadata','gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation', 'gmd:CI_Citation'):('identificationInfo'),
 
     # Extract resources from body (to _data)
     _extract_transfer_options(_body, opt, version, _data, errors, context)
     
     
     # BODY: iso19139 to iso translation
-
-    # body_fields = FrozenOrderedBidict({
-    #     ('gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',)
-    # })
-    # errors = map_to(_body, body_fields, _body)
 
     # TODO the rest of the model
 
@@ -328,7 +321,6 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
         _c.SCHEMA_VERSION_KEY: version,
         _c.SCHEMA_BODY_KEY: json.dumps(_new_resource_body),
         _c.SCHEMA_TYPE_KEY: type,
-        # TODO FORMAT
     }
     
     errors = map_to(_body, new_resource_dict_fields, _new_resource_dict)

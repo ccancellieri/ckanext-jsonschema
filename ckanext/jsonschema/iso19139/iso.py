@@ -221,7 +221,7 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
                 # {'name': geo_tag, 'vocabulary_id': vocab_id}
 
 
-def _extract_iso_name(body, opt, type, version, data, errors, context):
+def _extract_iso_name(body, type, opt, version, data, errors, context):
 
     # TODO generate if still none...
     # munge title to package name
@@ -248,8 +248,10 @@ def _extract_iso_name(body, opt, type, version, data, errors, context):
 ## RESOURCES
 ######################################################
 
-def _extract_iso_online_resource(body, opt, type, version, data, errors, context):
+def _extract_iso_online_resource(body, type, opt, version, data, errors, context):
     
+    _dict = dict(data)
+
     name = body.get('name')
     if not name:
         name = 'Online resource'
@@ -257,17 +259,19 @@ def _extract_iso_online_resource(body, opt, type, version, data, errors, context
     #     _v.stop_with_error('Unable to obtain {}'.format(key), errors)
     
     description = body.get('description','')
-
-    _dict = {
+    _dict.update({
         'name': name,
         'description': description,
-        'format': _get_format(body.get('protocol',''), data.get('url',''))
-    }
-    data.update(_dict)
+    })
+    format = get_format(body.get('protocol',''), data.get('url',''))
+    if format:
+        _dict.update({
+            'format': get_format(body.get('protocol',''), data.get('url',''))
+        })
 
-    return body, type, opt, version, data
+    return body, type, opt, version, _dict
 
-def _extract_iso_resource_dataset(body, opt, type, version, data, errors, context):
+def _extract_iso_resource_dataset(body, type, opt, version, data, errors, context):
 
     name = body.get('name')
     if not name:
@@ -280,7 +284,7 @@ def _extract_iso_resource_dataset(body, opt, type, version, data, errors, contex
 
     return body, type, opt, version, data
 
-def _extract_iso_resource_responsible(body, opt, type, version, data, errors, context):
+def _extract_iso_resource_responsible(body, type, opt, version, data, errors, context):
 
     name = body.get('individualName')
     if not name:
@@ -299,7 +303,7 @@ def _extract_iso_resource_responsible(body, opt, type, version, data, errors, co
 
     return body, type, opt, version, data
 
-def _get_format(protocol = None, url = None):
+def get_format(protocol = None, url = None):
     
     # https://www.ogc.org/docs/is
     # https://geonetwork-opensource.org/manuals/3.10.x/en/annexes/standards/iso19139.html#protocol
@@ -396,6 +400,7 @@ def _get_format(protocol = None, url = None):
             'zip': 'zip',
             'jpg': 'jpg',
             'jpeg': 'jpg',
+            'pdf': 'pdf',
             'png': 'png',
         }
 
