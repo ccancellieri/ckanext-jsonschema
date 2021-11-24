@@ -115,8 +115,14 @@ def resource_extractor(key, data, errors, context):
                     body, type, opt, version, _r = plugin.extract_from_json(body, type, opt, version, resource, errors, context)
 
                 except Exception as e:
-                    log.error('Error extracting resource type {}\
-                        from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+                    stop_with_error(str(e),key,errors)
+
+                    # log.error('Error extracting resource type {}\
+                    #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+                    # message = str(e)
+                    # log.error(message)
+                    # # e.error_summary = json.dumps(message)
+                    # raise ValidationError(message)
                 else:
                     # port back changes from body (and other extras) to the data model
                     update_resource_extras(_r, body, type, opt, version)
@@ -148,8 +154,9 @@ def before_extractor(key, data, errors, context):
                 # update datamodel
                 data.update(df.flatten_dict(__data))
         except Exception as e:
-            log.error('Error before extracting dataset type {}\
-                from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+            stop_with_error(str(e),key,errors)
+            # log.error('Error before extracting dataset type {}\
+            #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
    
 
@@ -176,8 +183,9 @@ def extractor(key, data, errors, context):
                 # update datamodel
                 data.update(df.flatten_dict(_data))
         except Exception as e:
-            log.error('Error extracting dataset type {}\
-                from body:\n{}\nError:\n{}'.format(type,body,str(e)))
+            stop_with_error(str(e),key,errors)
+            # log.error('Error extracting dataset type {}\
+            #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
 
 # def update_resource_extras(resource, extras):

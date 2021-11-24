@@ -129,7 +129,7 @@ def pop_nested(dict, tuple):
             d = d[k]
         except:
             return
-    return d.pop(tuple[-1:][0])
+    return d and d.pop(tuple[-1:][0])
 
 def get_nested(dict, tuple):
     d = dict
@@ -139,7 +139,7 @@ def get_nested(dict, tuple):
         except:
             return
     # return d.get(tuple[-1:])
-    return d.get(tuple[-1:][0])
+    return d and d.get(tuple[-1:][0])
 
 # https://github.com/jab/bidict/blob/0.18.x/bidict/__init__.py#L90
 #from bidict import FrozenOrderedBidict, bidict, inverted 
