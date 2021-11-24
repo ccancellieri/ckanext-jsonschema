@@ -259,7 +259,6 @@ def __spatial_representation_info(spatial_representation_info):
         if sri.get('gmd:MD_GridSpatialRepresentation'):
             # GRID
             grid_spatial_representation_info_fields = {
-                
                 ('gmd:MD_GridSpatialRepresentation','gmd:numberOfDimensions','gco:Integer',):('numberOfDimensions',),
                 ('gmd:MD_GridSpatialRepresentation','gmd:transformationParameterAvailability','gco:Boolean',):('transformationParameterAvailability',),
                 ('gmd:MD_GridSpatialRepresentation','gmd:cellGeometry','@codeListValue',):('cellGeometry',),
@@ -323,24 +322,26 @@ def _extract_iso(body, opt, version, data, errors, context):
     # DATA translation
     # root_fields = FrozenOrderedBidict({
     root_fields = {
-        
+        # fileIdentifier
         ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'):('fileIdentifier',),
-        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString'):('metadataStandardName',), # TODO this could be an array
-        ('gmd:MD_Metadata','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
+        # language
         ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:language','gco:CharacterString',):('language',),
+        # characterSet
+        ('gmd:MD_Metadata','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
+        # metadataStandardName
+        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString'):('metadataStandardName',), # TODO this could be an array
+        # metadataStandardVersion
         ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString'):('metadataStandardVersion',),
+        # parentIdentifier
         ('gmd:MD_Metadata','gco:CharacterString'):('parentIdentifier',),
-        
-        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString'):('referenceSystemIdentifier',),
-        
-        # # see below spatial_representation_info()
-        # ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',):('spatialRepresentationInfo',)
-
-
-        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString'):('dataQualityInfo','lineage','statement',),
-        # TODO dataQualityInfo complete LI_Lineage gmd:source
-
-        ## DATA IDENTIFICATION
+        # dataIdentification (see below)
+        # referenceSystemIdentifier
+        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
+        # spatialRepresentationInfo (see below)
+        # dataQualityInfo
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString',):('dataQualityInfo','lineage','statement',),
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:source','@uuidref',):('dataQualityInfo','lineage','source',),
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:scope','gmd:DQ_Scope','gmd:level','gmd:MD_ScopeCode','@codeListValue',):('dataQualityInfo','scope',),
     }
     _data = dict(data)
     _body = dict(body)
@@ -363,6 +364,7 @@ def _extract_iso(body, opt, version, data, errors, context):
         _identification_info = __identification_info(identification_info)
         set_nested(_iso_profile, ('dataIdentification',), _identification_info)
 
+    # TODO the rest of the model
 
     # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
     # ('gmd:MD_Metadata','gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation', 'gmd:CI_Citation'):('identificationInfo'),
@@ -370,13 +372,7 @@ def _extract_iso(body, opt, version, data, errors, context):
     # Extract resources from body (to _data)
     _extract_transfer_options(_body, opt, version, _data, errors, context)
     
-    
-    # BODY: iso19139 to iso translation
-
-    # TODO the rest of the model
-
-    
-    # Update _data with changes
+    # Update _data type
     _data.update({
         'type': TYPE_ISO
     })
@@ -455,15 +451,7 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
     
     errors = map_to(_body, new_resource_dict_fields, _new_resource_dict)
 
-
-    
-    # new_resource.update({
-    #     'format': _get_type_from(protocol, new_resource.get('url')) or ''
-    # })
-
     resources = data.get('resources', [])
     resources.append(_new_resource_dict)
     data.update({'resources': resources})
-
-    # TODO remove from body what is not managed by json
     
