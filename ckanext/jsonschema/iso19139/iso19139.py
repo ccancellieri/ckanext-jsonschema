@@ -358,14 +358,16 @@ def _extract_iso(body, opt, version, data, errors, context):
         # TODO map errors {key,error} to ckan errors 
         # _v.stop_with_error('Unable to map to iso', errors)
         log.error('unable to map')
-        
+
     spatial_representation_info = get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
-    _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
-    set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
+    if spatial_representation_info:
+        _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
+        set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
 
     identification_info = get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
-    _identification_info = __identification_info(identification_info)
-    set_nested(_iso_profile, ('dataIdentification',), _identification_info)
+    if identification_info:
+        _identification_info = __identification_info(identification_info)
+        set_nested(_iso_profile, ('dataIdentification',), _identification_info)
 
 
     # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
