@@ -168,92 +168,86 @@ def map_to(from_dict, map, to_dict):
 #     return errors
 
 def __identification_info(identification_info):
-    _ret = []
-    if not isinstance(identification_info, list):
-            identification_info = [identification_info]
-    for identification in identification_info:
-        _identification = {}
-        if identification.get('gmd:MD_DataIdentification'):
+    
+    _identification_info = {}
+    if identification_info.get('gmd:MD_DataIdentification'):
+        
+        identification_fields = {
             
-            identification_fields = {
-                
-                ## DATA IDENTIFICATION ( citation )
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('citation','title',),
+            ## DATA IDENTIFICATION ( citation )
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('citation','title',),
 # TODO date [] "gmd:citation": { "gmd:CI_Citation": {"gmd:date": [
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:edition','gco:CharacterString'):('citation','edition',),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:presentationForm','gmd:CI_PresentationFormCode','gmd:CI_PresentationFormCode',):('citation','presentationForm',),
-                
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:edition','gco:CharacterString'):('citation','edition',),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:presentationForm','gmd:CI_PresentationFormCode','gmd:CI_PresentationFormCode',):('citation','presentationForm',),
+            
 # TODO presentationForm []
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','name'),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','issueIdentification'),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','page'),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','otherCitationDetails'),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISBN'),
-                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISSN'),
-                
-                ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','name'),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','issueIdentification'),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','page'),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','otherCitationDetails'),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISBN'),
+            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISSN'),
+            
+            ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
 
 # TODO resourceConstraints []
 # TODO extent
 
-                ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue'):('characterSet',),
-                ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
+            ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue'):('characterSet',),
+            ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
 
 # aggregationInfo []
 
-                ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
+            ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
 # TODO extract "gmd:resourceMaintenance": { "gmd:MD_MaintenanceInformation": { "gmd:contact": { "gmd:CI_ResponsibleParty":...
 # TODO topicCategory []
 # TODO extract graphicOverview
-                ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
+            ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
 # TODO descriptiveKeywords []
 
 # TODO spatialRepresentationType []
 # ('gmd:spatialRepresentationType','gmd:language','gco:CharacterString'):('language',),
 
-                ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString'):('language',),
+            ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString'):('language',),
 
 # TODO extract 'gmd:pointOfContact'
 
-                ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('abstract',),
+            ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('abstract',),
 # TODO spatialResolution []
-                
+            
 
-                # resourceMaintenance
-                
-                ## DATA IDENTIFICATION (CITATIONS)
-                # TODO (''):('dataIdentification','citation','edition',),
-                # TODO presentationForm
-                # TODO series
-                
-                
-                # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
+            # resourceMaintenance
+            
+            ## DATA IDENTIFICATION (CITATIONS)
+            # TODO (''):('dataIdentification','citation','edition',),
+            # TODO presentationForm
+            # TODO series
+            
+            
+            # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
 
-                # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):'alternateTitle'
-            }
-            # map body to ckan fields (_data)
-            errors = map_to(identification, identification_fields, _identification)
+            # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):'alternateTitle'
+        }
+        # map body to ckan fields (_data)
+        errors = map_to(identification_info, identification_fields, _identification_info)
 
 
-            # date = get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
-            # if not isinstance(axis_dimension_properties, list):
-            #     axis_dimension_properties = [axis_dimension_properties]
-            # for axis in axis_dimension_properties:
-            #     _axis = {}
-            #     axis_fields = {
-            #         ('gmd:MD_Dimension','gmd:dimensionSize','gco:Integer',):('dimensionSize'),
-            #         ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName'),
-            #         ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
-            #     }
-            #     errors = map_to(axis, axis_fields, _axis)
-            #     _sri['dimension'].append(_axis)
-        else:
-            continue
+        # date = get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
+        # if not isinstance(axis_dimension_properties, list):
+        #     axis_dimension_properties = [axis_dimension_properties]
+        # for axis in axis_dimension_properties:
+        #     _axis = {}
+        #     axis_fields = {
+        #         ('gmd:MD_Dimension','gmd:dimensionSize','gco:Integer',):('dimensionSize'),
+        #         ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName'),
+        #         ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
+        #     }
+        #     errors = map_to(axis, axis_fields, _axis)
+        #     _sri['dimension'].append(_axis)
 
-        _ret.append(_identification)
-        
-    return _ret
+
+    return _identification_info
 
 def __spatial_representation_info(spatial_representation_info):
     # spatial_representation_info = get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
