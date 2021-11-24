@@ -340,15 +340,17 @@
     "spatialRepresentationType": {
       "propertyOrder": 70,
       "title": "Spatial representation type",
-      "type": "string",
-      "enum": [
-        "grid",
-        "vector",
-        "textTable",
-        "tin",
-        "stereoModel",
-        "video"
-      ]
+      "items":{
+        "type": "string",
+        "enum": [
+          "grid",
+          "vector",
+          "textTable",
+          "tin",
+          "stereoModel",
+          "video"
+        ]
+      }
     },
     "spatialResolution": {
       "propertyOrder": 80,

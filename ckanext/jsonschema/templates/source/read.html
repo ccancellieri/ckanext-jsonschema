@@ -9,10 +9,13 @@
   {% if json.get(key) %}
     {% for key, value in json.get(key).items() recursive %}
       {% if value is mapping %}
+        <tr>
+          <td><b>{{ key }}</b></td>
+        </tr>
         {{ loop(value.items()) }}
       {% else %}
         <tr>
-          <td>{{ key }}</td> 
+          <td><b>{{ key }}</b></td>
           <td>{{ value }}</td>
         </tr>
       {% endif %}
@@ -56,6 +59,7 @@
         {% endif %}
       {% endblock %}
     </h1>
+  {#
     {% block package_notes %}
       {% if pkg.notes %}
         <div class="notes embedded-content">
@@ -63,6 +67,7 @@
         </div>
       {% endif %}
     {% endblock %}
+  #}
   {% endblock %}
 
   {% if body.metadataStandardName %}

@@ -15,9 +15,9 @@
                 "cellGeometry":{
                     "type": "string",
                     "enum":[
-                        "area"
-                     ],
-                     "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CellGeometryCode"
+                        "area",
+                        "point"
+                     ]
                 },
                 "dimension":{
                     "type": "array",
@@ -73,9 +73,13 @@
                             "geometricObjectType":{
                                 "type":"string",
                                 "enum":[
-                                    "surface"
-                                ],
-                                "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_GeometricObjectTypeCode"
+                                    "surface",
+                                    "complex",
+                                    "composite",
+                                    "curve",
+                                    "point",
+                                    "solid"
+                                ]
                             }
                         }
                     }

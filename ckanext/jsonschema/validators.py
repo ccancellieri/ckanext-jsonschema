@@ -189,7 +189,7 @@ def extractor(key, data, errors, context):
 def update_resource_extras(resource, body, type, opt, version):
     extras = resource.get('__extras')
     if not extras:
-        extras = []
+        extras = {}
         resource['__extras'] = extras
     
     extras[_c.SCHEMA_BODY_KEY]=json.dumps(body)

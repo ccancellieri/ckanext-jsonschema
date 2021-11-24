@@ -167,6 +167,157 @@ def map_to(from_dict, map, to_dict):
 #             errors.append({k,v})
 #     return errors
 
+def __identification_info(identification_info):
+    _ret = []
+    if not isinstance(identification_info, list):
+            identification_info = [identification_info]
+    for identification in identification_info:
+        _identification = {}
+        if identification.get('gmd:MD_DataIdentification'):
+            
+            identification_fields = {
+                
+                ## DATA IDENTIFICATION ( citation )
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('citation','title',),
+# TODO date [] "gmd:citation": { "gmd:CI_Citation": {"gmd:date": [
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:edition','gco:CharacterString'):('citation','edition',),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:presentationForm','gmd:CI_PresentationFormCode','gmd:CI_PresentationFormCode',):('citation','presentationForm',),
+                
+# TODO presentationForm []
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','name'),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','issueIdentification'),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','page'),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','otherCitationDetails'),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISBN'),
+                ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISSN'),
+                
+                ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
+
+# TODO resourceConstraints []
+# TODO extent
+
+                ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue'):('characterSet',),
+                ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
+
+# aggregationInfo []
+
+                ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
+# TODO extract "gmd:resourceMaintenance": { "gmd:MD_MaintenanceInformation": { "gmd:contact": { "gmd:CI_ResponsibleParty":...
+# TODO topicCategory []
+# TODO extract graphicOverview
+                ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
+# TODO descriptiveKeywords []
+
+# TODO spatialRepresentationType []
+# ('gmd:spatialRepresentationType','gmd:language','gco:CharacterString'):('language',),
+
+                ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString'):('language',),
+
+# TODO extract 'gmd:pointOfContact'
+
+                ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('abstract',),
+# TODO spatialResolution []
+                
+
+                # resourceMaintenance
+                
+                ## DATA IDENTIFICATION (CITATIONS)
+                # TODO (''):('dataIdentification','citation','edition',),
+                # TODO presentationForm
+                # TODO series
+                
+                
+                # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
+
+                # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):'alternateTitle'
+            }
+            # map body to ckan fields (_data)
+            errors = map_to(identification, identification_fields, _identification)
+
+
+            # date = get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
+            # if not isinstance(axis_dimension_properties, list):
+            #     axis_dimension_properties = [axis_dimension_properties]
+            # for axis in axis_dimension_properties:
+            #     _axis = {}
+            #     axis_fields = {
+            #         ('gmd:MD_Dimension','gmd:dimensionSize','gco:Integer',):('dimensionSize'),
+            #         ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName'),
+            #         ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
+            #     }
+            #     errors = map_to(axis, axis_fields, _axis)
+            #     _sri['dimension'].append(_axis)
+        else:
+            continue
+
+        _ret.append(_identification)
+        
+    return _ret
+
+def __spatial_representation_info(spatial_representation_info):
+    # spatial_representation_info = get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
+    _ret = []
+    if not isinstance(spatial_representation_info, list):
+            spatial_representation_info = [spatial_representation_info]
+    for sri in spatial_representation_info:
+        _sri = {}
+        if sri.get('gmd:MD_GridSpatialRepresentation'):
+            # GRID
+            grid_spatial_representation_info_fields = {
+                
+                ('gmd:MD_GridSpatialRepresentation','gmd:numberOfDimensions','gco:Integer',):('numberOfDimensions',),
+                ('gmd:MD_GridSpatialRepresentation','gmd:transformationParameterAvailability','gco:Boolean',):('transformationParameterAvailability',),
+                ('gmd:MD_GridSpatialRepresentation','gmd:cellGeometry','@codeListValue',):('cellGeometry',),
+            }
+            # map body to ckan fields (_data)
+            errors = map_to(sri, grid_spatial_representation_info_fields, _sri)
+
+            axis_dimension_properties = get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
+            if not isinstance(axis_dimension_properties, list):
+                axis_dimension_properties = [axis_dimension_properties]
+            _dimensions = []
+            _sri['dimension'] = _dimensions
+            for axis in axis_dimension_properties:
+                _axis = {}
+                axis_fields = {
+                    ('gmd:MD_Dimension','gmd:dimensionSize','gco:Integer',):('dimensionSize',),
+                    ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName',),
+                    ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
+                }
+                errors = map_to(axis, axis_fields, _axis)
+                _dimensions.append(_axis)
+
+        elif sri.get('gmd:MD_VectorSpatialRepresentation'):
+            # VECTOR
+            vector_spatial_representation_info_fields = {
+                ('gmd:MD_VectorSpatialRepresentation','gmd:transformationParameterAvailability','gco:Boolean',):('transformationParameterAvailability',),
+                ('gmd:MD_VectorSpatialRepresentation','gmd:cellGeometry','@codeListValue',):('cellGeometry',)
+            }
+            errors = map_to(sri, vector_spatial_representation_info_fields, _sri)
+
+            geometric_objects = get_nested(sri, ('gmd:MD_VectorSpatialRepresentation','gmd:geometricObjects','gmd:MD_GeometricObjects',))
+            if not isinstance(geometric_objects, list):
+                geometric_objects = [geometric_objects]
+            _geometric_object = []
+            _sri['geometricObjects'] = _geometric_object
+            for go in geometric_objects:
+                _go = {}
+                go_fields = {
+                    ('gmd:geometricObjectCount','gco:Integer',) : ('geometricObjectCount',),
+                    ('gmd:geometricObjectType','gmd:MD_GeometricObjectTypeCode','@codeListValue',) : ('geometricObjectType',),
+                }
+                errors = map_to(go, go_fields, _go)
+                _geometric_object.append(_go)
+        else:
+            continue
+
+        _ret.append(_sri)
+        
+    return _ret
+
+
+
 # context = {
 #         _c.SCHEMA_OPT_KEY : opt,
 #         _c.SCHEMA_VERSION_KEY : version
@@ -185,54 +336,37 @@ def _extract_iso(body, opt, version, data, errors, context):
         ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:language','gco:CharacterString',):('language',),
         ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString'):('metadataStandardVersion',),
         ('gmd:MD_Metadata','gco:CharacterString'):('parentIdentifier',),
-        # TODO dataIdentification
+        
         ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString'):('referenceSystemIdentifier',),
-        # TODO spatialRepresentationInfo
+        
+        # # see below spatial_representation_info()
+        # ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',):('spatialRepresentationInfo',)
+
+
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString'):('dataQualityInfo','lineage','statement',),
         # TODO dataQualityInfo complete LI_Lineage gmd:source
 
         ## DATA IDENTIFICATION
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('dataIdentification','abstract',),
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('dataIdentification','purpose',),
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('dataIdentification','status',),
-        # descriptiveKeywords
-        # topicCategory
-        # resourceMaintenance
-        # resourceConstraints
-        # spatialRepresentationType (string)
-        # spatialResolution
-        
-        ## DATA IDENTIFICATION ( citation )
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('dataIdentification','citation','title',),
-
-        ## DATA IDENTIFICATION (EXTENT)
-        # supplementalInformation (string)
-        # language (string)
-        # characterSet (string)
-        # aggregationInfo
-        
-        # TODO date
-        ## DATA IDENTIFICATION (CITATIONS)
-        # TODO (''):('dataIdentification','citation','edition',),
-        # TODO presentationForm
-        # TODO series
-        
-        
-        # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
-
-        # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):'alternateTitle'
     }
     _data = dict(data)
     _body = dict(body)
     _iso_profile = {}
     # map body to ckan fields (_data)
     errors = map_to(_body, root_fields, _iso_profile)
-
-
+    
     if errors:
         # TODO map errors {key,error} to ckan errors 
         # _v.stop_with_error('Unable to map to iso', errors)
         log.error('unable to map')
+        
+    spatial_representation_info = get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
+    _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
+    set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
+
+    identification_info = get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
+    _identification_info = __identification_info(identification_info)
+    set_nested(_iso_profile, ('dataIdentification',), _identification_info)
+
 
     # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
     # ('gmd:MD_Metadata','gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation', 'gmd:CI_Citation'):('identificationInfo'),
