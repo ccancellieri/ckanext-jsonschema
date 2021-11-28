@@ -86,6 +86,16 @@
     {% snippet "package/snippets/tags.html", tags=pkg.tags %}
   {% endblock %}
 
+  {% for r in pkg.resources %} 
+    {# set resource = h.jsonschema_resolve_resource_extras(schema_type, r, True) #}
+    {% if r.format in ['PNG','JPG'] and r.url %}
+    <p>
+      <h3>{{r.title}}</h3>
+      <image src="{{r.url}}" style="width:80%;display:block;margin-left:auto;margin-right:auto;"\>
+    </p>
+    {% endif %}
+  {% endfor %}
+
   <p>
     <h3>Metadata:</h3>
     {{ render_nested(extras[BODY_KEY]) }}

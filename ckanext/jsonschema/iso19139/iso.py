@@ -304,6 +304,48 @@ def _extract_iso_resource_responsible(body, type, opt, version, data, errors, co
     return body, type, opt, version, data
 
 def get_format(protocol = None, url = None):
+    resource_types = {
+        # OGC
+        'wms': ('/wms', 'service=wms', 'geoserver/wms', 'mapserver/wmsserver', 'com.esri.wms.Esrimap', 'service/wms'),
+        'wfs': ('/wfs', 'service=wfs', 'geoserver/wfs', 'mapserver/wfsserver', 'com.esri.wfs.Esrimap'),
+        'wcs': ('/wcs', 'service=wcs', 'geoserver/wcs', 'imageserver/wcsserver', 'mapserver/wcsserver'),
+        'sos': ('/sos', 'service=sos',),
+        'csw': ('/csw', 'service=csw',),
+        # ESRI
+        'kml': ('mapserver/generatekml',),
+        'arcims': ('com.esri.esrimap.esrimap',),
+        'arcgis_rest': ('arcgis/rest/services',),
+    }
+
+    if url:
+        if not isinstance(url, str):
+            url = str(url)
+        url = url.lower().strip()
+        for resource_type, parts in resource_types.items():
+            if any(part in url for part in parts):
+                return resource_type
+
+        file_types = {
+            'kml' : 'kml',
+            'kmz': 'kmz',
+            'gml': 'gml',
+            'tif': 'tif',
+            'tiff': 'tif',
+            'json': 'json',
+            'shp': 'shp',
+            'zip': 'zip',
+            'jpg': 'jpg',
+            'jpeg': 'jpg',
+            'pdf': 'pdf',
+            'png': 'png',
+        }
+
+        import os
+        splitted_url = os.path.splitext(url)
+        if len(splitted_url) > 1:
+            extension = splitted_url[1][1:]
+            if extension:
+                return file_types.get(extension)
     
     # https://www.ogc.org/docs/is
     # https://geonetwork-opensource.org/manuals/3.10.x/en/annexes/standards/iso19139.html#protocol
@@ -368,48 +410,7 @@ def get_format(protocol = None, url = None):
         if resource_type:
             return resource_type
 
-    resource_types = {
-        # OGC
-        'wms': ('/wms', 'service=wms', 'geoserver/wms', 'mapserver/wmsserver', 'com.esri.wms.Esrimap', 'service/wms'),
-        'wfs': ('/wfs', 'service=wfs', 'geoserver/wfs', 'mapserver/wfsserver', 'com.esri.wfs.Esrimap'),
-        'wcs': ('/wcs', 'service=wcs', 'geoserver/wcs', 'imageserver/wcsserver', 'mapserver/wcsserver'),
-        'sos': ('/sos', 'service=sos',),
-        'csw': ('/csw', 'service=csw',),
-        # ESRI
-        'kml': ('mapserver/generatekml',),
-        'arcims': ('com.esri.esrimap.esrimap',),
-        'arcgis_rest': ('arcgis/rest/services',),
-    }
-
-    if url:
-        if not isinstance(url, str):
-            url = str(url)
-        url = url.lower().strip()
-        for resource_type, parts in resource_types.items():
-            if any(part in url for part in parts):
-                return resource_type
-
-        file_types = {
-            'kml' : 'kml',
-            'kmz': 'kmz',
-            'gml': 'gml',
-            'tif': 'tif',
-            'tiff': 'tif',
-            'json': 'json',
-            'shp': 'shp',
-            'zip': 'zip',
-            'jpg': 'jpg',
-            'jpeg': 'jpg',
-            'pdf': 'pdf',
-            'png': 'png',
-        }
-
-        import os
-        splitted_url = os.path.splitext(url)
-        if len(splitted_url) > 1:
-            extension = splitted_url[1][1:]
-            if extension:
-                return file_types.get(extension)
+    
 
 
 
