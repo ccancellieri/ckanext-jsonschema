@@ -2,30 +2,38 @@
 
 {% set pkg = c.pkg_dict %}
 
-
-
-{% macro render_nested(json, key) -%}
-<table>
-  {% if json.get(key) %}
-    {% for key, value in json.get(key).items() recursive %}
-      {% if value is mapping %}
-        <tr>
-          <td><b>{{ key }}</b></td>
-        </tr>
-        {{ loop(value.items()) }}
-      {% else %}
-        <tr>
-          <td><b>{{ key }}</b></td>
-          <td>{{ value }}</td>
-        </tr>
-      {% endif %}
+{% macro render_nested_body(json) -%}
+  {% if json is string %}
+    {{ json }}
+  {% elif json is mapping %}
+    {% for key, value in json | dictsort %}
+      <table class="table table-hover">
+        <tbody>
+          <tr>
+            <td><b>{{ key }}</b></td>
+          </tr>
+          <tr>
+            <td>
+              {{ render_nested_body(value) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    {% endfor %}
+  {% elif json is iterable %}
+    {% for s in json %}
+      {{ render_nested_body(s) }}
     {% endfor %}
   {% else %}
-    <p>None</p>
+    {{ json }}
   {% endif %}
-</table>
 {%- endmacro %}
 
+{% macro render_nested(json) -%}
+<div class="table-responsive">
+  {{ render_nested_body(json) }}
+</div>
+{%- endmacro %}
 
 {% set extras = h.jsonschema_resolve_extras(pkg, True) %}
 
@@ -69,20 +77,6 @@
     {% endblock %}
   #}
   {% endblock %}
-
-  {% if body.metadataStandardName %}
-    <p>
-      <h3>Standard:</h3>
-      <b>{{ body.metadataStandardName }}</b>
-    </p>
-  {% endif %}
-
-  {% for r in pkg.resources %} 
-    {% set resource = h.jsonschema_resolve_resource_extras(schema_type, r, True) %}
-    {% if resource[TYPE_KEY] == 'graphic-overview' and r.url %}
-      <image src={{r.url}} \>
-    {% endif %}
-  {% endfor %}
   
   {% block package_resources %}
     {% snippet "package/snippets/resources_list.html", pkg=pkg, resources=pkg.resources %}
@@ -92,8 +86,16 @@
     {% snippet "package/snippets/tags.html", tags=pkg.tags %}
   {% endblock %}
 
+  <p>
+    <h3>Metadata:</h3>
+    {{ render_nested(extras[BODY_KEY]) }}
+  </p>
 
-  {{ render_nested(extras,BODY_KEY) }}
+
+  <p>
+    <h3>Options:</h3>
+    {{ render_nested(extras[OPT_KEY]) }}
+  </p>
 
   {% block package_additional_info %}
     {% snippet "package/snippets/additional_info.html", pkg_dict=pkg %}

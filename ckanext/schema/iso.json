@@ -1,9 +1,11 @@
 {
     "type": "object",
     "title": "Metadata",
+    "additionalProperties": false,
     "required": [
         "fileIdentifier",
         "metadataStandardName",
+        "metadataStandardVersion",
         "characterSet",
         "dataIdentification"
     ],
@@ -43,7 +45,10 @@
             "propertyOrder": 50,
             "title": "Metadata standard version",
             "type": "string",
-            "default": "1"
+            "default": "1",
+            "options": {
+                "hidden": true
+            }
         },
         "parentIdentifier": {
             "propertyOrder": 60,

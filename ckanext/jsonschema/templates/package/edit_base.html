@@ -1,0 +1,6 @@
+{% ckan_extends %}
+{% set dataset_type = dataset_type if dataset_type else 'dataset' %}
+{% block content_primary_nav %}
+  {{ h.build_nav_icon(dataset_type~'_edit', _('Edit metadata'), id=pkg.name) }}
+  {{ h.build_nav_icon('dataset_resources', _('Resources'), id=pkg.name) }}
+{% endblock %}

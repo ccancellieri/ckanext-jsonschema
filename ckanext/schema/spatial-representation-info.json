@@ -5,12 +5,17 @@
             "type": "object",
             "title": "Raster spatial representation",
             "description":"GridSpatialRepresentation",
+            "required": [
+                "transformationParameterAvailability"
+            ],
             "properties":{
                 "numberOfDimensions":{
                     "type": "string"
                 },
                 "transformationParameterAvailability":{
-                    "type": "string"
+                    "type": "boolean",
+                    "format": "select",
+                    "uniqueItems": true
                 },
                 "cellGeometry":{
                     "type": "string",
@@ -27,9 +32,15 @@
                             "dimensionName":{
                                 "type":"string",
                                 "enum":[
-                                    "row"
-                                 ],
-                                 "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_DimensionNameTypeCode"
+                                    "row",
+                                    "column",
+                                    "vertical",
+                                    "track",
+                                    "crossTrack",
+                                    "line",
+                                    "sample",
+                                    "time"
+                                 ]
                             },
                             "dimensionSize":{
                                 "type":"string"
@@ -58,9 +69,16 @@
                 "topologyLevel":{
                     "type":"string",
                     "enum": [
-                        "geometryOnly"
+                        "geometryOnly",
+                        "topology1D",
+                        "fullPlanarGraph",
+                        "surfaceGraph",
+                        "fullSurfaceGraph",
+                        "topology3D",
+                        "fullTopology3D",
+                        "abstract"
                     ],
-                    "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_TopologyLevelCode"
+                    "description":"MD_TopologyLevelCode"
                 },
                 "geometricObjects":{
                     "type": "array",

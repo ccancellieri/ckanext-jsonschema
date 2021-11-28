@@ -418,9 +418,13 @@
             "title": "Aggregation type",
             "type": "string",
             "enum": [
-              "crossReference"
+              "crossReference",
+              "largerWorkCitation",
+              "partOfSeamlessDatabase",
+              "source",
+              "stereoMate"
             ],
-            "description": "Association type of the aggregate dataset"
+            "description": "Association type of the aggregate dataset (from: DS_AssociationTypeCode)"
           },
           "code": {
             "propertyOrder": 10,

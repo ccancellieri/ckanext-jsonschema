@@ -1,5 +1,5 @@
 {
     "type":"string",
     "enum":["utf8"],
-    "description":"http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"
+    "description":"MD_CharacterSetCode"
 }
