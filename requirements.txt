@@ -1,10 +1,12 @@
+# validator
 jsonschema
 #jsonschema-3.2.0-py2.py3
-
-#TODO REMOVE DEPENDECIES DUE TO CSWUTIL, CKANEXT_SPATIAL, CKANEXT_HARVESTER
-pyproj==1.9.6
+# xml importer
 xmltodict==0.12.0
 lxml>=2.3
-ckantoolkit
-geopython
-OWSLib==0.18.0
+
+#TODO REMOVE DEPENDECIES DUE TO CSWUTIL, CKANEXT_SPATIAL, CKANEXT_HARVESTER
+# pyproj==1.9.6
+# ckantoolkit
+# geopython
+# OWSLib==0.18.0
