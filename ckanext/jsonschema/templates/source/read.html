@@ -2,7 +2,7 @@
 
 {% set pkg = c.pkg_dict %}
 
-{% macro render_nested_body(json) -%}
+{% macro render_json_body(json) -%}
   {% if json is string %}
     {{ json }}
   {% elif json is mapping %}
@@ -14,7 +14,7 @@
           </tr>
           <tr>
             <td>
-              {{ render_nested_body(value) }}
+              {{ render_json_body(value) }}
             </td>
           </tr>
         </tbody>
@@ -22,16 +22,16 @@
     {% endfor %}
   {% elif json is iterable %}
     {% for s in json %}
-      {{ render_nested_body(s) }}
+      {{ render_json_body(s) }}
     {% endfor %}
   {% else %}
     {{ json }}
   {% endif %}
 {%- endmacro %}
 
-{% macro render_nested(json) -%}
+{% macro render_json(json) -%}
 <div class="table-responsive">
-  {{ render_nested_body(json) }}
+  {{ render_json_body(json) }}
 </div>
 {%- endmacro %}
 
@@ -98,14 +98,15 @@
 
   <p>
     <h3>Metadata:</h3>
-    {{ render_nested(extras[BODY_KEY]) }}
+    {{ render_json(extras[BODY_KEY]) }}
   </p>
 
-
+  {% if extras[OPT_KEY]) %}
   <p>
     <h3>Options:</h3>
-    {{ render_nested(extras[OPT_KEY]) }}
+    {{ render_json(extras[OPT_KEY]) }}
   </p>
+  {% endif %}
 
   {% block package_additional_info %}
     {% snippet "package/snippets/additional_info.html", pkg_dict=pkg %}
