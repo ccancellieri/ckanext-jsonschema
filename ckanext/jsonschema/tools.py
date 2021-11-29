@@ -71,15 +71,15 @@ def get_nested(dict, tuple):
 def map_to(from_dict, map, to_dict):
     errors=[]
     for (source_path, dest_path) in map.items():
-        value = _t.get_nested(from_dict, source_path)
-        if value and not _t.set_nested(to_dict, dest_path, value):
+        value = get_nested(from_dict, source_path)
+        if value and not set_nested(to_dict, dest_path, value):
             errors.append({source_path, dest_path})
     return errors
 
 # def map_inverse(to_dict, map, from_dict):
 #     errors=[]
 #     for (k,v) in inverted(map):
-#         if not _t.set_nested(to_dict, v, _t.get_nested(from_dict, k)):
+#         if not set_nested(to_dict, v, get_nested(from_dict, k)):
 #             errors.append({k,v})
 #     return errors
 

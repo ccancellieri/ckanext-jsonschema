@@ -12,8 +12,7 @@
       "title": "Citation",
       "type": "object",
       "required": [
-        "title",
-        "date"
+        "title"
       ],
       "properties": {
         "title": {
