@@ -1,49 +1,26 @@
-from sqlalchemy.sql.expression import true
-from sqlalchemy.sql.sqltypes import ARRAY
-
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
-
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
 import ckan.plugins as p
-
-# import ckan.logic.validators as v
-
-not_empty = toolkit.get_validator('not_empty')
-#ignore_missing = p.toolkit.get_validator('ignore_missing')
-#ignore_empty = p.toolkit.get_validator('ignore_empty')
-is_boolean = toolkit.get_validator('boolean_validator')
-# https://docs.ckan.org/en/2.8/extensions/validators.html#ckan.logic.validators.json_object
-# NOT FOUND import ckan.logic.validators.json_object
-#json_object = p.toolkit.get_validator('json_object')
-# isodate
-
-import ckan.lib.navl.dictization_functions as df
-
-missing = df.missing
-StopOnError = df.StopOnError
-Invalid = df.Invalid
 
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
-from ckanext.jsonschema.iso19139.iso import TYPE_ISO, get_format
+
+# iso19139 extract/convert by default into the iso profile
+from ckanext.jsonschema.iso19139.iso import TYPE_ISO,\
+ TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
 
 import logging
 log = logging.getLogger(__name__)
 
-
-import ckan.lib.navl.dictization_functions as df
-
+import json
 
 #############################################
 
-import json
-import ckan.model as model
-
-TYPE_ONLINE_RESOURCE='online-resource'
+# TYPE_ONLINE_RESOURCE='online-resource'
 TYPE_ISO19139='iso19139'
 
 SUPPORTED_DATASET_FORMATS = [TYPE_ISO19139]
@@ -82,113 +59,21 @@ class JsonschemaIso19139(p.SingletonPlugin):
 
         return SUPPORTED_DATASET_FORMATS
 
-
     def before_extractor(self, body, type, opt, version, data, errors, context):
             
         if type == TYPE_ISO19139:
             return _extract_iso(body, opt, version, data, errors, context)
 
         return body, type, opt, version, data
-        # if type == TYPE_ONLINE_RESOURCE:
-            # _extract_transfer_options(body, opt, type, version, data, errors, context)
 
+#############################################
 
-
-# def append_nested(_dict, tuple, value = {}):
-#     try:
-#         d = _dict
-#         for k in tuple[:-1]:
-#             v = d.get(k)
-#             if not v:
-#                 d = d.setdefault(k,{})
-#             elif isinstance(v, list):
-#                 d = {}
-#                 v.append(d)
-#             elif isinstance(v, dict):
-#                 d = d[k]
-
-#         d.update({tuple[-1:][0]:value})
-#     except:
-#         return None
-#     return _dict
-
-def set_nested(dict, tuple, value):
-    try:
-        d = dict
-        for k in tuple[:-1]:
-            d = d.setdefault(k,{})
-        d.update({tuple[-1:][0]:value})
-    except:
-        return None
-    return dict
-
-def pop_nested(dict, tuple):
-    d = dict
-    for k in tuple[:-1]:
-        try:
-            d = d[k]
-        except:
-            return
-    return d and d.pop(tuple[-1:][0])
-
-def get_nested(dict, tuple):
-    d = dict
-    for k in tuple[:-1]:
-        try:
-            d = d[k]
-        except:
-            return
-    # return d.get(tuple[-1:])
-    return d and d.get(tuple[-1:][0])
-
-# https://github.com/jab/bidict/blob/0.18.x/bidict/__init__.py#L90
-#from bidict import FrozenOrderedBidict, bidict, inverted 
-# OVERWRITE
-# OnDup, RAISE, DROP_OLD
-# bidict, inverted, 
-# class RelaxBidict(FrozenOrderedBidict):
-    # __slots__ = ()
-    # on_dup = OnDup(key=RAISE, val=DROP_OLD, kv=RAISE)
-    # on_dup = OVERWRITE
-
-
-def map_to(from_dict, map, to_dict):
-    errors=[]
-    for (source_path, dest_path) in map.items():
-        value = get_nested(from_dict, source_path)
-        if value and not set_nested(to_dict, dest_path, value):
-            errors.append({source_path, dest_path})
-    return errors
-
-# def map_inverse(to_dict, map, from_dict):
-#     errors=[]
-#     for (k,v) in inverted(map):
-#         if not set_nested(to_dict, v, get_nested(from_dict, k)):
-#             errors.append({k,v})
-#     return errors
-
-def __identification_info(identification_info):
-    
+def __identification_info(identification_info, opt, version, data, errors, context):
     _identification_info = {}
     if identification_info.get('gmd:MD_DataIdentification'):
-        
         identification_fields = {
-            
-            ## DATA IDENTIFICATION ( citation )
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:title','gco:CharacterString'):('citation','title',),
-# TODO date [] "gmd:citation": { "gmd:CI_Citation": {"gmd:date": [
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:edition','gco:CharacterString'):('citation','edition',),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:presentationForm','gmd:CI_PresentationFormCode','gmd:CI_PresentationFormCode',):('citation','presentationForm',),
-            
-# TODO presentationForm []
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','name'),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','issueIdentification'),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','page'),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','otherCitationDetails'),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISBN'),
-            ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISSN'),
-            
+            # DATA IDENTIFICATION ( citation see below )
+
             ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
 
 # TODO resourceConstraints []
@@ -204,6 +89,7 @@ def __identification_info(identification_info):
 # TODO topicCategory []
 # TODO extract graphicOverview
             ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
+            # ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
 # TODO descriptiveKeywords []
 
 # TODO spatialRepresentationType []
@@ -222,35 +108,124 @@ def __identification_info(identification_info):
             ## DATA IDENTIFICATION (CITATIONS)
             # TODO (''):('dataIdentification','citation','edition',),
             # TODO presentationForm
-            # TODO series
-            
-            
-            # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
+            # TODO seriespop_nested
 
-            # ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):'alternateTitle'
+            # ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):('alternateTitle',)
         }
         # map body to ckan fields (_data)
-        errors = map_to(identification_info, identification_fields, _identification_info)
+        errors = _t.map_to(identification_info, identification_fields, _identification_info)
+
+        citation = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation',))
+        if citation:
+            _citation = __citation(citation, opt, version, data, errors, context)
+            _t.set_nested(_citation, ('citation',), _identification_info)
+        
+    return _citation
+    
+def __citation(citation, opt, version, data, errors, context):
+    _citation = {}
+    citation_fields = {
+        ## DATA IDENTIFICATION ( citation )
+        # title
+        ('gmd:title','gco:CharacterString'):('citation','title',),
+        # edition
+        ('gmd:edition','gco:CharacterString',):('citation','edition',),
+
+        # dates (see below)
+
+        # TODO extract gmd:citedResponsibleParty
+        # citedResponsibleParty (see below)
+
+        # ## # TODO ASK about SERIES
+        # # otherCitationDetails
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','otherCitationDetails'),
+        # # collectiveTitle
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
+        # # ISBN
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISBN'),
+        # # ISSN
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISSN'),
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','name'),
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','issueIdentification'),
+        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','page'),
 
 
-        # date = get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
-        # if not isinstance(axis_dimension_properties, list):
-        #     axis_dimension_properties = [axis_dimension_properties]
-        # for axis in axis_dimension_properties:
-        #     _axis = {}
-        #     axis_fields = {
-        #         ('gmd:MD_Dimension','gmd:dimensionSize','gco:Integer',):('dimensionSize'),
-        #         ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName'),
-        #         ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
-        #     }
-        #     errors = map_to(axis, axis_fields, _axis)
-        #     _sri['dimension'].append(_axis)
+        # dates (see below)
 
+        # presentationForm
+        # TODO coud it be an array?
+        ('gmd:presentationForm','gmd:CI_PresentationFormCode','@codeListValue',):('citation','presentationForm',),
+    }
+    errors = _t.map_to(citation, citation_fields, _citation)
 
-    return _identification_info
+    dates = _t.get_nested(citation, ('gmd:date',))
+    if dates:
+        _dates = __dates(dates)
+        _t.set_nested(_citation, ('dates',), _dates)
+
+    cited_responsible_party = _t.get_nested(citation, ('gmd:citedResponsibleParty',))
+    if cited_responsible_party:
+        _cited_responsible_parties = __cited_responsible_parties(cited_responsible_party, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, opt, version, data, errors, context)
+        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
+    return _citation
+
+def __cited_responsible_parties(cited_responsible_party, _type, opt, version, data, errors, context):
+
+    resources = data.get('resources', [])
+    _cited_responsible_parties = []
+    cited_responsible_parties = cited_responsible_party
+    if not isinstance(cited_responsible_parties, list):
+        cited_responsible_parties = [cited_responsible_party]
+    for party in cited_responsible_parties:
+        _p = {}
+        party_fields = {
+            # address
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:deliveryPoint','gco:CharacterString',):('contactInfo','address','deliveryPoint',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:city','gco:CharacterString',):('contactInfo','address','city',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:postalCode','gco:CharacterString',):('contactInfo','address','postalCode',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:country','gco:CharacterString',):('contactInfo','address','country',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:electronicMailAddress','gco:CharacterString',):('contactInfo','address','electronicMailAddress',),
+            # phone
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:phone','gmd:voice','gco:CharacterString',):('phone','voice'),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:phone','gmd:facsimile','gco:CharacterString',):('phone','facsimile'),
+            # online resource
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:name', 'gco:CharacterString') : ('onlineResource', 'name',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:description', 'gco:CharacterString') : ('onlineResource', 'description',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:protocol', 'gco:CharacterString') : ('onlineResource', 'protocol',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:linkage', 'gco:CharacterString') : ('onlineResource', 'linkage',),
+        }
+        errors = _t.map_to(party, party_fields, _p)
+
+        _new_resource_dict = {
+            _c.SCHEMA_OPT_KEY: json.dumps(opt),
+            _c.SCHEMA_VERSION_KEY: version,
+            _c.SCHEMA_BODY_KEY: json.dumps(_p),
+            _c.SCHEMA_TYPE_KEY: _type,
+        }
+        resources.append(_new_resource_dict)
+        data.update({'resources': resources})
+
+    return _cited_responsible_parties
+
+def __dates(dates):
+    _dates = []
+    if not isinstance(dates, list):
+        dates = [dates]
+    for _date in dates:
+        _d = {}
+        dates_fields = {
+            ('gmd:CI_Date','gmd:date','gco:Date',):('date',),
+            ('gmd:CI_Date','gmd:dateType','gmd:CI_DateTypeCode','@codeListValue',):('dateType',),
+        }
+        errors = _t.map_to(_date, dates_fields, _d)
+
+        _dates.append(_d)
+
+    return _dates
 
 def __spatial_representation_info(spatial_representation_info):
-    # spatial_representation_info = get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
+    # spatial_representation_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
     _ret = []
     if not isinstance(spatial_representation_info, list):
             spatial_representation_info = [spatial_representation_info]
@@ -264,9 +239,9 @@ def __spatial_representation_info(spatial_representation_info):
                 ('gmd:MD_GridSpatialRepresentation','gmd:cellGeometry','@codeListValue',):('cellGeometry',),
             }
             # map body to ckan fields (_data)
-            errors = map_to(sri, grid_spatial_representation_info_fields, _sri)
+            errors = _t.map_to(sri, grid_spatial_representation_info_fields, _sri)
 
-            axis_dimension_properties = get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
+            axis_dimension_properties = _t.get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
             if not isinstance(axis_dimension_properties, list):
                 axis_dimension_properties = [axis_dimension_properties]
             _dimensions = []
@@ -278,7 +253,7 @@ def __spatial_representation_info(spatial_representation_info):
                     ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName',),
                     ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
                 }
-                errors = map_to(axis, axis_fields, _axis)
+                errors = _t.map_to(axis, axis_fields, _axis)
                 _dimensions.append(_axis)
 
         elif sri.get('gmd:MD_VectorSpatialRepresentation'):
@@ -287,9 +262,9 @@ def __spatial_representation_info(spatial_representation_info):
                 ('gmd:MD_VectorSpatialRepresentation','gmd:transformationParameterAvailability','gco:Boolean',):('transformationParameterAvailability',),
                 ('gmd:MD_VectorSpatialRepresentation','gmd:cellGeometry','@codeListValue',):('cellGeometry',)
             }
-            errors = map_to(sri, vector_spatial_representation_info_fields, _sri)
+            errors = _t.map_to(sri, vector_spatial_representation_info_fields, _sri)
 
-            geometric_objects = get_nested(sri, ('gmd:MD_VectorSpatialRepresentation','gmd:geometricObjects','gmd:MD_GeometricObjects',))
+            geometric_objects = _t.get_nested(sri, ('gmd:MD_VectorSpatialRepresentation','gmd:geometricObjects','gmd:MD_GeometricObjects',))
             if not isinstance(geometric_objects, list):
                 geometric_objects = [geometric_objects]
             _geometric_object = []
@@ -300,7 +275,7 @@ def __spatial_representation_info(spatial_representation_info):
                     ('gmd:geometricObjectCount','gco:Integer',) : ('geometricObjectCount',),
                     ('gmd:geometricObjectType','gmd:MD_GeometricObjectTypeCode','@codeListValue',) : ('geometricObjectType',),
                 }
-                errors = map_to(go, go_fields, _go)
+                errors = _t.map_to(go, go_fields, _go)
                 _geometric_object.append(_go)
         else:
             continue
@@ -309,35 +284,51 @@ def __spatial_representation_info(spatial_representation_info):
         
     return _ret
 
-
-
-# context = {
-#         _c.SCHEMA_OPT_KEY : opt,
-#         _c.SCHEMA_VERSION_KEY : version
-#     }
-# def _extract_iso(body, type, data, context):        
 def _extract_iso(body, opt, version, data, errors, context):
-
-    
     # DATA translation
     # root_fields = FrozenOrderedBidict({
     root_fields = {
         # fileIdentifier
         ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'):('fileIdentifier',),
+
         # language
-        ('gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:language','gco:CharacterString',):('language',),
+        ('gmd:MD_Metadata','gmd:language','gmd:LanguageCode','@codeListValue',):('language',),
+        
         # characterSet
         ('gmd:MD_Metadata','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
+
         # metadataStandardName
-        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString'):('metadataStandardName',), # TODO this could be an array
+        # TODO could this be an array?
+        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString'):('metadataStandardName',),
+        
         # metadataStandardVersion
         ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString'):('metadataStandardVersion',),
+        
         # parentIdentifier
         ('gmd:MD_Metadata','gco:CharacterString'):('parentIdentifier',),
+        
         # dataIdentification (see below)
+        
+        # TODO license
+        # <gmd:resourceConstraints>
+        #     <gmd:MD_LegalConstraints>
+        #         <gmd:useConstraints>
+        #             <gmd:MD_RestrictionCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode" codeListValue="license"></gmd:MD_RestrictionCode>
+        #         </gmd:useConstraints>
+        #         <gmd:accessConstraints>
+        #             <gmd:MD_RestrictionCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright"></gmd:MD_RestrictionCode>
+        #         </gmd:accessConstraints>
+        #         <gmd:otherConstraints>
+        #             <gco:CharacterString>Creative Commons Attribution-NonCommercial-ShareAlike 3.0 IGO. More info at \nhttps://creativecommons.org/licenses/by-nc-sa/3.0/igo/</gco:CharacterString>
+        #         </gmd:otherConstraints>
+        #     </gmd:MD_LegalConstraints>
+        # </gmd:resourceConstraints>
+
         # referenceSystemIdentifier
         ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
+
         # spatialRepresentationInfo (see below)
+
         # dataQualityInfo
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString',):('dataQualityInfo','lineage','statement',),
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:source','@uuidref',):('dataQualityInfo','lineage','source',),
@@ -347,27 +338,22 @@ def _extract_iso(body, opt, version, data, errors, context):
     _body = dict(body)
     _iso_profile = {}
     # map body to ckan fields (_data)
-    errors = map_to(_body, root_fields, _iso_profile)
+    errors = _t.map_to(_body, root_fields, _iso_profile)
     
     if errors:
         # TODO map errors {key,error} to ckan errors 
         # _v.stop_with_error('Unable to map to iso', errors)
         log.error('unable to map')
 
-    spatial_representation_info = get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
+    spatial_representation_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
     if spatial_representation_info:
         _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
-        set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
+        _t.set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
 
-    identification_info = get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
+    identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
     if identification_info:
-        _identification_info = __identification_info(identification_info)
-        set_nested(_iso_profile, ('dataIdentification',), _identification_info)
-
-    # TODO the rest of the model
-
-    # ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',):('transferOptions',),
-    # ('gmd:MD_Metadata','gmd:MD_Metadata','gmd:identificationInfo','gmd:MD_DataIdentification','gmd:citation', 'gmd:CI_Citation'):('identificationInfo'),
+        _identification_info = __identification_info(identification_info, opt, version, data, errors, context)
+        _t.set_nested(_iso_profile, ('dataIdentification',), _identification_info)
 
     # Extract resources from body (to _data)
     _extract_transfer_options(_body, opt, version, _data, errors, context)
@@ -379,32 +365,31 @@ def _extract_iso(body, opt, version, data, errors, context):
 
     return _iso_profile, TYPE_ISO, opt, version, _data
 
-
 def _extract_transfer_options(body, opt, version, data, errors, context):
 
     # _body = dict(body)
     _body = body
     # _data = dict(data)
-    _transfer_options = get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',))
+    _transfer_options = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',))
     #  = _data.pop(('transferOptions',))
     if _transfer_options:
         if not isinstance(_transfer_options, list):
             _transfer_options = [ _transfer_options ]
         for options in _transfer_options:
 
-            # units = get_nested(options, ('gmd:unitsOfDistribution', 'gco:CharacterString',)) 
-            # transferSize = get_nested(options, ('gmd:transferSize', 'gco:Real',))
+            # units = _t.get_nested(options, ('gmd:unitsOfDistribution', 'gco:CharacterString',)) 
+            # transferSize = _t.get_nested(options, ('gmd:transferSize', 'gco:Real',))
             
-            online = get_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
+            online = _t.get_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
             if not online:
                 continue
             if isinstance(online, list):
                 for idx, online_resource in enumerate(list(online)):
-                    pop_online(online_resource, opt, TYPE_ONLINE_RESOURCE, version, data, errors, context)
+                    pop_online(online_resource, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, version, data, errors, context)
                     online.remove(online_resource)
             else:
                 pop_online(online, opt, type, version, data, errors, context)
-                pop_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
+                _t.pop_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
 
 def pop_online(online_resource, opt, type, version, data, errors, context):
     if isinstance(online_resource, list):
@@ -422,7 +407,6 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
     # - body is an instance of gmd:CI_OnlineResource
     _body = dict(r)
 
-
     new_resource_body_fields = {
         # TODO otherwise do all here
         ('gmd:name', 'gco:CharacterString') : ('name',),
@@ -431,7 +415,7 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
         # ('gmd:linkage', 'gco:CharacterString') : ('linkage',),
     }
     _new_resource_body = {}
-    errors = map_to(_body, new_resource_body_fields, _new_resource_body)
+    errors = _t.map_to(_body, new_resource_body_fields, _new_resource_body)
 
 
     # TODO recursive validation triggered by resource_create action ?
@@ -449,9 +433,8 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
         _c.SCHEMA_TYPE_KEY: type,
     }
     
-    errors = map_to(_body, new_resource_dict_fields, _new_resource_dict)
+    errors = _t.map_to(_body, new_resource_dict_fields, _new_resource_dict)
 
     resources = data.get('resources', [])
     resources.append(_new_resource_dict)
     data.update({'resources': resources})
-    

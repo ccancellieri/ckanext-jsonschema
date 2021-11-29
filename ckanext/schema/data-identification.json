@@ -21,7 +21,7 @@
           "title": "Title",
           "type": "string"
         },
-        "date": {
+        "dates": {
           "propertyOrder": 10,
           "title": "Date",
           "type": "array",

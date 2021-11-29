@@ -39,6 +39,61 @@ def dataset_type(dataset):
 
     return dataset_type
 
+def set_nested(dict, tuple, value):
+    try:
+        d = dict
+        for k in tuple[:-1]:
+            d = d.setdefault(k,{})
+        d.update({tuple[-1:][0]:value})
+    except:
+        return None
+    return dict
+
+def pop_nested(dict, tuple):
+    d = dict
+    for k in tuple[:-1]:
+        try:
+            d = d[k]
+        except:
+            return
+    return d and d.pop(tuple[-1:][0])
+
+def get_nested(dict, tuple):
+    d = dict
+    for k in tuple[:-1]:
+        try:
+            d = d[k]
+        except:
+            return
+    # return d.get(tuple[-1:])
+    return d and d.get(tuple[-1:][0])
+
+def map_to(from_dict, map, to_dict):
+    errors=[]
+    for (source_path, dest_path) in map.items():
+        value = _t.get_nested(from_dict, source_path)
+        if value and not _t.set_nested(to_dict, dest_path, value):
+            errors.append({source_path, dest_path})
+    return errors
+
+# def map_inverse(to_dict, map, from_dict):
+#     errors=[]
+#     for (k,v) in inverted(map):
+#         if not _t.set_nested(to_dict, v, _t.get_nested(from_dict, k)):
+#             errors.append({k,v})
+#     return errors
+
+# https://github.com/jab/bidict/blob/0.18.x/bidict/__init__.py#L90
+#from bidict import FrozenOrderedBidict, bidict, inverted 
+# OVERWRITE
+# OnDup, RAISE, DROP_OLD
+# bidict, inverted, 
+# class RelaxBidict(FrozenOrderedBidict):
+    # __slots__ = ()
+    # on_dup = OnDup(key=RAISE, val=DROP_OLD, kv=RAISE)
+    # on_dup = OVERWRITE
+
+
 def get_schema_of(type):
     return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(type)
 

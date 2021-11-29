@@ -7,6 +7,7 @@
     {{ json }}
   {% elif json is mapping %}
     {% for key, value in json | dictsort %}
+      {% if value %} 
       <table class="table table-hover">
         <tbody>
           <tr>
@@ -19,11 +20,14 @@
           </tr>
         </tbody>
       </table>
+      {% endif %}
     {% endfor %}
   {% elif json is iterable %}
-    {% for s in json %}
-      {{ render_json_body(s) }}
-    {% endfor %}
+    <ul>
+      {% for s in json %}
+          <li>{{ render_json_body(s) }}</li>
+      {% endfor %}
+    </ul>
   {% else %}
     {{ json }}
   {% endif %}
