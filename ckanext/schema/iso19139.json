@@ -326,9 +326,20 @@
           "$ref": "iso19139.json#/definitions/dataQualityInfo"
         },
         "gmd:contact":{
-          "type":"object",
-          "$ref": "iso19139.json#/definitions/geonet",
-          "description":"TODO"
+          "oneOf":[{
+            "type":"array",
+            "items":{
+              "$ref": "iso19139.json#/definitions/geonet",
+              "description":"TODO"
+            }
+          },
+          {
+            "type":"objejct",
+            "$ref": "iso19139.json#/definitions/geonet",
+            "description":"TODO"
+          }
+        ]
+          
         },
         "gmd:identificationInfo":{
           "oneOf":[

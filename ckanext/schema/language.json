@@ -2,11 +2,11 @@
 {
     "type":"string",
     "enum":[
-        "en",
-        "fr",
-        "es",
-        "zo",
-        "ru",
+        "eng",
+        "fra",
+        "esp",
+        "zho",
+        "rus",
         "TODO"
     ],
     "description":"language"

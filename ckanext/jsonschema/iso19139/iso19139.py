@@ -89,7 +89,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
             # resourceMaintenance (see below)
             
-            # TODO graphic-overview[]
+            # graphic-overview (see below) (resources)
 
             # descriptiveKeywords (see below)
 
@@ -106,7 +106,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
             # topicCategory (see below)
 
-            # TODO extent
+            # extent (see below)
 
             # supplementalInformation
             ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
@@ -126,12 +126,18 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
         pointOfContact = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:pointOfContact',))
         if pointOfContact:
-            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_POINT_OF_CONTACT, opt, version, data, errors, context)
+            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
         resourceMaintenance = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:contact',))
         if resourceMaintenance:
             _resourceMaintenance = __responsible_parties(resourceMaintenance, TYPE_ISO_RESOURCE_MAINTAINER, opt, version, data, errors, context)
+            # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
+        graphic_overview = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:graphicOverview',))
+        if graphic_overview:
+            _graphic_overview = __graphic_overview(graphic_overview, TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, opt, version, data, errors, context)
+            # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
         descriptiveKeywords = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:descriptiveKeywords',))
         if descriptiveKeywords:
@@ -158,9 +164,9 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
                 ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('classification',),
 # TODO check
-                ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('userNote',),
-                ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('classificationSystem',),
-                ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+                # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('userNote',),
+                # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('classificationSystem',),
+                # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
             }
             _resourceConstraints_security = _t.as_list_of_dict(resourceConstraints, filter_type_security_fields, errors, filter_type_security)
             for s in _resourceConstraints_security:
@@ -174,9 +180,10 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             _resourceConstraints_constraints = _t.as_list_of_dict(resourceConstraints, filter_type_constraints_fields, errors, filter_type_constraints)
             for s in _resourceConstraints_constraints:
                 s['type'] = 'Constraints'
-            
-            # merge
-            _t.set_nested(_identification_info, ('resourceConstraints',), _resourceConstraints_legal + _resourceConstraints_security + _resourceConstraints_constraints)
+            _resourceConstraints = _resourceConstraints_legal + _resourceConstraints_security + _resourceConstraints_constraints
+            if _resourceConstraints:
+                # merge
+                _t.set_nested(_identification_info, ('resourceConstraints',), _resourceConstraints)
 
 
         spatialRepresentationType = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',))
@@ -205,12 +212,70 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 s['type'] = 'Scale'
 
             # merge
-            _t.set_nested(_identification_info, ('spatialResolution',), _spatialResolutionDistance + _spatialResolutionScale)
+            _spatialResolution = _spatialResolutionDistance + _spatialResolutionScale
+            if _spatialResolution:
+                _t.set_nested(_identification_info, ('spatialResolution',), _spatialResolution)
 
         topicCategory = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:topicCategory',))
         if topicCategory:
             _topicCategory = _t.as_list_of_values(topicCategory, ('gmd:MD_TopicCategoryCode',), errors)
             _t.set_nested(_identification_info, ('topicCategory',), _topicCategory)
+
+        # extent
+        extent_geographic = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',))
+        _extent = []
+        if extent_geographic:
+            # geographic_bbox
+            extent_geographic_bbox_filter = lambda r : r.get('gmd:EX_GeographicBoundingBox') is not None
+            extent_geographic_bbox_fields = {
+                ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('west',),
+                ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('east',),
+                ('gmd:EX_GeographicBoundingBox','gmd:southBoundLatitude','gco:Decimal',):('south',),
+                ('gmd:EX_GeographicBoundingBox','gmd:northBoundLatitude','gco:Decimal',):('north',),
+            }
+            _extent_geographic_bbox = _t.as_list_of_dict(extent_geographic, extent_geographic_bbox_fields, errors, extent_geographic_bbox_filter)
+            for s in _extent_geographic_bbox:
+                s['type'] = 'geographic_bbox'
+            _extent +=_extent_geographic_bbox
+
+            # geographic_polygon
+            extent_geographic_polygon_filter = lambda r : r.get('gmd:EX_BoundingPolygon') is not None
+            extent_geographic_polygon_fields = {
+                ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geospatial',),
+            }
+            _extent_geographic_polygon = _t.as_list_of_dict(extent_geographic, extent_geographic_polygon_fields, errors, extent_geographic_polygon_filter)
+            for s in _extent_geographic_polygon:
+                s['type'] = 'geographic_polygon'
+            _extent += _extent_geographic_polygon
+        
+        # extent_vertical = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent',))
+        # if extent_vertical:
+        #     # vertical
+        #     extent_vertical_filter = lambda r : r.get('gmd:verticalElement') is not None
+        #     extent_vertical_fields = {
+        #         ('gmd:verticalElement','gmd:EX_VerticalExtent','#####',):('scaleDenominator',),
+        #     }
+        #     _extent_vertical = _t.as_list_of_dict(extent_vertical, extent_vertical_fields, errors, extent_vertical_filter)
+        #     for s in _extent_vertical:
+        #         s['type'] = 'vertical'
+        #     _extent += _extent_vertical
+
+        extent_temporal = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:temporalElement',))
+        if extent_temporal:
+            # temporal
+            extent_temporal_filter = lambda r : r.get('gmd:EX_TemporalExtent') is not None
+            extent_temporal_fields = {
+                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('beginDate',),
+                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('endDate',),
+            }
+            _extent_temporal = _t.as_list_of_dict(extent_temporal, extent_temporal_fields, errors, extent_temporal_filter)
+            for s in _extent_temporal:
+                s['type'] = 'temporal'
+            _extent += _extent_temporal
+            
+        if _extent:
+            # merge
+            _t.set_nested(_identification_info, ('spatialResolution',), _extent)
 
         aggregationInfo = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:aggregationInfo',))
         if aggregationInfo:
@@ -220,8 +285,10 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             }
             _aggregationInfo = _t.as_list_of_dict(aggregationInfo, aggregationInfo_fields, errors)
             _t.set_nested(_identification_info, ('aggregationInfo',), _aggregationInfo)
-        
-    return _citation
+    
+    # _t.set_nested(_citation, ('identificationInfo',), _identification_info)
+
+    return _identification_info
     
 def __citation(citation, opt, version, data, errors, context):
     _citation = {}
@@ -266,7 +333,7 @@ def __citation(citation, opt, version, data, errors, context):
 
     presentationForm = _t.get_nested(citation, ('gmd:presentationForm',))
     if presentationForm:
-        _t.set_nested(_citation, ('citation','presentationForm',), _t.as_list_of_values(('gmd:CI_PresentationFormCode','@codeListValue',)))
+        _t.set_nested(_citation, ('citation','presentationForm',), _t.as_list_of_values(presentationForm, ('gmd:CI_PresentationFormCode','@codeListValue',), errors))
     
     cited_responsible_party = _t.get_nested(citation, ('gmd:citedResponsibleParty',))
     if cited_responsible_party:
@@ -310,16 +377,49 @@ def __responsible_parties(cited_responsible_party, _type, opt, version, data, er
         }
         errors = _t.map_to(party, party_fields, _p)
 
+        _url = _t.get_nested(_p,('onlineResource', 'linkage',)) or  ''
+
         _new_resource_dict = {
             _c.SCHEMA_OPT_KEY: json.dumps(opt),
             _c.SCHEMA_VERSION_KEY: version,
             _c.SCHEMA_BODY_KEY: json.dumps(_p),
             _c.SCHEMA_TYPE_KEY: _type,
+            'url': _url
         }
         resources.append(_new_resource_dict)
 
     data.update({'resources': resources})
     return _responsible_parties
+
+
+def __graphic_overview(graphic_overview, _type, opt, version, data, errors, context):
+
+    resources = data.get('resources', [])
+    _graphic_overview = []
+    graphic_overview = graphic_overview
+    if not isinstance(graphic_overview, list):
+        graphic_overview = [graphic_overview]
+    for go in graphic_overview:
+        _p = {}
+        graphic_overview_fields = {
+            # url
+            # ('gmd:MD_BrowseGraphic','gmd:fileName','gco:CharacterString',):('url',),
+            # fileDescription
+            ('gmd:gmd:MD_BrowseGraphic','gmd:fileDescription','gco:CharacterString',):('fileDescription',),
+        }
+        errors = _t.map_to(go, graphic_overview_fields, _p)
+
+        _new_resource_dict = {
+            _c.SCHEMA_OPT_KEY: json.dumps(opt),
+            _c.SCHEMA_VERSION_KEY: version,
+            _c.SCHEMA_BODY_KEY: json.dumps(_p),
+            _c.SCHEMA_TYPE_KEY: _type,
+            'url': _t.get_nested(go, ('gmd:MD_BrowseGraphic','gmd:fileName','gco:CharacterString',)) or ''
+        }
+        resources.append(_new_resource_dict)
+
+    data.update({'resources': resources})
+    return _graphic_overview
 
 def __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context):
     _descriptiveKeywords = []
@@ -332,9 +432,9 @@ def __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, conte
             # keywords (see below)
         }
         _t.map_to(_dk,descriptiveKeywords_fields,_k)
-        _keywords = _t.get_nested(_dk, ('gmd:MD_Keywords','gmd:keyword',)) | []
-        _ks = _t.as_list_of_values(_keywords, ('gmd:keyword',), errors)
-        _t.set_nested(_k,('keywords',),_ks)
+        _keywords = _t.get_nested(_dk, ('gmd:MD_Keywords','gmd:keyword',))
+        _ks = _t.as_list_of_values(_keywords, ('gco:CharacterString',), errors)
+        _t.set_nested(_k, ('keywords',), _ks)
 
         _descriptiveKeywords.append(_k)
     return _descriptiveKeywords
@@ -419,7 +519,11 @@ def __spatial_representation_info(spatial_representation_info):
 def _extract_iso(body, opt, version, data, errors, context):
     # DATA translation
     # root_fields = FrozenOrderedBidict({
-    root_fields = {
+
+    _data = dict(data)
+    _body = dict(body)
+    _iso_profile = {}
+    _iso_profile_fields = {
         # fileIdentifier
         ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'):('fileIdentifier',),
 
@@ -461,16 +565,15 @@ def _extract_iso(body, opt, version, data, errors, context):
 
         # spatialRepresentationInfo (see below)
 
+        # from xml to resource -> gmd:contact (see below)
+
         # dataQualityInfo
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString',):('dataQualityInfo','lineage','statement',),
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:source','@uuidref',):('dataQualityInfo','lineage','source',),
         ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:scope','gmd:DQ_Scope','gmd:level','gmd:MD_ScopeCode','@codeListValue',):('dataQualityInfo','scope',),
     }
-    _data = dict(data)
-    _body = dict(body)
-    _iso_profile = {}
     # map body to ckan fields (_data)
-    errors = _t.map_to(_body, root_fields, _iso_profile)
+    errors = _t.map_to(_body, _iso_profile_fields, _iso_profile)
     
     if errors:
         # TODO map errors {key,error} to ckan errors 
@@ -482,9 +585,14 @@ def _extract_iso(body, opt, version, data, errors, context):
         _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
         _t.set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
 
+    contact = _t.get_nested(body, ('gmd:MD_Metadata','gmd:contact',))
+    if contact:
+        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_POINT_OF_CONTACT, opt, version, _data, errors, context)
+        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
     identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
     if identification_info:
-        _identification_info = __identification_info(identification_info, opt, version, data, errors, context)
+        _identification_info = __identification_info(identification_info, opt, version, _data, errors, context)
         _t.set_nested(_iso_profile, ('dataIdentification',), _identification_info)
 
     # Extract resources from body (to _data)
