@@ -91,24 +91,24 @@
             "page":{
               "title": "Page",
               "type":"string"
-            },
-            "otherCitationDetails":{
-              "title": "Other Citation Details",
-              "type":"string"
-            },
-            "collectiveTitle":{
-              "title": "Collective title",
-              "type":"string"
-            },
-            "ISBN":{
-              "type":"string",
-              "description": "International Standard Book Number"
-            },
-            "ISSN":{
-              "type":"string",
-              "description": "International Standard Serial Number"
             }
           }
+        },
+        "otherCitationDetails":{
+          "title": "Other Citation Details",
+          "type":"string"
+        },
+        "collectiveTitle":{
+          "title": "Collective title",
+          "type":"string"
+        },
+        "ISBN":{
+          "type":"string",
+          "description": "International Standard Book Number"
+        },
+        "ISSN":{
+          "type":"string",
+          "description": "International Standard Serial Number"
         }
       }
     },
@@ -249,6 +249,13 @@
             "title": "Legal constraints",
             "type": "object",
             "properties": {
+              "type": {
+                "type":"string",
+                "enum": ["LegalConstraints"],
+                "options": {
+                  "hidden" : true
+                }
+              },
               "otherConstraints": {
                 "propertyOrder": 30,
                 "title": "Other constraints",
@@ -295,6 +302,13 @@
             "title": "Constraints",
             "type": "object",
             "properties": {
+              "type": {
+                "type":"string",
+                "enum": ["Constraints"],
+                "options": {
+                  "hidden" : true
+                }
+              },
               "useLimitation": {
                 "propertyOrder": 1,
                 "title": "Use limitation",
@@ -306,6 +320,13 @@
             "title": "Security constraints",
             "type": "object",
             "properties": {
+              "type": {
+                "type":"string",
+                "enum": ["SecurityConstraints"],
+                "options": {
+                  "hidden" : true
+                }
+              },
               "useLimitation": {
                 "propertyOrder": 1,
                 "title": "Use limitation",
@@ -339,6 +360,7 @@
     "spatialRepresentationType": {
       "propertyOrder": 70,
       "title": "Spatial representation type",
+      "type":"array",
       "items":{
         "type": "string",
         "enum": [
@@ -354,36 +376,53 @@
     "spatialResolution": {
       "propertyOrder": 80,
       "title": "Spatial resolution",
-      "type": "object",
-      "anyOf": [
-        {
-          "type": "object",
-          "title": "Distance",
-          "properties": {
-            "distance": {
-              "propertyOrder": 1,
-              "title": "Distance",
-              "type": "string"
-            },
-            "unit": {
-              "propertyOrder": 10,
-              "title": "Unit",
-              "type": "string"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "anyOf": [
+          {
+            "type": "object",
+            "title": "Distance",
+            "properties": {
+              "type": {
+                "type":"string",
+                "enum": ["Distance"],
+                "options": {
+                  "hidden" : true
+                }
+              },
+              "distance": {
+                "propertyOrder": 1,
+                "title": "Distance",
+                "type": "string"
+              },
+              "unit": {
+                "propertyOrder": 10,
+                "title": "Unit",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Scale",
+            "properties": {
+              "type": {
+                "type":"string",
+                "enum": ["Scale"],
+                "options": {
+                  "hidden" : true
+                }
+              },
+              "scaleDenominator": {
+                "propertyOrder": 20,
+                "title": "Scale denominator",
+                "type": "string"
+              }
             }
           }
-        },
-        {
-          "type": "object",
-          "title": "Scale",
-          "properties": {
-            "scaleDenominator": {
-              "propertyOrder": 20,
-              "title": "Scale denominator",
-              "type": "string"
-            }
-          }
-        }
-      ]
+        ]
+      }
     },
     "extent": {
       "propertyOrder": 90,

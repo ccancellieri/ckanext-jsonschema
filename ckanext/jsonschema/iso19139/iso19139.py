@@ -11,7 +11,10 @@ import ckanext.jsonschema.interfaces as _i
 
 # iso19139 extract/convert by default into the iso profile
 from ckanext.jsonschema.iso19139.iso import TYPE_ISO,\
- TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
+ TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY,\
+     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_POINT_OF_CONTACT,\
+         TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_MAINTAINER,\
+             TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY # TYPE_ISO_RESOURCE_DATASET
 
 import logging
 log = logging.getLogger(__name__)
@@ -72,44 +75,45 @@ def __identification_info(identification_info, opt, version, data, errors, conte
     _identification_info = {}
     if identification_info.get('gmd:MD_DataIdentification'):
         identification_fields = {
-            # DATA IDENTIFICATION ( citation see below )
+            # DATA IDENTIFICATION
 
-            ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
-
-# TODO resourceConstraints []
-# TODO extent
-
-            ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue'):('characterSet',),
-            ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
-
-# aggregationInfo []
-
-            ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
-# TODO extract "gmd:resourceMaintenance": { "gmd:MD_MaintenanceInformation": { "gmd:contact": { "gmd:CI_ResponsibleParty":...
-# TODO topicCategory []
-# TODO extract graphicOverview
-            ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
-            # ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:status','gmd:MD_ProgressCode','"@codeListValue',):('status',)
-# TODO descriptiveKeywords []
-
-# TODO spatialRepresentationType []
-# ('gmd:spatialRepresentationType','gmd:language','gco:CharacterString'):('language',),
-
-            ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString'):('language',),
-
-# TODO extract 'gmd:pointOfContact'
+            # citation (see below)
 
             ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('abstract',),
-# TODO spatialResolution []
-            
+            ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
+            ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
 
-            # resourceMaintenance
+            # pointOfContact (see below)
             
-            ## DATA IDENTIFICATION (CITATIONS)
-            # TODO (''):('dataIdentification','citation','edition',),
-            # TODO presentationForm
-            # TODO seriespop_nested
+            # resourceMaintenance maintenanceAndUpdateFrequency
+            ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
+            # resourceMaintenance (see below)
+            
+            # TODO graphic-overview[]
 
+            # descriptiveKeywords (see below)
+
+            # resourceConstraints (see below)
+
+            # spatialRepresentationType (see below)
+
+            # spatialResolution (see below)
+
+            # language
+            ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString'):('language',),
+            # CharacterSet
+            ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue'):('characterSet',),
+
+            # topicCategory (see below)
+
+            # TODO extent
+
+            # supplementalInformation
+            ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
+
+            # aggregationInfo (see below)
+
+            # alternate title (not present into iso profile???)
             # ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):('alternateTitle',)
         }
         # map body to ckan fields (_data)
@@ -118,7 +122,104 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         citation = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation',))
         if citation:
             _citation = __citation(citation, opt, version, data, errors, context)
-            _t.set_nested(_citation, ('citation',), _identification_info)
+            _t.set_nested(_identification_info, ('citation',), _citation)
+
+        pointOfContact = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:pointOfContact',))
+        if pointOfContact:
+            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_POINT_OF_CONTACT, opt, version, data, errors, context)
+            # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
+        resourceMaintenance = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:contact',))
+        if resourceMaintenance:
+            _resourceMaintenance = __responsible_parties(resourceMaintenance, TYPE_ISO_RESOURCE_MAINTAINER, opt, version, data, errors, context)
+
+        descriptiveKeywords = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:descriptiveKeywords',))
+        if descriptiveKeywords:
+            _descriptiveKeywords = __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context)
+            _t.set_nested(_identification_info, ('descriptiveKeywords',), _descriptiveKeywords)
+
+        resourceConstraints = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceConstraints',))
+        if resourceConstraints:
+            # LegalConstraints
+            filter_type_legal = lambda r : r.get('gmd:MD_LegalConstraints') is not None
+            filter_type_legal_fields = {
+                ('gmd:MD_LegalConstraints','gmd:otherConstraints','gco:CharacterString',):('otherConstraints',),
+                ('gmd:MD_LegalConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+                ('gmd:MD_LegalConstraints','gmd:useConstraints','gco:CharacterString','@codeListValue',):('useConstraints',),
+                ('gmd:MD_LegalConstraints','gmd:accessConstraints','gco:CharacterString','@codeListValue',):('accessConstraints',),
+            }
+            _resourceConstraints_legal = _t.as_list_of_dict(resourceConstraints, filter_type_legal_fields, errors, filter_type_legal)
+            for d in _resourceConstraints_legal:
+                d['type'] = 'LegalConstraints'
+
+            # SecurityConstraints
+            filter_type_security = lambda r : r.get('gmd:MD_SecurityConstraints') is not None
+            filter_type_security_fields = {
+                ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+                ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('classification',),
+# TODO check
+                ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('userNote',),
+                ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('classificationSystem',),
+                ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+            }
+            _resourceConstraints_security = _t.as_list_of_dict(resourceConstraints, filter_type_security_fields, errors, filter_type_security)
+            for s in _resourceConstraints_security:
+                s['type'] = 'SecurityConstraints'
+
+            # Constraints
+            filter_type_constraints = lambda r : r.get('gmd:MD_Constraints') is not None
+            filter_type_constraints_fields = {
+                ('gmd:MD_Constraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+            }
+            _resourceConstraints_constraints = _t.as_list_of_dict(resourceConstraints, filter_type_constraints_fields, errors, filter_type_constraints)
+            for s in _resourceConstraints_constraints:
+                s['type'] = 'Constraints'
+            
+            # merge
+            _t.set_nested(_identification_info, ('resourceConstraints',), _resourceConstraints_legal + _resourceConstraints_security + _resourceConstraints_constraints)
+
+
+        spatialRepresentationType = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',))
+        if spatialRepresentationType:
+            _spatialRepresentationType = _t.as_list_of_values(spatialRepresentationType, ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',), errors)
+            _t.set_nested(_identification_info, ('spatialRepresentationType',), _spatialRepresentationType)
+
+        spatialResolution = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialResolution',))
+        if spatialResolution:
+            # Distance
+            filter_type_distance = lambda r : r.get('gmd:distance') is not None
+            filter_type_distance_fields = {
+                ('gmd:MD_Resolution','gmd:distance','gco:Distance','#text',):('distance',),
+                ('gmd:MD_Resolution','gmd:distance','gco:Distance','@uom',):('unit',),
+            }
+            _spatialResolutionDistance = _t.as_list_of_dict(spatialResolution, filter_type_distance_fields, errors, filter_type_distance)
+            for d in _spatialResolutionDistance:
+                d['type'] = 'Distance'
+            # Scale
+            filter_type_scale = lambda r : r.get('gmd:equivalentScale') is not None
+            filter_type_scale_fields = {
+                ('gmd:MD_Resolution','gmd:equivalentScale','gmd:MD_RepresentativeFraction','gmd:denominator','gco:Integer',):('scaleDenominator',),
+            }
+            _spatialResolutionScale = _t.as_list_of_dict(spatialResolution, filter_type_scale_fields, errors, filter_type_scale)
+            for s in _spatialResolutionScale:
+                s['type'] = 'Scale'
+
+            # merge
+            _t.set_nested(_identification_info, ('spatialResolution',), _spatialResolutionDistance + _spatialResolutionScale)
+
+        topicCategory = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:topicCategory',))
+        if topicCategory:
+            _topicCategory = _t.as_list_of_values(topicCategory, ('gmd:MD_TopicCategoryCode',), errors)
+            _t.set_nested(_identification_info, ('topicCategory',), _topicCategory)
+
+        aggregationInfo = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:aggregationInfo',))
+        if aggregationInfo:
+            aggregationInfo_fields = {
+                ('gmd:MD_AggregateInformation','gmd:associationType','gmd:DS_AssociationTypeCode','codeListValue',):('aggregationInfo','associationType',),
+                ('gmd:MD_AggregateInformation','gmd:aggregateDataSetIdentifier','gmd:MD_Identifier','gmd:code','gco:CharacterString',):('aggregationInfo','code',)
+            }
+            _aggregationInfo = _t.as_list_of_dict(aggregationInfo, aggregationInfo_fields, errors)
+            _t.set_nested(_identification_info, ('aggregationInfo',), _aggregationInfo)
         
     return _citation
     
@@ -133,53 +234,65 @@ def __citation(citation, opt, version, data, errors, context):
 
         # dates (see below)
 
-        # TODO extract gmd:citedResponsibleParty
         # citedResponsibleParty (see below)
 
-        # ## # TODO ASK about SERIES
-        # # otherCitationDetails
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','otherCitationDetails'),
-        # # collectiveTitle
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
-        # # ISBN
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISBN'),
-        # # ISSN
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','ISSN'),
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','name'),
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','issueIdentification'),
-        # ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','page'),
+        # # SERIES
+        # name
+        ('gmd:series','gmd:CI_Series','gmd:name','gco:CharacterString'):('citation','series','name'),
+        # issueIdentification
+        ('gmd:series','gmd:CI_Series','gmd:issueIdentification','gco:CharacterString'):('citation','series','issueIdentification'),
+        # page
+        ('gmd:series','gmd:CI_Series','gmd:page','gco:CharacterString'):('citation','series','page'),
+        
+        # otherCitationDetails
+        ('gmd:otherCitationDetails','gco:CharacterString'):('citation','series','otherCitationDetails'),
+        # collectiveTitle
+        ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
+        # ISBN
+        ('gmd:collectiveTitle','gco:CharacterString'):('citation','ISBN'),
+        # ISSN
+        ('gmd:collectiveTitle','gco:CharacterString'):('citation','ISSN'),
 
-
-        # dates (see below)
-
-        # presentationForm
-        # TODO coud it be an array?
-        ('gmd:presentationForm','gmd:CI_PresentationFormCode','@codeListValue',):('citation','presentationForm',),
+        # presentationForm (see below)
+        
     }
     errors = _t.map_to(citation, citation_fields, _citation)
 
+    # TODO use _t.as_list_of_dict
     dates = _t.get_nested(citation, ('gmd:date',))
     if dates:
         _dates = __dates(dates)
         _t.set_nested(_citation, ('dates',), _dates)
 
+    presentationForm = _t.get_nested(citation, ('gmd:presentationForm',))
+    if presentationForm:
+        _t.set_nested(_citation, ('citation','presentationForm',), _t.as_list_of_values(('gmd:CI_PresentationFormCode','@codeListValue',)))
+    
     cited_responsible_party = _t.get_nested(citation, ('gmd:citedResponsibleParty',))
     if cited_responsible_party:
-        _cited_responsible_parties = __cited_responsible_parties(cited_responsible_party, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, opt, version, data, errors, context)
+        _cited_responsible_parties = __responsible_parties(cited_responsible_party, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, opt, version, data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
     return _citation
 
-def __cited_responsible_parties(cited_responsible_party, _type, opt, version, data, errors, context):
+def __responsible_parties(cited_responsible_party, _type, opt, version, data, errors, context):
 
     resources = data.get('resources', [])
-    _cited_responsible_parties = []
-    cited_responsible_parties = cited_responsible_party
-    if not isinstance(cited_responsible_parties, list):
-        cited_responsible_parties = [cited_responsible_party]
-    for party in cited_responsible_parties:
+    _responsible_parties = []
+    responsible_parties = cited_responsible_party
+    if not isinstance(responsible_parties, list):
+        responsible_parties = [cited_responsible_party]
+    for party in responsible_parties:
         _p = {}
         party_fields = {
+            # individualName
+            ('gmd:CI_ResponsibleParty','gmd:individualName','gco:CharacterString',):('individualName',),
+            # organisationName
+            ('gmd:CI_ResponsibleParty','gmd:organisationName','gco:CharacterString',):('organisationName',),
+            # positionName
+            ('gmd:CI_ResponsibleParty','gmd:positionName','gco:CharacterString',):('positionName',),
+            # role
+            ('gmd:CI_ResponsibleParty','gmd:role','gmd:CI_RoleCode','@codeListValue',):('role',),
             # address
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:deliveryPoint','gco:CharacterString',):('contactInfo','address','deliveryPoint',),
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:city','gco:CharacterString',):('contactInfo','address','city',),
@@ -204,10 +317,29 @@ def __cited_responsible_parties(cited_responsible_party, _type, opt, version, da
             _c.SCHEMA_TYPE_KEY: _type,
         }
         resources.append(_new_resource_dict)
-        data.update({'resources': resources})
 
-    return _cited_responsible_parties
+    data.update({'resources': resources})
+    return _responsible_parties
 
+def __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context):
+    _descriptiveKeywords = []
+    if not isinstance(descriptiveKeywords, list):
+        descriptiveKeywords = [descriptiveKeywords]
+    for _dk in descriptiveKeywords:
+        _k = {}
+        descriptiveKeywords_fields = {
+            ('gmd:MD_Keywords','gmd:type','gmd:MD_KeywordTypeCode','@codeListValue',):('type',),
+            # keywords (see below)
+        }
+        _t.map_to(_dk,descriptiveKeywords_fields,_k)
+        _keywords = _t.get_nested(_dk, ('gmd:MD_Keywords','gmd:keyword',)) | []
+        _ks = _t.as_list_of_values(_keywords, ('gmd:keyword',), errors)
+        _t.set_nested(_k,('keywords',),_ks)
+
+        _descriptiveKeywords.append(_k)
+    return _descriptiveKeywords
+
+# TODO use _t.as_list_of_dict
 def __dates(dates):
     _dates = []
     if not isinstance(dates, list):

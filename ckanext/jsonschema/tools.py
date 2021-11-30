@@ -76,6 +76,30 @@ def map_to(from_dict, map, to_dict):
             errors.append({source_path, dest_path})
     return errors
 
+
+def as_list_of_values(items, path, errors, filter = lambda i : True):
+    _items = []
+    if not isinstance(items, list):
+        items = [items]
+    for _item in items:
+        _i = get_nested(_item, path)
+        if _i and filter(_i):
+            _items.append(_i)
+        # TODO error trap and return
+    return _items
+
+def as_list_of_dict(items, fields, errors, filter = lambda i : True):
+    _items = []
+    if not isinstance(items, list):
+        items = [items]
+    for _item in items:
+        _i = {}
+        if _item and filter(_item):
+            errors = map_to(_item, fields, _i)
+            # TODO error trap and return
+            _items.append(_i)
+    return _items
+
 # def map_inverse(to_dict, map, from_dict):
 #     errors=[]
 #     for (k,v) in inverted(map):
