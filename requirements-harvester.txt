@@ -1,0 +1,5 @@
+# DEPENDECIES DUE TO CSWUTIL, CKANEXT_SPATIAL, CKANEXT_HARVESTER
+pyproj==1.9.6
+ckantoolkit
+geopython
+OWSLib==0.18.0
