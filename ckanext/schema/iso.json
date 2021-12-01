@@ -74,6 +74,24 @@
             "title": "Spatial representation info",
             "$ref": "spatial-representation-info.json"
         },
+        "distributionInfo": {
+            "propertyOrder": 95,
+            "title": "Distribution info",
+            "type": "object",
+            "properties": {
+                "distributionFormat": {
+                    "title": "Distribution format",
+                    "type": "object",
+                    "version":{
+                        "type":"string"
+                    },
+                    "name":{
+                        "type":"string"
+                    }
+                    
+                }
+            }
+        },
         "dataQualityInfo": {
             "propertyOrder": 100,
             "title": "Data quality info",

@@ -1,3 +1,4 @@
+from sqlalchemy.sql.expression import true
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
 _get_or_bust= toolkit.get_or_bust
@@ -10,11 +11,11 @@ import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
 
 # iso19139 extract/convert by default into the iso profile
-from ckanext.jsonschema.iso19139.iso import TYPE_ISO,\
+from ckanext.jsonschema.iso19139.iso import TYPE_ISO, TYPE_ISO_RESOURCE_DISTRIBUTOR,\
  TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY,\
-     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_POINT_OF_CONTACT,\
-         TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_MAINTAINER,\
-             TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY # TYPE_ISO_RESOURCE_DATASET
+     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_RESOURCE_CONTACT,\
+         TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_MAINTAINER
+            #  TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY, TYPE_ISO_RESOURCE_DATASET
 
 import logging
 log = logging.getLogger(__name__)
@@ -126,7 +127,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
         pointOfContact = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:pointOfContact',))
         if pointOfContact:
-            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, data, errors, context)
+            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_RESOURCE_CONTACT, opt, version, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
         resourceMaintenance = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:contact',))
@@ -163,7 +164,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             filter_type_security_fields = {
                 ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
                 ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('classification',),
-# TODO check
+                # TODO (on 1/12/2021 we decided to don't fetch even if present into iso profile)
                 # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('userNote',),
                 # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('classificationSystem',),
                 # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
@@ -405,7 +406,7 @@ def __graphic_overview(graphic_overview, _type, opt, version, data, errors, cont
             # url
             # ('gmd:MD_BrowseGraphic','gmd:fileName','gco:CharacterString',):('url',),
             # fileDescription
-            ('gmd:gmd:MD_BrowseGraphic','gmd:fileDescription','gco:CharacterString',):('fileDescription',),
+            ('gmd:MD_BrowseGraphic','gmd:fileDescription','gco:CharacterString',):('fileDescription',),
         }
         errors = _t.map_to(go, graphic_overview_fields, _p)
 
@@ -565,6 +566,16 @@ def _extract_iso(body, opt, version, data, errors, context):
 
         # spatialRepresentationInfo (see below)
 
+        # DISTRIBUTION INFO
+        # transferOptions (see below) _extract_transfer_options
+
+        # distributionFormat
+        # TODO could it be an array???
+        ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat','gmd:MD_Format','gmd:name','gco:CharacterString',) : ('distributionInfo','distributionFormat','name',),
+        ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat','gmd:MD_Format','gmd:version','gco:CharacterString',) : ('distributionInfo','distributionFormat','version',),
+
+        # distributor (see below) _extract_distributor
+
         # from xml to resource -> gmd:contact (see below)
 
         # dataQualityInfo
@@ -587,7 +598,7 @@ def _extract_iso(body, opt, version, data, errors, context):
 
     contact = _t.get_nested(body, ('gmd:MD_Metadata','gmd:contact',))
     if contact:
-        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_POINT_OF_CONTACT, opt, version, _data, errors, context)
+        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, _data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
     identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
@@ -598,6 +609,12 @@ def _extract_iso(body, opt, version, data, errors, context):
     # Extract resources from body (to _data)
     _extract_transfer_options(_body, opt, version, _data, errors, context)
     
+    # distributor
+    distributor = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
+    if distributor:
+        _distributor = _extract_distributor(distributor, TYPE_ISO_RESOURCE_DISTRIBUTOR, opt, version, _data, errors, context)
+        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
     # Update _data type
     _data.update({
         'type': TYPE_ISO
@@ -605,6 +622,27 @@ def _extract_iso(body, opt, version, data, errors, context):
 
     return _iso_profile, TYPE_ISO, opt, version, _data
 
+
+# def _extract_distributor(body, opt, version, data, errors, context):
+    # _transfer_options = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
+    # TYPE_ISO_RESOURCE_DISTRIBUTOR
+# # TODO extract resources
+
+def _extract_distributor(distributor, _type, opt, version, data, errors, context):
+
+    resources = data.get('resources', [])
+    _distributor = []
+    distributor = distributor
+    if not isinstance(distributor, list):
+        distributor = [distributor]
+    for distrib in distributor:
+        # TODO ??? gmd:distributorFormat
+        _distributor_contact = _t.get_nested(distrib, ('gmd:MD_Distributor','gmd:distributorContact',))
+        if _distributor_contact:
+            __responsible_parties(_distributor_contact, _type, opt, version, data, errors, context)
+
+    return True
+    
 def _extract_transfer_options(body, opt, version, data, errors, context):
 
     # _body = dict(body)

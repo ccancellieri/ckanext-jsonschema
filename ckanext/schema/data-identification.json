@@ -340,7 +340,14 @@
               "classification": {
                 "propertyOrder": 20,
                 "title": "Classification",
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "confidential",
+                  "restricted",
+                  "secret",
+                  "topSecret",
+                  "unclassified"
+                ]
               },
               "classificationSystem": {
                 "propertyOrder": 30,

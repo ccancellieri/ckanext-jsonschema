@@ -2,6 +2,7 @@ from sqlalchemy.sql.expression import true
 
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
+import ckan.lib.munge as munge
 
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
@@ -48,27 +49,26 @@ TYPE_ISO = 'iso'
 
 SUPPORTED_DATASET_FORMATS = [ TYPE_ISO ]
 
-TYPE_ISO_RESOURCE_DATASET = 'resource-dataset'
+# TYPE_ISO_RESOURCE_DATASET = 'resource-dataset'
 TYPE_ISO_RESOURCE_ONLINE_RESOURCE = 'online-resource'
 TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW = 'graphic-overview'
 
-
 TYPE_ISO_RESOURCE_METADATA_CONTACT = 'metadata-contact'
-TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY = 'responsible-party'
+TYPE_ISO_RESOURCE_DISTRIBUTOR = 'distributor'
+# TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY = 'responsible-party'
 TYPE_ISO_RESOURCE_MAINTAINER = 'resource-maintainer'
-TYPE_ISO_RESOURCE_POINT_OF_CONTACT = 'point-of-contact'
+TYPE_ISO_RESOURCE_RESOURCE_CONTACT = 'resource-contact'
 TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY = 'cited-responsible-party'
-
 
 SUPPORTED_ISO_RESOURCE_FORMATS = [
     TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
-    TYPE_ISO_RESOURCE_DATASET,
+    # TYPE_ISO_RESOURCE_DATASET,
     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW,
 
     TYPE_ISO_RESOURCE_METADATA_CONTACT,
-    TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY,
+    # TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY,
     TYPE_ISO_RESOURCE_MAINTAINER,
-    TYPE_ISO_RESOURCE_POINT_OF_CONTACT,
+    TYPE_ISO_RESOURCE_RESOURCE_CONTACT,
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
     ]
 
@@ -215,7 +215,7 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
                 if keywords:
                     tags = []
                     for k in keywords:
-                        _data['tags'].append({'name': k})
+                        _data['tags'].append({'name': munge.munge_tag(k)})
                         # tags.append({'name': k, 'vocabulary_id': vocab_id})
 
                 # {'name': geo_tag, 'vocabulary_id': vocab_id}
@@ -229,7 +229,7 @@ def _extract_iso_name(body, type, opt, version, data, errors, context):
 
     # /api/util/dataset/munge_title_to_name?title=police:%20spending%20figures%202009
     
-    name = body.get('fileIdentifier')
+    name = munge.munge_name(body.get('fileIdentifier',''))
 
     if not name:
         name = str(uuid.uuid4())
@@ -252,6 +252,7 @@ def _extract_iso_online_resource(body, type, opt, version, data, errors, context
     
     _dict = dict(data)
 
+    # name = munge.munge_filename(body.get('name'),'')
     name = body.get('name')
     if not name:
         name = 'Online resource'
@@ -297,7 +298,7 @@ def _extract_iso_resource_responsible(body, type, opt, version, data, errors, co
     organisationName = body.get('organisationName','') #TODO error if null...
     _dict = {
         'name': name,
-        'description': 'Role: {}\nOrganisation: {}'.format(role, organisationName)
+        'description': 'Role: {} Organisation: {}'.format(role, organisationName)
     }
     data.update(_dict)
 
@@ -418,73 +419,73 @@ def get_format(protocol = None, url = None):
 ## UNUSED
 #######################################
 
-def _vocabulary_setup(vocab_name, tags=[], context={}):
-    # user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
-    # context = {'user': user['name']}
-    context.update({'ignore_auth': True})
-    try:
-        data = {'id': vocab_name}
-        return toolkit.get_action('vocabulary_show')(context, data)
-    except Exception as e:
-        log.warn('Error getting vocabulary: {}'.format(str(e)))
-    # toolkit.ObjectNotFound:
-        data = {'name': vocab_name}
-        vocab = toolkit.get_action('vocabulary_create')(context, data)
-        for tag in tags:
-            data = {'name': tag, 'vocabulary_id': vocab['id']}
-            toolkit.get_action('tag_create')(context, data)
-        return vocab
+# def _vocabulary_setup(vocab_name, tags=[], context={}):
+#     # user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+#     # context = {'user': user['name']}
+#     context.update({'ignore_auth': True})
+#     try:
+#         data = {'id': vocab_name}
+#         return toolkit.get_action('vocabulary_show')(context, data)
+#     except Exception as e:
+#         log.warn('Error getting vocabulary: {}'.format(str(e)))
+#     # toolkit.ObjectNotFound:
+#         data = {'name': vocab_name}
+#         vocab = toolkit.get_action('vocabulary_create')(context, data)
+#         for tag in tags:
+#             data = {'name': tag, 'vocabulary_id': vocab['id']}
+#             toolkit.get_action('tag_create')(context, data)
+#         return vocab
 
 
 
-def default_lon_e(data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=180
-        return
-    try:
-        if float(data[key])>180:
-            data[key]=180
-    except ValueError:
-        data[key]=180
+# def default_lon_e(data, errors, context):
+#     '''
+#     Validator providing default values 
+#     '''
+#     if not data[key]:
+#         data[key]=180
+#         return
+#     try:
+#         if float(data[key])>180:
+#             data[key]=180
+#     except ValueError:
+#         data[key]=180
 
-def default_lon_w(data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=-180
-        return
-    try:
-        if float(data[key])<-180:
-            data[key]=-180
-    except ValueError:
-        data[key]=-180
+# def default_lon_w(data, errors, context):
+#     '''
+#     Validator providing default values 
+#     '''
+#     if not data[key]:
+#         data[key]=-180
+#         return
+#     try:
+#         if float(data[key])<-180:
+#             data[key]=-180
+#     except ValueError:
+#         data[key]=-180
 
-def default_lat_n(data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=90
-        return
-    try:
-        if float(data[key])>90:
-            data[key]=90
-    except ValueError:
-        data[key]=90
+# def default_lat_n(data, errors, context):
+#     '''
+#     Validator providing default values 
+#     '''
+#     if not data[key]:
+#         data[key]=90
+#         return
+#     try:
+#         if float(data[key])>90:
+#             data[key]=90
+#     except ValueError:
+#         data[key]=90
 
-def default_lat_s(data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=-90
-        return
-    try:
-        if float(data[key])<-90:
-            data[key]=-90
-    except ValueError:
-        data[key]=-90
+# def default_lat_s(data, errors, context):
+#     '''
+#     Validator providing default values 
+#     '''
+#     if not data[key]:
+#         data[key]=-90
+#         return
+#     try:
+#         if float(data[key])<-90:
+#             data[key]=-90
+#     except ValueError:
+#         data[key]=-90
