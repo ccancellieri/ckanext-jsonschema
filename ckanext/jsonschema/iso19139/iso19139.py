@@ -295,9 +295,9 @@ def __citation(citation, opt, version, data, errors, context):
     citation_fields = {
         ## DATA IDENTIFICATION ( citation )
         # title
-        ('gmd:title','gco:CharacterString'):('citation','title',),
+        ('gmd:title','gco:CharacterString'):('title',),
         # edition
-        ('gmd:edition','gco:CharacterString',):('citation','edition',),
+        ('gmd:edition','gco:CharacterString',):('edition',),
 
         # dates (see below)
 
@@ -305,20 +305,20 @@ def __citation(citation, opt, version, data, errors, context):
 
         # # SERIES
         # name
-        ('gmd:series','gmd:CI_Series','gmd:name','gco:CharacterString'):('citation','series','name'),
+        ('gmd:series','gmd:CI_Series','gmd:name','gco:CharacterString'):('series','name'),
         # issueIdentification
-        ('gmd:series','gmd:CI_Series','gmd:issueIdentification','gco:CharacterString'):('citation','series','issueIdentification'),
+        ('gmd:series','gmd:CI_Series','gmd:issueIdentification','gco:CharacterString'):('series','issueIdentification'),
         # page
-        ('gmd:series','gmd:CI_Series','gmd:page','gco:CharacterString'):('citation','series','page'),
+        ('gmd:series','gmd:CI_Series','gmd:page','gco:CharacterString'):('series','page'),
         
         # otherCitationDetails
-        ('gmd:otherCitationDetails','gco:CharacterString'):('citation','series','otherCitationDetails'),
+        ('gmd:otherCitationDetails','gco:CharacterString'):('series','otherCitationDetails'),
         # collectiveTitle
-        ('gmd:collectiveTitle','gco:CharacterString'):('citation','series','collectiveTitle'),
+        ('gmd:collectiveTitle','gco:CharacterString'):('series','collectiveTitle'),
         # ISBN
-        ('gmd:collectiveTitle','gco:CharacterString'):('citation','ISBN'),
+        ('gmd:collectiveTitle','gco:CharacterString'):('ISBN'),
         # ISSN
-        ('gmd:collectiveTitle','gco:CharacterString'):('citation','ISSN'),
+        ('gmd:collectiveTitle','gco:CharacterString'):('ISSN'),
 
         # presentationForm (see below)
         
@@ -333,7 +333,7 @@ def __citation(citation, opt, version, data, errors, context):
 
     presentationForm = _t.get_nested(citation, ('gmd:presentationForm',))
     if presentationForm:
-        _t.set_nested(_citation, ('citation','presentationForm',), _t.as_list_of_values(presentationForm, ('gmd:CI_PresentationFormCode','@codeListValue',), errors))
+        _t.set_nested(_citation, ('presentationForm',), _t.as_list_of_values(presentationForm, ('gmd:CI_PresentationFormCode','@codeListValue',), errors))
     
     cited_responsible_party = _t.get_nested(citation, ('gmd:citedResponsibleParty',))
     if cited_responsible_party:
@@ -541,7 +541,7 @@ def _extract_iso(body, opt, version, data, errors, context):
         ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString'):('metadataStandardVersion',),
         
         # parentIdentifier
-        ('gmd:MD_Metadata','gco:CharacterString'):('parentIdentifier',),
+        ('gmd:MD_Metadata','gmd:parentIdentifier','gco:CharacterString'):('parentIdentifier',),
         
         # dataIdentification (see below)
         
