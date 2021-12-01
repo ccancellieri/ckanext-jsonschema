@@ -148,10 +148,12 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         resourceConstraints = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceConstraints',))
         if resourceConstraints:
             # LegalConstraints
-            filter_type_legal = lambda r : r.get('gmd:MD_LegalConstraints') is not None
+            filter_type_legal = lambda r : r and r.get('gmd:MD_LegalConstraints') is not None
             filter_type_legal_fields = {
                 ('gmd:MD_LegalConstraints','gmd:otherConstraints','gco:CharacterString',):('otherConstraints',),
+                # TODO sometime this is an array ...
                 ('gmd:MD_LegalConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+                # TODO sometime this is an array ...
                 ('gmd:MD_LegalConstraints','gmd:useConstraints','gco:CharacterString','@codeListValue',):('useConstraints',),
                 ('gmd:MD_LegalConstraints','gmd:accessConstraints','gco:CharacterString','@codeListValue',):('accessConstraints',),
             }
@@ -160,7 +162,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 d['type'] = 'LegalConstraints'
 
             # SecurityConstraints
-            filter_type_security = lambda r : r.get('gmd:MD_SecurityConstraints') is not None
+            filter_type_security = lambda r : r and r.get('gmd:MD_SecurityConstraints') is not None
             filter_type_security_fields = {
                 ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
                 ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('classification',),
@@ -174,7 +176,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 s['type'] = 'SecurityConstraints'
 
             # Constraints
-            filter_type_constraints = lambda r : r.get('gmd:MD_Constraints') is not None
+            filter_type_constraints = lambda r : r and r.get('gmd:MD_Constraints') is not None
             filter_type_constraints_fields = {
                 ('gmd:MD_Constraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
             }
@@ -195,7 +197,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         spatialResolution = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialResolution',))
         if spatialResolution:
             # Distance
-            filter_type_distance = lambda r : r.get('gmd:distance') is not None
+            filter_type_distance = lambda r : r and r.get('gmd:distance') is not None
             filter_type_distance_fields = {
                 ('gmd:MD_Resolution','gmd:distance','gco:Distance','#text',):('distance',),
                 ('gmd:MD_Resolution','gmd:distance','gco:Distance','@uom',):('unit',),
@@ -204,7 +206,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             for d in _spatialResolutionDistance:
                 d['type'] = 'Distance'
             # Scale
-            filter_type_scale = lambda r : r.get('gmd:equivalentScale') is not None
+            filter_type_scale = lambda r : r and r.get('gmd:equivalentScale') is not None
             filter_type_scale_fields = {
                 ('gmd:MD_Resolution','gmd:equivalentScale','gmd:MD_RepresentativeFraction','gmd:denominator','gco:Integer',):('scaleDenominator',),
             }
@@ -227,7 +229,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         _extent = []
         if extent_geographic:
             # geographic_bbox
-            extent_geographic_bbox_filter = lambda r : r.get('gmd:EX_GeographicBoundingBox') is not None
+            extent_geographic_bbox_filter = lambda r : r and r.get('gmd:EX_GeographicBoundingBox') is not None
             extent_geographic_bbox_fields = {
                 ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('west',),
                 ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('east',),
@@ -240,7 +242,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             _extent +=_extent_geographic_bbox
 
             # geographic_polygon
-            extent_geographic_polygon_filter = lambda r : r.get('gmd:EX_BoundingPolygon') is not None
+            extent_geographic_polygon_filter = lambda r : r and r.get('gmd:EX_BoundingPolygon') is not None
             extent_geographic_polygon_fields = {
                 ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geospatial',),
             }
@@ -264,7 +266,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         extent_temporal = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:temporalElement',))
         if extent_temporal:
             # temporal
-            extent_temporal_filter = lambda r : r.get('gmd:EX_TemporalExtent') is not None
+            extent_temporal_filter = lambda r : r and r.get('gmd:EX_TemporalExtent') is not None
             extent_temporal_fields = {
                 ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('beginDate',),
                 ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('endDate',),

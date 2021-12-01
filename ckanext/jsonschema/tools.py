@@ -56,7 +56,10 @@ def pop_nested(dict, tuple):
             d = d[k]
         except:
             return
-    return d and d.pop(tuple[-1:][0])
+    try:
+        d.pop(tuple[-1:][0])
+    except:
+        return # TODO errors?
 
 def get_nested(dict, tuple):
     d = dict
@@ -65,8 +68,10 @@ def get_nested(dict, tuple):
             d = d[k]
         except:
             return
-    # return d.get(tuple[-1:])
-    return d and d.get(tuple[-1:][0])
+    try:
+        return d[tuple[-1:][0]]
+    except:
+        return
 
 def map_to(from_dict, map, to_dict):
     errors=[]

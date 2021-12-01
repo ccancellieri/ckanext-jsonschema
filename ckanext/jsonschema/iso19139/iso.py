@@ -129,7 +129,7 @@ class JsonschemaIso(p.SingletonPlugin):
         # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
         # TYPE_ISO_RESOURCE_DATASET,
 
-        elif type == TYPE_ISO_RESOURCE_DATASET:
+        elif type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
             return _extract_iso_resource_dataset(body, type, opt, version, data, errors, context)
             
 
@@ -142,14 +142,14 @@ class JsonschemaIso(p.SingletonPlugin):
             
         elif type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
-            
-        elif type == TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY:
+        
+        elif type == TYPE_ISO_RESOURCE_RESOURCE_CONTACT:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
             
         elif type == TYPE_ISO_RESOURCE_MAINTAINER:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
             
-        elif type == TYPE_ISO_RESOURCE_POINT_OF_CONTACT:
+        elif type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
             
         elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
