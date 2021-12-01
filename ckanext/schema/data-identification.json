@@ -182,6 +182,7 @@
     },
     "topicCategory": {
       "title": "Topic category",
+      "minItems": 1,
       "propertyOrder": 40,
       "type": "array",
       "format": "table",
