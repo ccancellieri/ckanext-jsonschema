@@ -2,19 +2,12 @@
   "title": "Extent",
   "type": "array",
   "items": {
-    "anyOf": [
-      {
+    "type":"object",
+    "properties":{
+      "temporal":{
         "type": "object",
         "title": "Temporal extent",
         "properties": {
-          "type": {
-            "enum": [
-              "temporal"
-            ],
-            "options": {
-                "hidden": true
-            }
-          },
           "beginDate": {
             "propertyOrder": 1,
             "title": "Begin date",
@@ -29,18 +22,10 @@
           }
         }
       },
-      {
+      "vertical":{
         "type": "object",
         "title": "Vertical extent",
         "properties": {
-          "type": {
-            "enum": [
-              "vertical"
-            ],
-            "options": {
-                "hidden": true
-            }
-          },
           "minimumValue": {
             "propertyOrder": 10,
             "title": "Minimum value",
@@ -53,22 +38,14 @@
           }
         }
       },
-      {
+      "geographic":{
         "type": "object",
         "title": "Geographic extent",
-        "oneOf": [
-          {
+        "properties": {
+          "bbox": {
             "title": "Geografic bounding box",
             "description": "bbox geographic extent",
             "properties": {
-              "type": {
-                "enum": [
-                  "geographic_bbox"
-                ],
-                "options": {
-                    "hidden": true
-                }
-              },
               "east": {
                 "propertyOrder": 10,
                 "title": "East",
@@ -91,27 +68,20 @@
               }
             }
           },
-          {
+          "polygon": {
             "title": "Geographic bounding polygon",
             "description": "polygon geographic extent",
             "properties": {
-              "type": {
-                "enum": [
-                  "geographic_polygon"
-                ],
-                "options": {
-                    "hidden": true
-                }
-              },
               "geospatial": {
                 "propertyOrder": 1,
                 "title": "Geospatial",
-                "type": "string"
+                "type": "string",
+                "format": "textarea"
               }
             }
           }
-        ]
+        }
       }
-    ]
+    }
   }
 }

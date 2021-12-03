@@ -3,7 +3,10 @@
   display: block;
 }
 
-
+/* AJV editor... */
+#editor-jsonschema-config > div > div.form-group > div {
+  height: 90vh;
+}
 /*
  Save space and higlight borders
 */

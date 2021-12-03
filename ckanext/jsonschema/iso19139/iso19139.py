@@ -82,7 +82,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
             ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('abstract',),
             ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
-            ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue'):('status',),
+            ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue',):('status',),
 
             # pointOfContact (see below)
             
@@ -101,16 +101,16 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             # spatialResolution (see below)
 
             # language
-            ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString'):('language',),
+            ('gmd:MD_DataIdentification','gmd:language','gco:CharacterString',):('language',),
             # CharacterSet
-            ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue'):('characterSet',),
+            ('gmd:MD_DataIdentification','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
 
             # topicCategory (see below)
 
             # extent (see below)
 
             # supplementalInformation
-            ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString'):('supplementalInformation',),
+            ('gmd:MD_DataIdentification','gmd:supplementalInformation','gco:CharacterString',):('supplementalInformation',),
 
             # aggregationInfo (see below)
 
@@ -145,112 +145,153 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             _descriptiveKeywords = __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context)
             _t.set_nested(_identification_info, ('descriptiveKeywords',), _descriptiveKeywords)
 
+        def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):
+            nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
+            if nested_items_root:
+                for i in nested_items_root:
+                    _nested_element = _t.get_nested(i, source_array_path)
+                    nested_list = _t.as_list_of_values(_nested_element, get_tuple_as_array)
+                    _t.extend_nested(dest, dest_tuple, nested_list)
+            
+        def _from_nested_list_extend_array_of_dict(source, source_array_path, get_mapping, dest, dest_tuple):
+            nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
+            if nested_items_root:
+                for i in nested_items_root:
+                    _nested_element = _t.get_nested(i, source_array_path)
+                    nested_dicts = _t.as_list_of_dict(_nested_element, get_mapping)
+                    _t.extend_nested(dest, dest_tuple, nested_dicts)
+
         resourceConstraints = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceConstraints',))
         if resourceConstraints:
+            # for type, constraint in resourceConstraints.items():
+            # _resourceConstraints = []
+
             # LegalConstraints
-            filter_type_legal = lambda r : r and r.get('gmd:MD_LegalConstraints') is not None
-            filter_type_legal_fields = {
-                ('gmd:MD_LegalConstraints','gmd:otherConstraints','gco:CharacterString',):('otherConstraints',),
-                # TODO sometime this is an array ...
-                ('gmd:MD_LegalConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
-                # TODO sometime this is an array ...
-                ('gmd:MD_LegalConstraints','gmd:useConstraints','gco:CharacterString','@codeListValue',):('useConstraints',),
-                ('gmd:MD_LegalConstraints','gmd:accessConstraints','gco:CharacterString','@codeListValue',):('accessConstraints',),
-            }
-            _resourceConstraints_legal = _t.as_list_of_dict(resourceConstraints, filter_type_legal_fields, errors, filter_type_legal)
-            for d in _resourceConstraints_legal:
-                d['type'] = 'LegalConstraints'
+            # filter_type_legal = lambda r : r and r.get('gmd:MD_LegalConstraints') is not None
+            # filter_type_legal_fields = {
+            #     ('gmd:MD_LegalConstraints','gmd:otherConstraints',):('legalConstraints','otherConstraints',),
+            #     ('gmd:MD_LegalConstraints','gmd:useLimitation',):('legalConstraints','useLimitation',),
+            #     ('gmd:MD_LegalConstraints','gmd:useConstraints',):('legalConstraints','useConstraints',),
+            #     ('gmd:MD_LegalConstraints','gmd:accessConstraints',):('legalConstraints','accessConstraints',),
+            #     ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
+            #     ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('securityConstraints','classification',),
+            #     # TODO (on 1/12/2021 we decided to don't fetch even if present into iso profile)
+            #     # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('securityConstraints','userNote',),
+            #     # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('securityConstraints','classificationSystem',),
+            #     # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
+            
+            # }
+                    
+            # with_filter = lambda r : r and r.get('gmd:MD_LegalConstraints') is not None
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_LegalConstraints','gmd:otherConstraints',),
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','legalConstraints','otherConstraints',))
+            
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_LegalConstraints','gmd:useLimitation',),
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','legalConstraints','useLimitation',))
 
-            # SecurityConstraints
-            filter_type_security = lambda r : r and r.get('gmd:MD_SecurityConstraints') is not None
-            filter_type_security_fields = {
-                ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
-                ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('classification',),
-                # TODO (on 1/12/2021 we decided to don't fetch even if present into iso profile)
-                # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('userNote',),
-                # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('classificationSystem',),
-                # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
-            }
-            _resourceConstraints_security = _t.as_list_of_dict(resourceConstraints, filter_type_security_fields, errors, filter_type_security)
-            for s in _resourceConstraints_security:
-                s['type'] = 'SecurityConstraints'
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_LegalConstraints','gmd:useConstraints',),
+                ('gmd:MD_RestrictionCode','@codeListValue',),
+                _identification_info,
+                ('resourceConstraints','legalConstraints','useConstraints',))
 
-            # Constraints
-            filter_type_constraints = lambda r : r and r.get('gmd:MD_Constraints') is not None
-            filter_type_constraints_fields = {
-                ('gmd:MD_Constraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
-            }
-            _resourceConstraints_constraints = _t.as_list_of_dict(resourceConstraints, filter_type_constraints_fields, errors, filter_type_constraints)
-            for s in _resourceConstraints_constraints:
-                s['type'] = 'Constraints'
-            _resourceConstraints = _resourceConstraints_legal + _resourceConstraints_security + _resourceConstraints_constraints
-            if _resourceConstraints:
-                # merge
-                _t.set_nested(_identification_info, ('resourceConstraints',), _resourceConstraints)
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_LegalConstraints','gmd:accessConstraints',),
+                ('gmd:MD_RestrictionCode','@codeListValue',),
+                _identification_info,
+                ('resourceConstraints','legalConstraints','accessConstraints',))
+                    
+# MD_SecurityConstraints
+            #     ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_SecurityConstraints','gmd:useLimitation',),
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','securityConstraints','useLimitation',))
 
+                # ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('securityConstraints','classification',),
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_SecurityConstraints','gmd:classification',),
+                ('gco:MD_ClassificationCode','@codeListValue',),
+                _identification_info,
+                ('resourceConstraints','securityConstraints','classification',))
+                # # TODO (on 1/12/2021 we decided to don't fetch even if present into iso profile)
+                # # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('securityConstraints','userNote',),
+                # # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('securityConstraints','classificationSystem',),
+                # # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
+            
+# MD_Constraints
+            # ('gmd:MD_Constraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_Constraints','gmd:useLimitation',),
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','constraints','useLimitation',))
 
-        spatialRepresentationType = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',))
-        if spatialRepresentationType:
-            _spatialRepresentationType = _t.as_list_of_values(spatialRepresentationType, ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',), errors)
-            _t.set_nested(_identification_info, ('spatialRepresentationType',), _spatialRepresentationType)
+        _from_nested_list_extend_array(identification_info,
+                ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',),
+                ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',),
+                _identification_info,
+                ('spatialRepresentationType',))
+        # spatialRepresentationType = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',))
+        # if spatialRepresentationType:
+        #     _spatialRepresentationType = _t.as_list_of_values(spatialRepresentationType, ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',), errors)
+        #     _t.set_nested(_identification_info, ('spatialRepresentationType',), _spatialRepresentationType)
 
-        spatialResolution = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialResolution',))
-        if spatialResolution:
-            # Distance
-            filter_type_distance = lambda r : r and r.get('gmd:distance') is not None
-            filter_type_distance_fields = {
-                ('gmd:MD_Resolution','gmd:distance','gco:Distance','#text',):('distance',),
-                ('gmd:MD_Resolution','gmd:distance','gco:Distance','@uom',):('unit',),
-            }
-            _spatialResolutionDistance = _t.as_list_of_dict(spatialResolution, filter_type_distance_fields, errors, filter_type_distance)
-            for d in _spatialResolutionDistance:
-                d['type'] = 'Distance'
-            # Scale
-            filter_type_scale = lambda r : r and r.get('gmd:equivalentScale') is not None
-            filter_type_scale_fields = {
-                ('gmd:MD_Resolution','gmd:equivalentScale','gmd:MD_RepresentativeFraction','gmd:denominator','gco:Integer',):('scaleDenominator',),
-            }
-            _spatialResolutionScale = _t.as_list_of_dict(spatialResolution, filter_type_scale_fields, errors, filter_type_scale)
-            for s in _spatialResolutionScale:
-                s['type'] = 'Scale'
-
-            # merge
-            _spatialResolution = _spatialResolutionDistance + _spatialResolutionScale
-            if _spatialResolution:
-                _t.set_nested(_identification_info, ('spatialResolution',), _spatialResolution)
+        _resolution_fields_map = {
+            ('gmd:MD_Resolution','gmd:distance','gco:Distance','#text',):('distance',),
+            ('gmd:MD_Resolution','gmd:distance','gco:Distance','@uom',):('unit',),
+            ('gmd:MD_Resolution','gmd:equivalentScale','gmd:MD_RepresentativeFraction','gmd:denominator','gco:Integer',):('scaleDenominator',),
+        }
+        _from_nested_list_extend_array_of_dict(identification_info,
+                ('gmd:MD_DataIdentification','gmd:spatialResolution',),
+                _resolution_fields_map,
+                _identification_info,
+                ('spatialResolution',))
+#TODO verify 
 
         topicCategory = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:topicCategory',))
         if topicCategory:
-            _topicCategory = _t.as_list_of_values(topicCategory, ('gmd:MD_TopicCategoryCode',), errors)
+            _topicCategory = _t.as_list_of_values(topicCategory, ('gmd:MD_TopicCategoryCode',))
             _t.set_nested(_identification_info, ('topicCategory',), _topicCategory)
 
         # extent
         extent_geographic = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',))
         _extent = []
         if extent_geographic:
+            extent_geographic_bbox_fields = {
+                ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('geographic','bbox','west',),
+                ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('geographic','bbox','east',),
+                ('gmd:EX_GeographicBoundingBox','gmd:southBoundLatitude','gco:Decimal',):('geographic','bbox','south',),
+                ('gmd:EX_GeographicBoundingBox','gmd:northBoundLatitude','gco:Decimal',):('geographic','bbox','north',)
+            }
+            # _from_nested_list_extend_array_of_dict(identification_info,
+            #         ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',),
+            #         extent_geographic_bbox_fields,
+            #         _identification_info,
+            #         ('extent',))
             # geographic_bbox
             extent_geographic_bbox_filter = lambda r : r and r.get('gmd:EX_GeographicBoundingBox') is not None
-            extent_geographic_bbox_fields = {
-                ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('west',),
-                ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('east',),
-                ('gmd:EX_GeographicBoundingBox','gmd:southBoundLatitude','gco:Decimal',):('south',),
-                ('gmd:EX_GeographicBoundingBox','gmd:northBoundLatitude','gco:Decimal',):('north',),
-            }
-            _extent_geographic_bbox = _t.as_list_of_dict(extent_geographic, extent_geographic_bbox_fields, errors, extent_geographic_bbox_filter)
-            for s in _extent_geographic_bbox:
-                s['type'] = 'geographic_bbox'
-            _extent +=_extent_geographic_bbox
+            
+            _extent_geographic_bbox = _t.as_list_of_dict(extent_geographic, extent_geographic_bbox_fields, extent_geographic_bbox_filter)
+            _extent += _extent_geographic_bbox
 
             # geographic_polygon
             extent_geographic_polygon_filter = lambda r : r and r.get('gmd:EX_BoundingPolygon') is not None
             extent_geographic_polygon_fields = {
-                ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geospatial',),
+                ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geographic','polygon','geospatial',),
             }
-            _extent_geographic_polygon = _t.as_list_of_dict(extent_geographic, extent_geographic_polygon_fields, errors, extent_geographic_polygon_filter)
-            for s in _extent_geographic_polygon:
-                s['type'] = 'geographic_polygon'
+            _extent_geographic_polygon = _t.as_list_of_dict(extent_geographic, extent_geographic_polygon_fields, extent_geographic_polygon_filter)
             _extent += _extent_geographic_polygon
+
         
+        # TODO on 1/12/2021 we decided to delay the management of this type of item
         # extent_vertical = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent',))
         # if extent_vertical:
         #     # vertical
@@ -259,26 +300,23 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         #         ('gmd:verticalElement','gmd:EX_VerticalExtent','#####',):('scaleDenominator',),
         #     }
         #     _extent_vertical = _t.as_list_of_dict(extent_vertical, extent_vertical_fields, errors, extent_vertical_filter)
-        #     for s in _extent_vertical:
-        #         s['type'] = 'vertical'
-        #     _extent += _extent_vertical
+
 
         extent_temporal = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:temporalElement',))
         if extent_temporal:
             # temporal
             extent_temporal_filter = lambda r : r and r.get('gmd:EX_TemporalExtent') is not None
             extent_temporal_fields = {
-                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('beginDate',),
-                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('endDate',),
+                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('temporal','beginDate',),
+                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('temporal','endDate',),
             }
-            _extent_temporal = _t.as_list_of_dict(extent_temporal, extent_temporal_fields, errors, extent_temporal_filter)
-            for s in _extent_temporal:
-                s['type'] = 'temporal'
+            _extent_temporal = _t.as_list_of_dict(extent_temporal, extent_temporal_fields, extent_temporal_filter)
             _extent += _extent_temporal
-            
+
         if _extent:
             # merge
             _t.set_nested(_identification_info, ('spatialResolution',), _extent)
+
 
         aggregationInfo = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:aggregationInfo',))
         if aggregationInfo:
@@ -286,7 +324,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 ('gmd:MD_AggregateInformation','gmd:associationType','gmd:DS_AssociationTypeCode','codeListValue',):('aggregationInfo','associationType',),
                 ('gmd:MD_AggregateInformation','gmd:aggregateDataSetIdentifier','gmd:MD_Identifier','gmd:code','gco:CharacterString',):('aggregationInfo','code',)
             }
-            _aggregationInfo = _t.as_list_of_dict(aggregationInfo, aggregationInfo_fields, errors)
+            _aggregationInfo = _t.as_list_of_dict(aggregationInfo, aggregationInfo_fields)
             _t.set_nested(_identification_info, ('aggregationInfo',), _aggregationInfo)
     
     # _t.set_nested(_citation, ('identificationInfo',), _identification_info)
@@ -336,7 +374,7 @@ def __citation(citation, opt, version, data, errors, context):
 
     presentationForm = _t.get_nested(citation, ('gmd:presentationForm',))
     if presentationForm:
-        _t.set_nested(_citation, ('presentationForm',), _t.as_list_of_values(presentationForm, ('gmd:CI_PresentationFormCode','@codeListValue',), errors))
+        _t.set_nested(_citation, ('presentationForm',), _t.as_list_of_values(presentationForm, ('gmd:CI_PresentationFormCode','@codeListValue',)))
     
     cited_responsible_party = _t.get_nested(citation, ('gmd:citedResponsibleParty',))
     if cited_responsible_party:
@@ -436,7 +474,7 @@ def __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, conte
         }
         _t.map_to(_dk,descriptiveKeywords_fields,_k)
         _keywords = _t.get_nested(_dk, ('gmd:MD_Keywords','gmd:keyword',))
-        _ks = _t.as_list_of_values(_keywords, ('gco:CharacterString',), errors)
+        _ks = _t.as_list_of_values(_keywords, ('gco:CharacterString',))
         _t.set_nested(_k, ('keywords',), _ks)
 
         _descriptiveKeywords.append(_k)
@@ -548,21 +586,6 @@ def _extract_iso(body, opt, version, data, errors, context):
         
         # dataIdentification (see below)
         
-        # TODO license
-        # <gmd:resourceConstraints>
-        #     <gmd:MD_LegalConstraints>
-        #         <gmd:useConstraints>
-        #             <gmd:MD_RestrictionCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode" codeListValue="license"></gmd:MD_RestrictionCode>
-        #         </gmd:useConstraints>
-        #         <gmd:accessConstraints>
-        #             <gmd:MD_RestrictionCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright"></gmd:MD_RestrictionCode>
-        #         </gmd:accessConstraints>
-        #         <gmd:otherConstraints>
-        #             <gco:CharacterString>Creative Commons Attribution-NonCommercial-ShareAlike 3.0 IGO. More info at \nhttps://creativecommons.org/licenses/by-nc-sa/3.0/igo/</gco:CharacterString>
-        #         </gmd:otherConstraints>
-        #     </gmd:MD_LegalConstraints>
-        # </gmd:resourceConstraints>
-
         # referenceSystemIdentifier
         ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
 
@@ -571,11 +594,8 @@ def _extract_iso(body, opt, version, data, errors, context):
         # DISTRIBUTION INFO
         # transferOptions (see below) _extract_transfer_options
 
-        # distributionFormat
-        # TODO could it be an array???
-        ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat','gmd:MD_Format','gmd:name','gco:CharacterString',) : ('distributionInfo','distributionFormat','name',),
-        ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat','gmd:MD_Format','gmd:version','gco:CharacterString',) : ('distributionInfo','distributionFormat','version',),
-
+        # distributionFormat (see below) _distribution_format
+        
         # distributor (see below) _extract_distributor
 
         # from xml to resource -> gmd:contact (see below)
@@ -611,6 +631,15 @@ def _extract_iso(body, opt, version, data, errors, context):
     # Extract resources from body (to _data)
     _extract_transfer_options(_body, opt, version, _data, errors, context)
     
+    distributionFormat = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat',))
+    if distributionFormat:
+        distributionFormat_fields = {
+            ('gmd:MD_Format','gmd:name','gco:CharacterString',) : ('name',),
+            ('gmd:MD_Format','gmd:version','gco:CharacterString',) : ('version',),
+        }
+        _distributionFormat = _t.as_list_of_dict(distributionFormat, distributionFormat_fields)
+        _t.set_nested(_iso_profile, ('distributionFormat',), _distributionFormat)
+
     # distributor
     distributor = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
     if distributor:
@@ -632,9 +661,7 @@ def _extract_iso(body, opt, version, data, errors, context):
 
 def _extract_distributor(distributor, _type, opt, version, data, errors, context):
 
-    resources = data.get('resources', [])
-    _distributor = []
-    distributor = distributor
+    
     if not isinstance(distributor, list):
         distributor = [distributor]
     for distrib in distributor:
@@ -642,8 +669,7 @@ def _extract_distributor(distributor, _type, opt, version, data, errors, context
         _distributor_contact = _t.get_nested(distrib, ('gmd:MD_Distributor','gmd:distributorContact',))
         if _distributor_contact:
             __responsible_parties(_distributor_contact, _type, opt, version, data, errors, context)
-
-    return True
+            return True
     
 def _extract_transfer_options(body, opt, version, data, errors, context):
 
@@ -668,7 +694,7 @@ def _extract_transfer_options(body, opt, version, data, errors, context):
                     pop_online(online_resource, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, version, data, errors, context)
                     online.remove(online_resource)
             else:
-                pop_online(online, opt, type, version, data, errors, context)
+                pop_online(online, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, version, data, errors, context)
                 _t.pop_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
 
 def pop_online(online_resource, opt, type, version, data, errors, context):

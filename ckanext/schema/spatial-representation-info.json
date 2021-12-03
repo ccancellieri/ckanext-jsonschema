@@ -13,9 +13,7 @@
                     "type": "string"
                 },
                 "transformationParameterAvailability":{
-                    "type": "boolean",
-                    "format": "select",
-                    "uniqueItems": true
+                    "type": "boolean"
                 },
                 "cellGeometry":{
                     "type": "string",

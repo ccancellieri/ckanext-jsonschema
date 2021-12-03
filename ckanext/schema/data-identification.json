@@ -245,98 +245,108 @@
       "title": "Resource Constraints",
       "type": "array",
       "items": {
-        "anyOf": [
-          {
+        "type":"object",
+        "properties":{
+          "legalConstraints":{
             "title": "Legal constraints",
-            "type": "object",
-            "properties": {
-              "type": {
-                "type":"string",
-                "enum": ["LegalConstraints"],
-                "options": {
-                  "hidden" : true
+            "type": "array",
+            "format": "grid",
+            "items": {
+              "type": "object",
+              "properties": {
+                "otherConstraints": {
+                  "propertyOrder": 30,
+                  "title": "Other constraints",
+                  "type": "array",
+                  "items": {
+                    "format": "textarea",
+                    "type": "string"
+                  }
+                },
+                "useConstraints": {
+                  "propertyOrder": 20,
+                  "title": "Use constraints",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "copyright",
+                      "patent",
+                      "patentPending",
+                      "trademark",
+                      "license",
+                      "intellectualPropertyRights",
+                      "restricted",
+                      "otherRestrictions"
+                    ]
+                  }
+                },
+                "accessConstraints": {
+                  "propertyOrder": 10,
+                  "title": "Access constraints",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "copyright",
+                      "patent",
+                      "patentPending",
+                      "trademark",
+                      "license",
+                      "intellectualPropertyRights",
+                      "restricted",
+                      "otherRestrictions"
+                    ]
+                  }
+                },
+                "useLimitation": {
+                  "propertyOrder": 1,
+                  "title": "Use limitation",
+                  "type": "array",
+                  "items": {
+                    "format": "textarea",
+                    "type": "string"
+                  }
                 }
-              },
-              "otherConstraints": {
-                "propertyOrder": 30,
-                "title": "Other constraints",
-                "type": "string"
-              },
-              "useConstraints": {
-                "propertyOrder": 20,
-                "title": "Use constraints",
-                "type": "string",
-                "enum": [
-                  "copyright",
-                  "patent",
-                  "patentPending",
-                  "trademark",
-                  "license",
-                  "intellectualPropertyRights",
-                  "restricted",
-                  "otherRestrictions"
-                ]
-              },
-              "accessConstraints": {
-                "propertyOrder": 10,
-                "title": "Access constraints",
-                "type": "string",
-                "enum": [
-                  "copyright",
-                  "patent",
-                  "patentPending",
-                  "trademark",
-                  "license",
-                  "intellectualPropertyRights",
-                  "restricted",
-                  "otherRestrictions"
-                ]
-              },
-              "useLimitation": {
-                "propertyOrder": 1,
-                "title": "Use limitation",
-                "type": "string"
               }
             }
           },
-          {
+          "constraints":{
             "title": "Constraints",
             "type": "object",
             "properties": {
-              "type": {
-                "type":"string",
-                "enum": ["Constraints"],
-                "options": {
-                  "hidden" : true
-                }
-              },
               "useLimitation": {
                 "propertyOrder": 1,
                 "title": "Use limitation",
-                "type": "string"
+                "type": "array",
+                "items": {
+                  "format": "textarea",
+                  "type": "string"
+                }
               }
             }
           },
-          {
+          "securityConstraints":{
             "title": "Security constraints",
             "type": "object",
             "properties": {
-              "type": {
-                "type":"string",
-                "enum": ["SecurityConstraints"],
-                "options": {
-                  "hidden" : true
-                }
-              },
               "useLimitation": {
                 "propertyOrder": 1,
                 "title": "Use limitation",
-                "type": "string"
+                "type": "array",
+                "items": {
+                  "format": "textarea",
+                  "type": "string"
+                }
               },
               "userNote": {
                 "propertyOrder": 10,
                 "title": "User note",
-                "type": "string"
+                "type": "array",
+                "items": {
+                  "format": "textarea",
+                  "type": "string"
+                }
               },
               "classification": {
                 "propertyOrder": 20,
@@ -353,16 +363,18 @@
               "classificationSystem": {
                 "propertyOrder": 30,
                 "title": "Classification system",
+                "format": "textarea",
                 "type": "string"
               },
               "handingDescription": {
                 "propertyOrder": 40,
                 "title": "Handing description",
+                "format": "textarea",
                 "type": "string"
               }
             }
           }
-        ]
+        }
       }
     },
     "spatialRepresentationType": {
@@ -387,49 +399,23 @@
       "type": "array",
       "items": {
         "type": "object",
-        "anyOf": [
-          {
-            "type": "object",
-            "title": "Distance",
-            "properties": {
-              "type": {
-                "type":"string",
-                "enum": ["Distance"],
-                "options": {
-                  "hidden" : true
-                }
-              },
-              "distance": {
-                "propertyOrder": 1,
-                "title": "Distance",
-                "type": "string"
-              },
-              "unit": {
-                "propertyOrder": 10,
-                "title": "Unit",
-                "type": "string"
-              }
+        "properties": {
+            "distance": {
+              "propertyOrder": 1,
+              "title": "Distance",
+              "type": "string"
+            },
+            "unit": {
+              "propertyOrder": 10,
+              "title": "Unit",
+              "type": "string"
+            },
+            "scaleDenominator": {
+              "propertyOrder": 20,
+              "title": "Scale denominator",
+              "type": "string"
             }
-          },
-          {
-            "type": "object",
-            "title": "Scale",
-            "properties": {
-              "type": {
-                "type":"string",
-                "enum": ["Scale"],
-                "options": {
-                  "hidden" : true
-                }
-              },
-              "scaleDenominator": {
-                "propertyOrder": 20,
-                "title": "Scale denominator",
-                "type": "string"
-              }
-            }
-          }
-        ]
+        }
       }
     },
     "extent": {
@@ -440,7 +426,8 @@
     "supplementalInformation": {
       "propertyOrder": 100,
       "title": "Supplemental information",
-      "type": "string"
+      "type": "string",
+      "format":"textarea"
     },
     "language": {
       "propertyOrder": 110,

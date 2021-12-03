@@ -74,21 +74,17 @@
             "title": "Spatial representation info",
             "$ref": "spatial-representation-info.json"
         },
-        "distributionInfo": {
+        "distributionFormat": {
+            "title": "Distribution format",
             "propertyOrder": 95,
-            "title": "Distribution info",
-            "type": "object",
-            "properties": {
-                "distributionFormat": {
-                    "title": "Distribution format",
-                    "type": "object",
-                    "version":{
-                        "type":"string"
-                    },
-                    "name":{
-                        "type":"string"
-                    }
-                    
+            "type": "array",
+            "items": {
+                "type": "object",
+                "version":{
+                    "type":"string"
+                },
+                "name":{
+                    "type":"string"
                 }
             }
         },
@@ -142,7 +138,6 @@
                             "title": "Source",
                             "description": "Information about the source data used in creating the data specified by the scope",
                             "type": "array",
-                            "format": "table",
                             "items": {
                                 "title": "URI or UUID of the source metadata",
                                 "type": "string"

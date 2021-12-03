@@ -253,7 +253,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 // validateFormats: false,
                 // formats: {'*': true, checkbox: true},
                 loadSchema:loadSchema,
-                // strict: false,
+                //strict: false,
                 // // allErrors: true,
                 // validateSchema: false, 
                 strictSchema: false

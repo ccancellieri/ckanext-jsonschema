@@ -130,7 +130,7 @@ class JsonschemaIso(p.SingletonPlugin):
         # TYPE_ISO_RESOURCE_DATASET,
 
         elif type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
-            return _extract_iso_resource_dataset(body, type, opt, version, data, errors, context)
+            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
             
 
 
@@ -138,7 +138,7 @@ class JsonschemaIso(p.SingletonPlugin):
             return _extract_iso_online_resource(body, type, opt, version, data, errors, context)
             
         elif type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
-            return _extract_iso_online_resource(body, type, opt, version, data, errors, context)
+            return _extract_iso_graphic_overview(body, type, opt, version, data, errors, context)
             
         elif type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
@@ -229,15 +229,18 @@ def _extract_iso_name(body, type, opt, version, data, errors, context):
 
     # /api/util/dataset/munge_title_to_name?title=police:%20spending%20figures%202009
     
-    name = munge.munge_name(body.get('fileIdentifier',''))
+    name = body.get('fileIdentifier')
 
     if not name:
         name = str(uuid.uuid4())
-        # if we are here we are creating/updating a metadata without file identifier
-        # let's port back to body the new identifier ...
-        body['fileIdentifier'] = name
         # _v.stop_with_error('Unable to obtain {}'.format('fileIdentifier'), 'fileIdentifier', errors)
-        
+    else:
+        name = munge.munge_name(name)
+
+    # if we are here we are creating/updating a metadata without file identifier
+    # let's port back to body the new identifier ...
+    body['fileIdentifier'] = name
+
     _dict = {
         'name': name,
         'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
@@ -272,11 +275,12 @@ def _extract_iso_online_resource(body, type, opt, version, data, errors, context
 
     return body, type, opt, version, _dict
 
-def _extract_iso_resource_dataset(body, type, opt, version, data, errors, context):
+def _extract_iso_graphic_overview(body, type, opt, version, data, errors, context):
 
-    name = body.get('name')
+    name = body.get('fileDescription')
     if not name:
-        _v.stop_with_error('Unable to obtain \'name\'', 'name', errors)
+        name = 'Graphic overview'
+        # _v.stop_with_error('Unable to obtain \'fileDescription\'', 'fileDescription', errors)
         
     _dict = {
         'name': name
@@ -287,7 +291,7 @@ def _extract_iso_resource_dataset(body, type, opt, version, data, errors, contex
 
 def _extract_iso_resource_responsible(body, type, opt, version, data, errors, context):
 
-    name = body.get('individualName')
+    name = body.get('individualName') or _t.get_nested(body, ('onlineResource','name',))
     if not name:
         name = 'Contact'
     

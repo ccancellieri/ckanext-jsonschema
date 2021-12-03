@@ -73,6 +73,22 @@ def get_nested(dict, tuple):
     except:
         return
 
+def extend_nested(_dict, _tuple, _list):
+    if not _dict or not _tuple or not _list:
+        return
+    try:
+        d = _dict
+        for k in _tuple[:-1]:
+            d = d.setdefault(k,{})
+        k = _tuple[-1:][0]
+        if not d.get(k):
+            d[k] = _list
+        else:
+            d[k].extend(_list)
+    except:
+        return
+    return _dict
+
 def map_to(from_dict, map, to_dict):
     errors=[]
     for (source_path, dest_path) in map.items():
@@ -82,7 +98,9 @@ def map_to(from_dict, map, to_dict):
     return errors
 
 
-def as_list_of_values(items, path, errors, filter = lambda i : True):
+def as_list_of_values(items, path, filter = lambda i : True, errors = None):
+    if not items:
+        return
     _items = []
     if not isinstance(items, list):
         items = [items]
@@ -93,15 +111,17 @@ def as_list_of_values(items, path, errors, filter = lambda i : True):
         # TODO error trap and return
     return _items
 
-def as_list_of_dict(items, fields, errors, filter = lambda i : True):
+def as_list_of_dict(items, fields_map = None, filter = lambda i : True, errors = None):
     _items = []
     if not isinstance(items, list):
         items = [items]
     for _item in items:
-        _i = {}
         if _item and filter(_item):
-            errors = map_to(_item, fields, _i)
-            # TODO error trap and return
+            _i = {}
+            if fields_map:
+                errors = map_to(_item, fields_map, _i)
+            else:
+                _i = _item
             _items.append(_i)
     return _items
 
