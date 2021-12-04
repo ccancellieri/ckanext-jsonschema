@@ -323,7 +323,14 @@
           "$ref": "iso19139.json#/definitions/referenceSystemInfo"
         },
         "gmd:dataQualityInfo":{
-          "$ref": "iso19139.json#/definitions/dataQualityInfo"
+          "anyOf":[
+            {
+              "$ref": "iso19139.json#/definitions/dataQualityInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "gmd:contact":{
           "oneOf":[{
