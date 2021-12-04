@@ -204,13 +204,13 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 ('resourceConstraints','securityConstraints','classification',))
 
             _from_nested_list_extend_array(resourceConstraints,
-                ('gmd:MD_SecurityConstraints','gmd:userNote',)
+                ('gmd:MD_SecurityConstraints','gmd:userNote',),
                 ('gco:CharacterString',),
                 _identification_info,
                 ('resourceConstraints','securityConstraints','userNote',))
 
             _from_nested_list_extend_array(resourceConstraints,
-                ('gmd:MD_SecurityConstraints','gmd:classificationSystem',)
+                ('gmd:MD_SecurityConstraints','gmd:classificationSystem',),
                 ('gco:CharacterString',),
                 _identification_info,
                 ('resourceConstraints','securityConstraints','classificationSystem',))
