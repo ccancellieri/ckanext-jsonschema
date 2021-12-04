@@ -33,9 +33,9 @@ def dataset_type(dataset):
     if not dataset_type:
         raise Exception(_('The resource has no format!'))
     
-     # type has been properly configured only if it is matching the type-mapping
-    if dataset_type not in _c.TYPE_MAPPING.keys():
-        raise Exception(_('Not recognized type: {}. Please check your configuration.').format(dataset_type))
+    #  # type has been properly configured only if it is matching the type-mapping
+    # if dataset_type not in _c.TYPE_MAPPING.keys():
+    #     raise Exception(_('Not recognized type: {}. Please check your configuration.').format(dataset_type))
 
     return dataset_type
 
@@ -124,6 +124,30 @@ def as_list_of_dict(items, fields_map = None, filter = lambda i : True, errors =
                 _i = _item
             _items.append(_i)
     return _items
+
+def as_boolean(dict, path):
+    '''
+    if a value is found a conversion to boolean is provided
+    return None
+    '''
+    # convert type
+    b = get_nested(dict,path)
+    if b and not isinstance(b, bool):
+        if b.lower()=='true':
+            set_nested(dict, path, True)
+        else:
+            set_nested(dict, path, False)
+
+import datetime as dt
+def as_datetime(dict, path, strptime_format='%Y-%m-%d'):
+    #'%Y-%m-%d %H:%M:%S'
+    d = get_nested(dict,path)
+    if d and not isinstance(d, dt.date):
+        try:
+            return set_nested(dict, path, dt.datetime.strptime(d, strptime_format))
+        except Exception as e:
+            pass
+        
 
 # def map_inverse(to_dict, map, from_dict):
 #     errors=[]

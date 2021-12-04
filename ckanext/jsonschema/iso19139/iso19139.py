@@ -492,7 +492,9 @@ def __dates(dates):
             ('gmd:CI_Date','gmd:dateType','gmd:CI_DateTypeCode','@codeListValue',):('dateType',),
         }
         errors = _t.map_to(_date, dates_fields, _d)
-
+        # convert types
+        # not json serializable
+#        _t.as_datetime(_d, ('date',))
         _dates.append(_d)
 
     return _dates
@@ -515,6 +517,9 @@ def __spatial_representation_info(spatial_representation_info):
             # map body to ckan fields (_data)
             errors = _t.map_to(sri, grid_spatial_representation_info_fields, _sri)
 
+            # convert types
+            _t.as_boolean(_sri, ('transformationParameterAvailability',))
+
             axis_dimension_properties = _t.get_nested(sri, ('gmd:MD_GridSpatialRepresentation','gmd:axisDimensionProperties',))
             if not isinstance(axis_dimension_properties, list):
                 axis_dimension_properties = [axis_dimension_properties]
@@ -533,10 +538,9 @@ def __spatial_representation_info(spatial_representation_info):
             _Grids.append(_sri)
 
         elif sri.get('gmd:MD_VectorSpatialRepresentation'):
-            # VECTOR
+            # VECTOR<gmd:MD_VectorSpatialRepresentation>
             vector_spatial_representation_info_fields = {
-                ('gmd:MD_VectorSpatialRepresentation','gmd:transformationParameterAvailability','gco:Boolean',):('transformationParameterAvailability',),
-                ('gmd:MD_VectorSpatialRepresentation','gmd:cellGeometry','@codeListValue',):('cellGeometry',)
+                ('gmd:MD_VectorSpatialRepresentation','gmd:topologyLevel','gmd:MD_TopologyLevelCode','@codeListValue',):('topologyLevel',)
             }
             errors = _t.map_to(sri, vector_spatial_representation_info_fields, _sri)
 
