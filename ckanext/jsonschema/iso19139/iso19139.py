@@ -499,7 +499,8 @@ def __dates(dates):
 
 def __spatial_representation_info(spatial_representation_info):
     # spatial_representation_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
-    _ret = []
+    _Grids = []
+    _Vectors = []
     if not isinstance(spatial_representation_info, list):
             spatial_representation_info = [spatial_representation_info]
     for sri in spatial_representation_info:
@@ -528,6 +529,8 @@ def __spatial_representation_info(spatial_representation_info):
                 }
                 errors = _t.map_to(axis, axis_fields, _axis)
                 _dimensions.append(_axis)
+            
+            _Grids.append(_sri)
 
         elif sri.get('gmd:MD_VectorSpatialRepresentation'):
             # VECTOR
@@ -550,11 +553,16 @@ def __spatial_representation_info(spatial_representation_info):
                 }
                 errors = _t.map_to(go, go_fields, _go)
                 _geometric_object.append(_go)
+            _Vectors.append(_sri)
         else:
             continue
 
-        _ret.append(_sri)
-        
+    
+    _ret = {}
+    if _Vectors:
+        _ret = { 'vectorSpatialRepresentation' : _Vectors }
+    if _Grids:
+        _ret.update({ 'gridSpatialRepresentation' : _Grids })
     return _ret
 
 def _extract_iso(body, opt, version, data, errors, context):

@@ -1,56 +1,59 @@
 {
     "type": "object",
-    "anyOf": [
-        {
-            "type": "object",
+    "properties": {
+        "gridSpatialRepresentation":{
+            "type":"array",
             "title": "Raster spatial representation",
-            "description":"GridSpatialRepresentation",
-            "required": [
-                "transformationParameterAvailability"
-            ],
-            "properties":{
-                "numberOfDimensions":{
-                    "type": "string"
-                },
-                "transformationParameterAvailability":{
-                    "type": "boolean"
-                },
-                "cellGeometry":{
-                    "type": "string",
-                    "enum":[
-                        "area",
-                        "point"
-                     ]
-                },
-                "dimension":{
-                    "type": "array",
-                    "items": {
-                        "type":"object",
-                        "properties":{
-                            "dimensionName":{
-                                "type":"string",
-                                "enum":[
-                                    "row",
-                                    "column",
-                                    "vertical",
-                                    "track",
-                                    "crossTrack",
-                                    "line",
-                                    "sample",
-                                    "time"
-                                 ]
-                            },
-                            "dimensionSize":{
-                                "type":"string"
-                            },
-                            "resolution": {
-                                "type":"object",
-                                "properties":{
-                                    "uom": {
-                                        "type":"string"
-                                    },
-                                    "value":{
-                                        "type":"string"
+            "items":{
+                "type": "object",
+                "description":"GridSpatialRepresentation",
+                "required": [
+                    "transformationParameterAvailability"
+                ],
+                "properties":{
+                    "numberOfDimensions":{
+                        "type": "string"
+                    },
+                    "transformationParameterAvailability":{
+                        "type": "boolean"
+                    },
+                    "cellGeometry":{
+                        "type": "string",
+                        "enum":[
+                            "area",
+                            "point"
+                        ]
+                    },
+                    "dimension":{
+                        "type": "array",
+                        "items": {
+                            "type":"object",
+                            "properties":{
+                                "dimensionName":{
+                                    "type":"string",
+                                    "enum":[
+                                        "row",
+                                        "column",
+                                        "vertical",
+                                        "track",
+                                        "crossTrack",
+                                        "line",
+                                        "sample",
+                                        "time"
+                                    ]
+                                },
+                                "dimensionSize":{
+                                    "type":"string"
+                                },
+                                "resolution": {
+                                    "type":"object",
+                                    "properties":{
+                                        "uom": {
+                                            "type":"string"
+                                        },
+                                        "value":{
+                                            "type":"string"
+                                        }
                                     }
                                 }
                             }
@@ -59,48 +62,51 @@
                 }
             }
         },
-        {
-            "type": "object",
+        "vectorSpatialRepresentation":{
+            "type":"array",
             "title": "Vector spatial representation",
-            "description":"VectorSpatialRepresentation",
-            "properties":{
-                "topologyLevel":{
-                    "type":"string",
-                    "enum": [
-                        "geometryOnly",
-                        "topology1D",
-                        "fullPlanarGraph",
-                        "surfaceGraph",
-                        "fullSurfaceGraph",
-                        "topology3D",
-                        "fullTopology3D",
-                        "abstract"
-                    ],
-                    "description":"MD_TopologyLevelCode"
-                },
-                "geometricObjects":{
-                    "type": "array",
-                    "items": {
-                        "type":"object",
-                        "properties":{
-                            "geometricObjectCount":{
-                                "type":"string"
-                            },
-                            "geometricObjectType":{
-                                "type":"string",
-                                "enum":[
-                                    "surface",
-                                    "complex",
-                                    "composite",
-                                    "curve",
-                                    "point",
-                                    "solid"
-                                ]
+            "items":{
+                "type": "object",
+                "description":"VectorSpatialRepresentation",
+                "properties":{
+                    "topologyLevel":{
+                        "type":"string",
+                        "enum": [
+                            "geometryOnly",
+                            "topology1D",
+                            "fullPlanarGraph",
+                            "surfaceGraph",
+                            "fullSurfaceGraph",
+                            "topology3D",
+                            "fullTopology3D",
+                            "abstract"
+                        ],
+                        "description":"MD_TopologyLevelCode"
+                    },
+                    "geometricObjects":{
+                        "type": "array",
+                        "items": {
+                            "type":"object",
+                            "properties":{
+                                "geometricObjectCount":{
+                                    "type":"string"
+                                },
+                                "geometricObjectType":{
+                                    "type":"string",
+                                    "enum":[
+                                        "surface",
+                                        "complex",
+                                        "composite",
+                                        "curve",
+                                        "point",
+                                        "solid"
+                                    ]
+                                }
                             }
                         }
                     }
                 }
             }
-        } 
-    ]
+        }
+    }
 }
