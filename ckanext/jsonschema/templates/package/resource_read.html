@@ -1,0 +1,75 @@
+{% ckan_extends %}
+
+{% import 'source/macros.html' as reader %}
+
+{% block resource_content %}
+{% endblock %}
+
+{% block subtitle %}{{ h.dataset_display_name(c.package) }} - {{ h.resource_display_name(res) }}{% endblock %}
+
+{% block breadcrumb_content_selected %}{% endblock %}
+
+{% block breadcrumb_content %}
+  {{ super() }}
+  <li class="active"><a href="">{{ h.resource_display_name(res)|truncate(30) }}</a></li>
+{% endblock %}
+
+
+{% if dataset_type %}
+    {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
+    {% if resource_types and resource_types | length > 0 %}
+        {% set jsonschema = true %}
+    {% endif %}
+{% endif %}
+
+{% block primary_content %}
+  {% block resource_additional_information %}
+    {% if res %}
+      {{super()}}
+      <section class="module">
+        {% block resource_additional_information_inner %}
+        {% endblock %}
+        {% if jsonschema is defined %}
+          {% set extras = h.jsonschema_resolve_resource_extras(dataset_type, res, True) %}
+
+          {% set TYPE_KEY = h.jsonschema_get_type_key() %}
+          {% set BODY_KEY = h.jsonschema_get_body_key() %}
+          {% set OPT_KEY = h.jsonschema_get_opt_key() %}
+          {% set VERSION_KEY = h.jsonschema_get_version_key() %}
+
+          {% set schema_type = extras[TYPE_KEY] %}
+          {% set body = extras[BODY_KEY] %}
+          {% set opt = extras[OPT_KEY] %}
+          {% set version = extras[VERSION_KEY] %}
+
+          
+          {% set schema = h.jsonschema_get_schema(schema_type) %}
+          {% if body %}
+            <p>
+              <h3>Metadata:</h3>
+              {{ reader.render_json(body) }}
+            </p>
+          {% endif %}
+          {% if opt %}
+            <p>
+              <h3>Options:</h3>
+              {{ reader.render_json(opt) }}
+            </p>
+          {% endif %}
+        {% endif %}
+      </section>
+    {% endif %}
+  {% endblock %}
+{% endblock %}
+
+{% block secondary_content %}
+
+  {% block resources_list %}
+    {% snippet "package/snippets/resources.html", pkg=pkg, active=res.id %}
+  {% endblock %}
+
+  {% block resource_license %}
+    {% snippet "snippets/social.html" %}
+  {% endblock %}
+{% endblock %}
+

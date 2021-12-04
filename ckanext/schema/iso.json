@@ -78,6 +78,9 @@
             "title": "Distribution format",
             "propertyOrder": 95,
             "type": "array",
+            "required": [
+                "name"
+            ],
             "items": {
                 "type": "object",
                 "version":{
