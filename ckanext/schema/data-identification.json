@@ -249,64 +249,60 @@
         "properties":{
           "legalConstraints":{
             "title": "Legal constraints",
-            "type": "array",
-            "format": "grid",
-            "items": {
-              "type": "object",
-              "properties": {
-                "otherConstraints": {
-                  "propertyOrder": 30,
-                  "title": "Other constraints",
-                  "type": "array",
-                  "items": {
-                    "format": "textarea",
-                    "type": "string"
-                  }
-                },
-                "useConstraints": {
-                  "propertyOrder": 20,
-                  "title": "Use constraints",
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "copyright",
-                      "patent",
-                      "patentPending",
-                      "trademark",
-                      "license",
-                      "intellectualPropertyRights",
-                      "restricted",
-                      "otherRestrictions"
-                    ]
-                  }
-                },
-                "accessConstraints": {
-                  "propertyOrder": 10,
-                  "title": "Access constraints",
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": [
-                      "copyright",
-                      "patent",
-                      "patentPending",
-                      "trademark",
-                      "license",
-                      "intellectualPropertyRights",
-                      "restricted",
-                      "otherRestrictions"
-                    ]
-                  }
-                },
-                "useLimitation": {
-                  "propertyOrder": 1,
-                  "title": "Use limitation",
-                  "type": "array",
-                  "items": {
-                    "format": "textarea",
-                    "type": "string"
-                  }
+            "type": "object",
+            "properties": {
+              "otherConstraints": {
+                "propertyOrder": 30,
+                "title": "Other constraints",
+                "type": "array",
+                "items": {
+                  "format": "textarea",
+                  "type": "string"
+                }
+              },
+              "useConstraints": {
+                "propertyOrder": 20,
+                "title": "Use constraints",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "copyright",
+                    "patent",
+                    "patentPending",
+                    "trademark",
+                    "license",
+                    "intellectualPropertyRights",
+                    "restricted",
+                    "otherRestrictions"
+                  ]
+                }
+              },
+              "accessConstraints": {
+                "propertyOrder": 10,
+                "title": "Access constraints",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "copyright",
+                    "patent",
+                    "patentPending",
+                    "trademark",
+                    "license",
+                    "intellectualPropertyRights",
+                    "restricted",
+                    "otherRestrictions"
+                  ]
+                }
+              },
+              "useLimitation": {
+                "propertyOrder": 1,
+                "title": "Use limitation",
+                "type": "array",
+                "items": {
+                  "format": "textarea",
+                  "type": "string"
                 }
               }
             }
