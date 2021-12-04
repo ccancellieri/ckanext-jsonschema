@@ -163,26 +163,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
         resourceConstraints = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceConstraints',))
         if resourceConstraints:
-            # for type, constraint in resourceConstraints.items():
-            # _resourceConstraints = []
-
-            # LegalConstraints
-            # filter_type_legal = lambda r : r and r.get('gmd:MD_LegalConstraints') is not None
-            # filter_type_legal_fields = {
-            #     ('gmd:MD_LegalConstraints','gmd:otherConstraints',):('legalConstraints','otherConstraints',),
-            #     ('gmd:MD_LegalConstraints','gmd:useLimitation',):('legalConstraints','useLimitation',),
-            #     ('gmd:MD_LegalConstraints','gmd:useConstraints',):('legalConstraints','useConstraints',),
-            #     ('gmd:MD_LegalConstraints','gmd:accessConstraints',):('legalConstraints','accessConstraints',),
-            #     ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
-            #     ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('securityConstraints','classification',),
-            #     # TODO (on 1/12/2021 we decided to don't fetch even if present into iso profile)
-            #     # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('securityConstraints','userNote',),
-            #     # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('securityConstraints','classificationSystem',),
-            #     # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
             
-            # }
-                    
-            # with_filter = lambda r : r and r.get('gmd:MD_LegalConstraints') is not None
             _from_nested_list_extend_array(resourceConstraints,
                 ('gmd:MD_LegalConstraints','gmd:otherConstraints',),
                 ('gco:CharacterString',),
@@ -207,7 +188,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 _identification_info,
                 ('resourceConstraints','legalConstraints','accessConstraints',))
                     
-# MD_SecurityConstraints
+            # MD_SecurityConstraints
             #     ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
             _from_nested_list_extend_array(resourceConstraints,
                 ('gmd:MD_SecurityConstraints','gmd:useLimitation',),
@@ -221,12 +202,32 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 ('gco:MD_ClassificationCode','@codeListValue',),
                 _identification_info,
                 ('resourceConstraints','securityConstraints','classification',))
-                # # TODO (on 1/12/2021 we decided to don't fetch even if present into iso profile)
-                # # ('gmd:MD_SecurityConstraints','gmd:userNote','gco:CharacterString','@codeListValue',):('securityConstraints','userNote',),
-                # # ('gmd:MD_SecurityConstraints','gmd:classificationSystem','gco:CharacterString',):('securityConstraints','classificationSystem',),
-                # # ('gmd:MD_SecurityConstraints','gmd:useLimitation','gco:CharacterString',):('securityConstraints','useLimitation',),
+
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_SecurityConstraints','gmd:userNote',)
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','securityConstraints','userNote',))
+
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_SecurityConstraints','gmd:classificationSystem',)
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','securityConstraints','classificationSystem',))
+
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_SecurityConstraints','gmd:useLimitation',),
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','securityConstraints','useLimitation',))
             
-# MD_Constraints
+            _from_nested_list_extend_array(resourceConstraints,
+                ('gmd:MD_SecurityConstraints','gmd:handlingDescription',),
+                ('gco:CharacterString',),
+                _identification_info,
+                ('resourceConstraints','securityConstraints','handlingDescription',))
+            
+            # MD_Constraints
             # ('gmd:MD_Constraints','gmd:useLimitation','gco:CharacterString',):('useLimitation',),
             _from_nested_list_extend_array(resourceConstraints,
                 ('gmd:MD_Constraints','gmd:useLimitation',),
@@ -234,6 +235,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 _identification_info,
                 ('resourceConstraints','constraints','useLimitation',))
 
+        # spatialRepresentationType
         _from_nested_list_extend_array(identification_info,
                 ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',),
                 ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',),

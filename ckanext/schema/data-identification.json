@@ -243,131 +243,128 @@
     "resourceConstraints": {
       "propertyOrder": 60,
       "title": "Resource Constraints",
-      "type": "array",
-      "items": {
-        "type":"object",
-        "properties":{
-          "legalConstraints":{
-            "title": "Legal constraints",
-            "type": "object",
-            "properties": {
-              "otherConstraints": {
-                "propertyOrder": 30,
-                "title": "Other constraints",
-                "type": "array",
-                "items": {
-                  "format": "textarea",
-                  "type": "string"
-                }
-              },
-              "useConstraints": {
-                "propertyOrder": 20,
-                "title": "Use constraints",
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "copyright",
-                    "patent",
-                    "patentPending",
-                    "trademark",
-                    "license",
-                    "intellectualPropertyRights",
-                    "restricted",
-                    "otherRestrictions"
-                  ]
-                }
-              },
-              "accessConstraints": {
-                "propertyOrder": 10,
-                "title": "Access constraints",
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "copyright",
-                    "patent",
-                    "patentPending",
-                    "trademark",
-                    "license",
-                    "intellectualPropertyRights",
-                    "restricted",
-                    "otherRestrictions"
-                  ]
-                }
-              },
-              "useLimitation": {
-                "propertyOrder": 1,
-                "title": "Use limitation",
-                "type": "array",
-                "items": {
-                  "format": "textarea",
-                  "type": "string"
-                }
+      "type":"object",
+      "properties":{
+        "legalConstraints":{
+          "title": "Legal constraints",
+          "type": "object",
+          "properties": {
+            "otherConstraints": {
+              "propertyOrder": 30,
+              "title": "Other constraints",
+              "type": "array",
+              "items": {
+                "format": "textarea",
+                "type": "string"
               }
-            }
-          },
-          "constraints":{
-            "title": "Constraints",
-            "type": "object",
-            "properties": {
-              "useLimitation": {
-                "propertyOrder": 1,
-                "title": "Use limitation",
-                "type": "array",
-                "items": {
-                  "format": "textarea",
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "securityConstraints":{
-            "title": "Security constraints",
-            "type": "object",
-            "properties": {
-              "useLimitation": {
-                "propertyOrder": 1,
-                "title": "Use limitation",
-                "type": "array",
-                "items": {
-                  "format": "textarea",
-                  "type": "string"
-                }
-              },
-              "userNote": {
-                "propertyOrder": 10,
-                "title": "User note",
-                "type": "array",
-                "items": {
-                  "format": "textarea",
-                  "type": "string"
-                }
-              },
-              "classification": {
-                "propertyOrder": 20,
-                "title": "Classification",
+            },
+            "useConstraints": {
+              "propertyOrder": 20,
+              "title": "Use constraints",
+              "type": "array",
+              "items": {
                 "type": "string",
                 "enum": [
-                  "confidential",
+                  "copyright",
+                  "patent",
+                  "patentPending",
+                  "trademark",
+                  "license",
+                  "intellectualPropertyRights",
                   "restricted",
-                  "secret",
-                  "topSecret",
-                  "unclassified"
+                  "otherRestrictions"
                 ]
-              },
-              "classificationSystem": {
-                "propertyOrder": 30,
-                "title": "Classification system",
-                "format": "textarea",
-                "type": "string"
-              },
-              "handingDescription": {
-                "propertyOrder": 40,
-                "title": "Handing description",
+              }
+            },
+            "accessConstraints": {
+              "propertyOrder": 10,
+              "title": "Access constraints",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "copyright",
+                  "patent",
+                  "patentPending",
+                  "trademark",
+                  "license",
+                  "intellectualPropertyRights",
+                  "restricted",
+                  "otherRestrictions"
+                ]
+              }
+            },
+            "useLimitation": {
+              "propertyOrder": 1,
+              "title": "Use limitation",
+              "type": "array",
+              "items": {
                 "format": "textarea",
                 "type": "string"
               }
+            }
+          }
+        },
+        "constraints":{
+          "title": "Constraints",
+          "type": "object",
+          "properties": {
+            "useLimitation": {
+              "propertyOrder": 1,
+              "title": "Use limitation",
+              "type": "array",
+              "items": {
+                "format": "textarea",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "securityConstraints":{
+          "title": "Security constraints",
+          "type": "object",
+          "properties": {
+            "useLimitation": {
+              "propertyOrder": 1,
+              "title": "Use limitation",
+              "type": "array",
+              "items": {
+                "format": "textarea",
+                "type": "string"
+              }
+            },
+            "userNote": {
+              "propertyOrder": 10,
+              "title": "User note",
+              "type": "array",
+              "items": {
+                "format": "textarea",
+                "type": "string"
+              }
+            },
+            "classification": {
+              "propertyOrder": 20,
+              "title": "Classification",
+              "type": "string",
+              "enum": [
+                "confidential",
+                "restricted",
+                "secret",
+                "topSecret",
+                "unclassified"
+              ]
+            },
+            "classificationSystem": {
+              "propertyOrder": 30,
+              "title": "Classification system",
+              "format": "textarea",
+              "type": "string"
+            },
+            "handingDescription": {
+              "propertyOrder": 40,
+              "title": "Handing description",
+              "format": "textarea",
+              "type": "string"
             }
           }
         }
