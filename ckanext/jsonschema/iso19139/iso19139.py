@@ -72,6 +72,22 @@ class JsonschemaIso19139(p.SingletonPlugin):
 
 #############################################
 
+def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):
+    nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
+    if nested_items_root:
+        for i in nested_items_root:
+            _nested_element = _t.get_nested(i, source_array_path)
+            nested_list = _t.as_list_of_values(_nested_element, get_tuple_as_array)
+            _t.extend_nested(dest, dest_tuple, nested_list)
+    
+def _from_nested_list_extend_array_of_dict(source, source_array_path, get_mapping, dest, dest_tuple):
+    nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
+    if nested_items_root:
+        for i in nested_items_root:
+            _nested_element = _t.get_nested(i, source_array_path)
+            nested_dicts = _t.as_list_of_dict(_nested_element, get_mapping)
+            _t.extend_nested(dest, dest_tuple, nested_dicts)
+
 def __identification_info(identification_info, opt, version, data, errors, context):
     _identification_info = {}
     if identification_info.get('gmd:MD_DataIdentification'):
@@ -144,22 +160,6 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         if descriptiveKeywords:
             _descriptiveKeywords = __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context)
             _t.set_nested(_identification_info, ('descriptiveKeywords',), _descriptiveKeywords)
-
-        def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):
-            nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
-            if nested_items_root:
-                for i in nested_items_root:
-                    _nested_element = _t.get_nested(i, source_array_path)
-                    nested_list = _t.as_list_of_values(_nested_element, get_tuple_as_array)
-                    _t.extend_nested(dest, dest_tuple, nested_list)
-            
-        def _from_nested_list_extend_array_of_dict(source, source_array_path, get_mapping, dest, dest_tuple):
-            nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
-            if nested_items_root:
-                for i in nested_items_root:
-                    _nested_element = _t.get_nested(i, source_array_path)
-                    nested_dicts = _t.as_list_of_dict(_nested_element, get_mapping)
-                    _t.extend_nested(dest, dest_tuple, nested_dicts)
 
         resourceConstraints = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceConstraints',))
         if resourceConstraints:
@@ -346,20 +346,20 @@ def __citation(citation, opt, version, data, errors, context):
 
         # # SERIES
         # name
-        ('gmd:series','gmd:CI_Series','gmd:name','gco:CharacterString'):('series','name'),
+        ('gmd:series','gmd:CI_Series','gmd:name','gco:CharacterString',):('series','name',),
         # issueIdentification
-        ('gmd:series','gmd:CI_Series','gmd:issueIdentification','gco:CharacterString'):('series','issueIdentification'),
+        ('gmd:series','gmd:CI_Series','gmd:issueIdentification','gco:CharacterString',):('series','issueIdentification',),
         # page
-        ('gmd:series','gmd:CI_Series','gmd:page','gco:CharacterString'):('series','page'),
+        ('gmd:series','gmd:CI_Series','gmd:page','gco:CharacterString',):('series','page',),
         
         # otherCitationDetails
-        ('gmd:otherCitationDetails','gco:CharacterString'):('series','otherCitationDetails'),
+        ('gmd:otherCitationDetails','gco:CharacterString',):('otherCitationDetails',),
         # collectiveTitle
-        ('gmd:collectiveTitle','gco:CharacterString'):('series','collectiveTitle'),
+        ('gmd:collectiveTitle','gco:CharacterString',):('collectiveTitle',),
         # ISBN
-        ('gmd:collectiveTitle','gco:CharacterString'):('ISBN'),
+        ('gmd:collectiveTitle','gco:CharacterString',):('ISBN',),
         # ISSN
-        ('gmd:collectiveTitle','gco:CharacterString'):('ISSN'),
+        ('gmd:collectiveTitle','gco:CharacterString',):('ISSN',),
 
         # presentationForm (see below)
         
