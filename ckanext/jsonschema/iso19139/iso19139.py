@@ -336,7 +336,7 @@ def __citation(citation, opt, version, data, errors, context):
     citation_fields = {
         ## DATA IDENTIFICATION ( citation )
         # title
-        ('gmd:title','gco:CharacterString'):('title',),
+        ('gmd:title','gco:CharacterString',):('title',),
         # edition
         ('gmd:edition','gco:CharacterString',):('edition',),
 
