@@ -44,17 +44,23 @@
 
           
           {% set schema = h.jsonschema_get_schema(schema_type) %}
+          {% if schema_type %}
+          <p>
+            <h3>Type:</h3>
+            {{ schema_type }}
+          </p>
+          {% endif %}
           {% if body %}
-            <p>
-              <h3>Metadata:</h3>
-              {{ reader.render_json(body) }}
-            </p>
+          <p>
+            <h3>Metadata:</h3>
+            {{ reader.render_json(body) }}
+          </p>
           {% endif %}
           {% if opt %}
-            <p>
-              <h3>Options:</h3>
-              {{ reader.render_json(opt) }}
-            </p>
+          <p>
+            <h3>Options:</h3>
+            {{ reader.render_json(opt) }}
+          </p>
           {% endif %}
         {% endif %}
       </section>

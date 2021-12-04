@@ -2,42 +2,7 @@
 
 {% set pkg = c.pkg_dict %}
 
-{% macro render_json_body(json) -%}
-  {% if json is string %}
-    {{ json }}
-  {% elif json is mapping %}
-    {% for key, value in json | dictsort %}
-      {% if value %} 
-      <table class="table table-hover">
-        <tbody>
-          <tr>
-            <td><b>{{ key }}</b></td>
-          </tr>
-          <tr>
-            <td>
-              {{ render_json_body(value) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      {% endif %}
-    {% endfor %}
-  {% elif json is iterable %}
-    <ul>
-      {% for s in json %}
-          <li>{{ render_json_body(s) }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    {{ json }}
-  {% endif %}
-{%- endmacro %}
-
-{% macro render_json(json) -%}
-<div class="table-responsive">
-  {{ render_json_body(json) }}
-</div>
-{%- endmacro %}
+{% import 'source/macros.html' as reader %}
 
 {% set extras = h.jsonschema_resolve_extras(pkg, True) %}
 
@@ -100,15 +65,22 @@
     {% endif %}
   {% endfor %}
 
+  {% if schema_type %}
+  <p>
+    <h3>Type:</h3>
+    {{ schema_type }}
+  </p>
+  {% endif %}
+  {% if body %}
   <p>
     <h3>Metadata:</h3>
-    {{ render_json(extras[BODY_KEY]) }}
+    {{ reader.render_json(body) }}
   </p>
-
-  {% if extras[OPT_KEY] %}
+  {% endif %}
+  {% if opt %}
   <p>
     <h3>Options:</h3>
-    {{ render_json(extras[OPT_KEY]) }}
+    {{ reader.render_json(opt) }}
   </p>
   {% endif %}
 
