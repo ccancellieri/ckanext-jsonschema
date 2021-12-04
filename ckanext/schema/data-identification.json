@@ -345,26 +345,35 @@
             "classification": {
               "propertyOrder": 20,
               "title": "Classification",
-              "type": "string",
-              "enum": [
-                "confidential",
-                "restricted",
-                "secret",
-                "topSecret",
-                "unclassified"
-              ]
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "confidential",
+                  "restricted",
+                  "secret",
+                  "topSecret",
+                  "unclassified"
+                ]
+              }
             },
             "classificationSystem": {
               "propertyOrder": 30,
               "title": "Classification system",
-              "format": "textarea",
-              "type": "string"
+              "type": "array",
+              "items": {
+                "format": "textarea",
+                "type": "string"
+              }
             },
-            "handingDescription": {
+            "handlingDescription": {
               "propertyOrder": 40,
-              "title": "Handing description",
-              "format": "textarea",
-              "type": "string"
+              "title": "Handling description",
+              "type": "array",
+              "items": {
+                "format": "textarea",
+                "type": "string"
+              }
             }
           }
         }
