@@ -281,10 +281,15 @@ def _extract_iso_graphic_overview(body, type, opt, version, data, errors, contex
     if not name:
         name = 'Graphic overview'
         # _v.stop_with_error('Unable to obtain \'fileDescription\'', 'fileDescription', errors)
-        
     _dict = {
         'name': name
-    }
+    } 
+    format = get_format(body.get('protocol',''), data.get('url',''))
+    if format:
+        _dict.update({
+            'format': format
+        })
+    
     data.update(_dict)
 
     return body, type, opt, version, data
