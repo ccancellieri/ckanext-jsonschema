@@ -32,10 +32,11 @@
 ckanext-jsonschema
 =============
 
-.. Put a description of your extension here:
-   What does it do? What features does it have?
-   Consider including some screenshots or embedding a video!
+Provides an extensible jsonschema + json based metadata support.
 
+Provide an iso19139 implementation and a simplified profile
+
+Provide several extension points to introduce new dataset and resource formats
 
 ------------
 Requirements
@@ -43,7 +44,6 @@ Requirements
 
 For example, you might want to mention here which versions of CKAN this
 extension works with.
-
 
 ------------
 Installation
@@ -76,12 +76,34 @@ To install ckanext-jsonschema:
 Config Settings
 ---------------
 
-Document any optional config settings here. For example::
 
-    # The minimum number of hours to wait before re-checking a resource
-    # (optional, default: 24).
-    ckanext.jsonschema.some_setting = some_default_value
+# Provided plugins:
 
+## jsonschema
+
+base plugin to enable extensions points provide basic jsonschema functionnalities
+
+## jsonschema_iso19139
+
+extension to provide an iso19139 binding from iso19139 and the below simplified iso profile
+
+## jsonschema_iso
+
+extension to provide a simplified but quite complet iso model
+
+## harvester_iso19139
+
+An harvester from CSW to iso19139/iso
+
+requires harves plugin to be installed, also has a dedicate requirements file
+
+## Suggested configuration:
+
+    jsonschema jsonschema_iso19139 jsonschema_iso
+
+know issue:
+---
+ the xml importer is encountering some runtime issue (due to xml format body) with the google analytics extension
 
 ------------------------
 Development Installation
@@ -99,15 +121,6 @@ do::
 -----------------
 Running the Tests
 -----------------
-
-To run the tests, do::
-
-    nosetests --nologcapture --with-pylons=test.ini
-
-To run the tests and produce a coverage report, first make sure you have
-coverage installed in your virtualenv (``pip install coverage``) then run::
-
-    nosetests --nologcapture --with-pylons=test.ini --with-coverage --cover-package=ckanext.jsonschema --cover-inclusive --cover-erase --cover-tests
 
 
 ---------------------------------
