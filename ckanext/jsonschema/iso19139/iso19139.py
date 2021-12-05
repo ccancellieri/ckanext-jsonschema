@@ -85,8 +85,9 @@ def _from_nested_list_extend_array_of_dict(source, source_array_path, get_mappin
     if nested_items_root:
         for i in nested_items_root:
             _nested_element = _t.get_nested(i, source_array_path)
-            nested_dicts = _t.as_list_of_dict(_nested_element, get_mapping)
-            _t.extend_nested(dest, dest_tuple, nested_dicts)
+            if _nested_element:
+                nested_dicts = _t.as_list_of_dict(_nested_element, get_mapping)
+                _t.extend_nested(dest, dest_tuple, nested_dicts)
 
 def __identification_info(identification_info, opt, version, data, errors, context):
     _identification_info = {}
@@ -264,33 +265,57 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             _t.set_nested(_identification_info, ('topicCategory',), _topicCategory)
 
         # extent
-        extent_geographic = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',))
-        _extent = []
-        if extent_geographic:
-            extent_geographic_bbox_fields = {
+        
+        extents = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent',))
+        for extent in extents:
+            _extent_geographic_bbox_fields_map = {
                 ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('geographic','bbox','west',),
                 ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('geographic','bbox','east',),
                 ('gmd:EX_GeographicBoundingBox','gmd:southBoundLatitude','gco:Decimal',):('geographic','bbox','south',),
                 ('gmd:EX_GeographicBoundingBox','gmd:northBoundLatitude','gco:Decimal',):('geographic','bbox','north',)
             }
-            # _from_nested_list_extend_array_of_dict(identification_info,
-            #         ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',),
-            #         extent_geographic_bbox_fields,
-            #         _identification_info,
-            #         ('extent',))
-            # geographic_bbox
-            extent_geographic_bbox_filter = lambda r : r and r.get('gmd:EX_GeographicBoundingBox') is not None
-            
-            _extent_geographic_bbox = _t.as_list_of_dict(extent_geographic, extent_geographic_bbox_fields, extent_geographic_bbox_filter)
-            _extent += _extent_geographic_bbox
+            _from_nested_list_extend_array_of_dict(extent,
+                    ('gmd:EX_Extent','gmd:geographicElement',),
+                    _extent_geographic_bbox_fields_map,
+                    _identification_info,
+                    ('extent',))
 
-            # geographic_polygon
-            extent_geographic_polygon_filter = lambda r : r and r.get('gmd:EX_BoundingPolygon') is not None
-            extent_geographic_polygon_fields = {
-                ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geographic','polygon','geospatial',),
+        # extent_geographic = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent',))
+        # _extent = []
+        # if extent_geographic:
+        #     extent_geographic_bbox_fields = {
+        #         ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('geographic','bbox','west',),
+        #         ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('geographic','bbox','east',),
+        #         ('gmd:EX_GeographicBoundingBox','gmd:southBoundLatitude','gco:Decimal',):('geographic','bbox','south',),
+        #         ('gmd:EX_GeographicBoundingBox','gmd:northBoundLatitude','gco:Decimal',):('geographic','bbox','north',)
+        #     }
+        #     # _from_nested_list_extend_array_of_dict(identification_info,
+        #     #         ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',),
+        #     #         extent_geographic_bbox_fields,
+        #     #         _identification_info,
+        #     #         ('extent',))
+        #     # geographic_bbox
+        #     extent_geographic_bbox_filter = lambda r : r and r.get('gmd:EX_GeographicBoundingBox') is not None
+            
+        #     _extent_geographic_bbox = _t.as_list_of_dict(extent_geographic, extent_geographic_bbox_fields, extent_geographic_bbox_filter)
+        #     _extent += _extent_geographic_bbox
+
+            # # geographic_polygon
+            # extent_geographic_polygon_filter = lambda r : r and r.get('gmd:EX_BoundingPolygon') is not None
+            # extent_geographic_polygon_fields = {
+            #     ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geographic','polygon','geospatial',),
+            # }
+            # _extent_geographic_polygon = _t.as_list_of_dict(extent_geographic, extent_geographic_polygon_fields, extent_geographic_polygon_filter)
+            # _extent += _extent_geographic_polygon
+
+            _extent_geographic_polygon_fields_map = {
+                ('gmd:EX_BoundingPolygon','gmd:polygon','gml:MultiSurface','gml:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList','#text',):('geographic','polygon','geospatial',),
             }
-            _extent_geographic_polygon = _t.as_list_of_dict(extent_geographic, extent_geographic_polygon_fields, extent_geographic_polygon_filter)
-            _extent += _extent_geographic_polygon
+            _from_nested_list_extend_array_of_dict(extent,
+                    ('gmd:EX_Extent','gmd:geographicElement',),
+                    _extent_geographic_polygon_fields_map,
+                    _identification_info,
+                    ('extent',))
 
         
         # TODO on 1/12/2021 we decided to delay the management of this type of item
@@ -303,21 +328,30 @@ def __identification_info(identification_info, opt, version, data, errors, conte
         #     }
         #     _extent_vertical = _t.as_list_of_dict(extent_vertical, extent_vertical_fields, errors, extent_vertical_filter)
 
-
-        extent_temporal = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:temporalElement',))
-        if extent_temporal:
-            # temporal
-            extent_temporal_filter = lambda r : r and r.get('gmd:EX_TemporalExtent') is not None
-            extent_temporal_fields = {
-                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('temporal','beginDate',),
-                ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('temporal','endDate',),
+            _extent_temporal_fields_map = {
+                ('gmd:EX_TemporalExtent','gmd:extent','gml:TimePeriod','gml:beginPosition',):('temporal','beginDate',),
+                ('gmd:EX_TemporalExtent','gmd:extent','gml:TimePeriod','gml:endPosition',):('temporal','endDate',),
             }
-            _extent_temporal = _t.as_list_of_dict(extent_temporal, extent_temporal_fields, extent_temporal_filter)
-            _extent += _extent_temporal
+            _from_nested_list_extend_array_of_dict(extent,
+                    ('gmd:EX_Extent','gmd:temporalElement',),
+                    _extent_temporal_fields_map,
+                    _identification_info,
+                    ('extent',))
 
-        if _extent:
-            # merge
-            _t.set_nested(_identification_info, ('spatialResolution',), _extent)
+        # extent_temporal = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:temporalElement',))
+        # if extent_temporal:
+        #     # temporal
+        #     extent_temporal_filter = lambda r : r and r.get('gmd:EX_TemporalExtent') is not None
+        #     extent_temporal_fields = {
+        #         ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('temporal','beginDate',),
+        #         ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('temporal','endDate',),
+        #     }
+        #     _extent_temporal = _t.as_list_of_dict(extent_temporal, extent_temporal_fields, extent_temporal_filter)
+        #     _extent += _extent_temporal
+
+        # if _extent:
+        #     # merge
+        #     _t.set_nested(_identification_info, ('spatialResolution',), _extent)
 
 
         aggregationInfo = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:aggregationInfo',))

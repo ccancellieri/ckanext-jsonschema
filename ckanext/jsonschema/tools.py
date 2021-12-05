@@ -118,11 +118,14 @@ def as_list_of_dict(items, fields_map = None, filter = lambda i : True, errors =
     for _item in items:
         if _item and filter(_item):
             _i = {}
+            
             if fields_map:
                 errors = map_to(_item, fields_map, _i)
             else:
                 _i = _item
-            _items.append(_i)
+            
+            if _i: 
+                _items.append(_i)
     return _items
 
 def as_boolean(dict, path):
