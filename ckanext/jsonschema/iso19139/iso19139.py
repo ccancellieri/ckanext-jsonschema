@@ -33,18 +33,6 @@ SUPPORTED_RESOURCE_FORMATS = []
 class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder, inherit=True)
 
-        # namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
-        # # TODO DEBUG
-        # import ckanext.jsonschema.utils as _u
-        # import os
-        # j = _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'))
-        # import json
-        # _j=json.loads(j)
-        # _namespaces=_j['http://www.isotc211.org/2005/gmd:MD_Metadata']['@xmlns']
-        # namespaces = dict((v,k) for k,v in _namespaces.iteritems())
-        # _u.json_to_xml()
-        # _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'), True, namespaces)
-
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
         if version != _c.SCHEMA_VERSION:
             # when version is not the default one we don't touch
@@ -242,10 +230,6 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',),
                 _identification_info,
                 ('spatialRepresentationType',))
-        # spatialRepresentationType = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:spatialRepresentationType',))
-        # if spatialRepresentationType:
-        #     _spatialRepresentationType = _t.as_list_of_values(spatialRepresentationType, ('gmd:MD_SpatialRepresentationTypeCode','@codeListValue',), errors)
-        #     _t.set_nested(_identification_info, ('spatialRepresentationType',), _spatialRepresentationType)
 
         _resolution_fields_map = {
             ('gmd:MD_Resolution','gmd:distance','gco:Distance','#text',):('distance',),
@@ -257,16 +241,16 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 _resolution_fields_map,
                 _identification_info,
                 ('spatialResolution',))
-#TODO verify 
-
+        
         topicCategory = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:topicCategory',))
         if topicCategory:
             _topicCategory = _t.as_list_of_values(topicCategory, ('gmd:MD_TopicCategoryCode',))
             _t.set_nested(_identification_info, ('topicCategory',), _topicCategory)
 
         # extent
-        
         extents = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent',))
+        if not isinstance(extents, list):
+            extents = [ extents ]
         for extent in extents:
             _extent_geographic_bbox_fields_map = {
                 ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('geographic','bbox','west',),
@@ -280,34 +264,6 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                     _identification_info,
                     ('extent',))
 
-        # extent_geographic = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent',))
-        # _extent = []
-        # if extent_geographic:
-        #     extent_geographic_bbox_fields = {
-        #         ('gmd:EX_GeographicBoundingBox','gmd:westBoundLongitude','gco:Decimal',):('geographic','bbox','west',),
-        #         ('gmd:EX_GeographicBoundingBox','gmd:eastBoundLongitude','gco:Decimal',):('geographic','bbox','east',),
-        #         ('gmd:EX_GeographicBoundingBox','gmd:southBoundLatitude','gco:Decimal',):('geographic','bbox','south',),
-        #         ('gmd:EX_GeographicBoundingBox','gmd:northBoundLatitude','gco:Decimal',):('geographic','bbox','north',)
-        #     }
-        #     # _from_nested_list_extend_array_of_dict(identification_info,
-        #     #         ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:geographicElement',),
-        #     #         extent_geographic_bbox_fields,
-        #     #         _identification_info,
-        #     #         ('extent',))
-        #     # geographic_bbox
-        #     extent_geographic_bbox_filter = lambda r : r and r.get('gmd:EX_GeographicBoundingBox') is not None
-            
-        #     _extent_geographic_bbox = _t.as_list_of_dict(extent_geographic, extent_geographic_bbox_fields, extent_geographic_bbox_filter)
-        #     _extent += _extent_geographic_bbox
-
-            # # geographic_polygon
-            # extent_geographic_polygon_filter = lambda r : r and r.get('gmd:EX_BoundingPolygon') is not None
-            # extent_geographic_polygon_fields = {
-            #     ('gmd:EX_BoundingPolygon','gmd:polygon','gmd:MultiSurface','gco:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList',):('geographic','polygon','geospatial',),
-            # }
-            # _extent_geographic_polygon = _t.as_list_of_dict(extent_geographic, extent_geographic_polygon_fields, extent_geographic_polygon_filter)
-            # _extent += _extent_geographic_polygon
-
             _extent_geographic_polygon_fields_map = {
                 ('gmd:EX_BoundingPolygon','gmd:polygon','gml:MultiSurface','gml:surfaceMember','gml:Polygon','gml:exterior','gml:LinearRing','gml:posList','#text',):('geographic','polygon','geospatial',),
             }
@@ -317,16 +273,15 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                     _identification_info,
                     ('extent',))
 
-        
-        # TODO on 1/12/2021 we decided to delay the management of this type of item
-        # extent_vertical = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent',))
-        # if extent_vertical:
-        #     # vertical
-        #     extent_vertical_filter = lambda r : r.get('gmd:verticalElement') is not None
-        #     extent_vertical_fields = {
-        #         ('gmd:verticalElement','gmd:EX_VerticalExtent','#####',):('scaleDenominator',),
-        #     }
-        #     _extent_vertical = _t.as_list_of_dict(extent_vertical, extent_vertical_fields, errors, extent_vertical_filter)
+            # TODO on 1/12/2021 we decided to delay the management of this type of item
+            # extent_vertical = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent',))
+            # if extent_vertical:
+            #     # vertical
+            #     extent_vertical_filter = lambda r : r.get('gmd:verticalElement') is not None
+            #     extent_vertical_fields = {
+            #         ('gmd:verticalElement','gmd:EX_VerticalExtent','#####',):('scaleDenominator',),
+            #     }
+            #     _extent_vertical = _t.as_list_of_dict(extent_vertical, extent_vertical_fields, errors, extent_vertical_filter)
 
             _extent_temporal_fields_map = {
                 ('gmd:EX_TemporalExtent','gmd:extent','gml:TimePeriod','gml:beginPosition',):('temporal','beginDate',),
@@ -337,22 +292,6 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                     _extent_temporal_fields_map,
                     _identification_info,
                     ('extent',))
-
-        # extent_temporal = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:extent','gmd:EX_Extent','gmd:temporalElement',))
-        # if extent_temporal:
-        #     # temporal
-        #     extent_temporal_filter = lambda r : r and r.get('gmd:EX_TemporalExtent') is not None
-        #     extent_temporal_fields = {
-        #         ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:beginPosition:',):('temporal','beginDate',),
-        #         ('gmd:EX_TemporalExtent','gmd:extent','gmd:TimePeriod','gml:endPosition:',):('temporal','endDate',),
-        #     }
-        #     _extent_temporal = _t.as_list_of_dict(extent_temporal, extent_temporal_fields, extent_temporal_filter)
-        #     _extent += _extent_temporal
-
-        # if _extent:
-        #     # merge
-        #     _t.set_nested(_identification_info, ('spatialResolution',), _extent)
-
 
         aggregationInfo = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:aggregationInfo',))
         if aggregationInfo:
@@ -597,7 +536,6 @@ def __spatial_representation_info(spatial_representation_info):
         else:
             continue
 
-    
     _ret = {}
     if _Vectors:
         _ret = { 'vectorSpatialRepresentation' : _Vectors }
@@ -701,15 +639,8 @@ def _extract_iso(body, opt, version, data, errors, context):
 
     return _iso_profile, TYPE_ISO, opt, version, _data
 
-
-# def _extract_distributor(body, opt, version, data, errors, context):
-    # _transfer_options = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
-    # TYPE_ISO_RESOURCE_DISTRIBUTOR
-# # TODO extract resources
-
 def _extract_distributor(distributor, _type, opt, version, data, errors, context):
 
-    
     if not isinstance(distributor, list):
         distributor = [distributor]
     for distrib in distributor:
@@ -721,11 +652,8 @@ def _extract_distributor(distributor, _type, opt, version, data, errors, context
     
 def _extract_transfer_options(body, opt, version, data, errors, context):
 
-    # _body = dict(body)
     _body = body
-    # _data = dict(data)
     _transfer_options = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',))
-    #  = _data.pop(('transferOptions',))
     if _transfer_options:
         if not isinstance(_transfer_options, list):
             _transfer_options = [ _transfer_options ]

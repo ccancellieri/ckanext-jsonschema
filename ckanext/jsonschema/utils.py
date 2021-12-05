@@ -49,6 +49,18 @@ import xmltodict
 import pprint
 import json
 
+# namespaces = {u'http://www.opengis.net/gml/3.2': u'gml', u'http://www.isotc211.org/2005/srv': u'srv', u'http://www.isotc211.org/2005/gts': u'gts', u'http://www.isotc211.org/2005/gmx': u'gmx', u'http://www.isotc211.org/2005/gmd': u'gmd', u'http://www.isotc211.org/2005/gsr': u'gsr', u'http://www.w3.org/2001/XMLSchema-instance': u'xsi', u'http://www.isotc211.org/2005/gco': u'gco', u'http://www.isotc211.org/2005/gmi': u'gmi', u'http://www.w3.org/1999/xlink': u'xlink'}
+# # TODO DEBUG
+# import ckanext.jsonschema.utils as _u
+# import os
+# j = _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'))
+# import json
+# _j=json.loads(j)
+# _namespaces=_j['http://www.isotc211.org/2005/gmd:MD_Metadata']['@xmlns']
+# namespaces = dict((v,k) for k,v in _namespaces.iteritems())
+# _u.json_to_xml()
+# _u.xml_to_json_from_file(os.path.join(_c.PATH_TEMPLATE,'test_iso.xml'), True, namespaces)
+
 def xml_to_json_from_file(xml_file, namespaces = None):
     with open(xml_file) as fd:
         return xml_to_json(fd, namespaces = namespaces)
