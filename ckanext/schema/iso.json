@@ -1,7 +1,7 @@
 {
     "type": "object",
     "title": "Metadata",
-    "additionalProperties": false,
+    
     "required": [
         "fileIdentifier",
         "metadataStandardName",

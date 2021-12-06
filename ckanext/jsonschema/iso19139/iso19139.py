@@ -524,6 +524,15 @@ def _extract_iso(body, opt, version, data, errors, context):
     _iso_profile_fields = {
         # fileIdentifier
         ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'):('fileIdentifier',),
+        # TODO
+        #  
+        # "gmd:fileIdentifier":{
+        #     "gco:CharacterString":{
+        #         "@xmlns:gmx":"http://www.isotc211.org/2005/gmx",
+        #         "#text":"dcc718a7-xyz-4c86-xyz-6abfxyz---70db",
+        #         "@xmlns:srv":"http://www.isotc211.org/2005/srv"
+        #     }
+        # },
 
         # language
         ('gmd:MD_Metadata','gmd:language','gmd:LanguageCode','@codeListValue',):('language',),

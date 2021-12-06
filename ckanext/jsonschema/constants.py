@@ -74,6 +74,10 @@ REST_SCHEMA_FILE_PATH='/{}/schema_file'.format(TYPE)
 PATH_TEMPLATE=path.realpath(config.get('ckanext.jsonschema.path.template', path.join(PATH_ROOT,'template')))
 REST_TEMPLATE_PATH='/{}/template'.format(TYPE)
 
+#REST_GET_BODY = TODO
+REST_GET_BODY_PATH='/{}/body'.format(TYPE)
+
+
 # (Optional)
 # Used as options
 PATH_OPT=path.realpath(config.get('ckanext.jsonschema.path.opt', path.join(PATH_ROOT,'opt')))

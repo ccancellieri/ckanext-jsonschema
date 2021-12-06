@@ -78,7 +78,6 @@ def importer(context, data_dict):
     package_dict['type'] = _type
     package_dict['owner_org'] = data_dict.get('owner_org')
     
-
     opt = dict(_c.SCHEMA_OPT)
     
     opt.update({
@@ -96,15 +95,24 @@ def importer(context, data_dict):
 
     #TODO resources store back to the package_dict
     try:
+        # # TODO has deep impact/implications over resources
         is_package_update = asbool(data_dict.get('package_update', False))
         if is_package_update:
             errors=[]
             for plugin in _v.JSONSCHEMA_PLUGINS:
                 if _type in plugin.supported_dataset_types(opt, _c.SCHEMA_VERSION):
-                    id = plugin.extract_id(json.loads(body), _type, opt, _c.SCHEMA_VERSION, errors, context)
+                    # _body = json.loads(body)
+                    _body = body
+                    id = plugin.extract_id(_body, _type, opt, _c.SCHEMA_VERSION, errors, context)
                     if id:
-                        package_dict['id'] = id
-                        return toolkit.get_action('package_update')(context, package_dict)
+                        pkg = Package.get(id)
+                        if pkg and pkg.type == _type:
+                            context["package"] = pkg
+                            _dict={}
+                            _dict["id"] = pkg.id
+                            # _dict['type'] = pkg.type
+                            _dict['extras'] = extras
+                            return toolkit.get_action('package_update')(context, _dict)
             raise Exception('no rupport provided for this operation/format')
         else:
             return toolkit.get_action('package_create')(context, package_dict)

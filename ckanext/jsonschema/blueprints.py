@@ -9,6 +9,7 @@ import json
 
 import ckan.lib.helpers as h
 import ckan.logic as logic
+from ckan.model.package import Package
 import ckan.plugins.toolkit as toolkit
 from ckan.common import _, request
 
@@ -86,3 +87,18 @@ def resolve_module(schema_type):
     return abort(404, _('Unable to locate JS module for type: {}'.format(schema_type)))
 
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_MODULE_FILE_PATH), view_func=resolve_module, endpoint='module', methods=[u'GET'])
+
+
+import ckanext.jsonschema.validators as _v
+def get_body(id):
+    '''
+    Dumps the url of a js module file name matching the schema type
+    '''
+    # TODO CREATE A MODEL!!!
+    pkg = Package.get(id)
+    if pkg.extras:
+        return Response(stream_with_context(pkg.extras[_c.SCHEMA_BODY_KEY]), mimetype='text/plain')
+        # return send_file(filename, mimetype='application/json')
+    return abort(404, _('Unable to resolve extras for id: {}'.format(id)))
+    
+jsonschema.add_url_rule('{}/<id>'.format(_c.REST_GET_BODY_PATH), view_func=get_body, endpoint='body', methods=[u'GET'])
