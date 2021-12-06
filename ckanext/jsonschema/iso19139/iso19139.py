@@ -303,9 +303,9 @@ def __citation(citation, opt, version, data, errors, context):
         # collectiveTitle
         ('gmd:collectiveTitle','gco:CharacterString',):('collectiveTitle',),
         # ISBN
-        ('gmd:collectiveTitle','gco:CharacterString',):('ISBN',),
+        ('gmd:ISBN','gco:CharacterString',):('ISBN',),
         # ISSN
-        ('gmd:collectiveTitle','gco:CharacterString',):('ISSN',),
+        ('gmd:ISSN','gco:CharacterString',):('ISSN',),
 
         # presentationForm (see below)
         
