@@ -184,6 +184,7 @@ class JsonschemaIso(p.SingletonPlugin):
 
 
 def render_notes(body, type, opt, version):
+    # TODO: jinja2 template?
     pass
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):

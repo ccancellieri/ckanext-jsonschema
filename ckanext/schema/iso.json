@@ -78,16 +78,19 @@
             "title": "Distribution format",
             "propertyOrder": 95,
             "type": "array",
-            "required": [
-                "name"
-            ],
+            "format": "table",
             "items": {
                 "type": "object",
-                "version":{
-                    "type":"string"
-                },
-                "name":{
-                    "type":"string"
+                "required": [
+                    "name"
+                ],
+                "properties":{
+                    "version":{
+                        "type":"string"
+                    },
+                    "name":{
+                        "type":"string"
+                    }
                 }
             }
         },
