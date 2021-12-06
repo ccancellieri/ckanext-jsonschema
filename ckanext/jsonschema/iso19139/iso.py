@@ -183,6 +183,8 @@ class JsonschemaIso(p.SingletonPlugin):
         return body, type, opt, version, data
 
 
+def render_notes(body, type, opt, version):
+    pass
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
     # _data = df.unflatten(data)
@@ -299,18 +301,18 @@ def _extract_iso_graphic_overview(body, type, opt, version, data, errors, contex
 
 def _extract_iso_resource_responsible(body, type, opt, version, data, errors, context):
 
-    name = body.get('individualName') or _t.get_nested(body, ('onlineResource','name',))
-    if not name:
-        name = 'Contact'
+    name = body.get('individualName', 'Contact')
+    # as discussed on 06/12/2022
+    organisationName = body.get('organisationName', name) or \
+            _t.get_nested(body, ('onlineResource','name',))
     
     role = body.get('role','')
     if not role:
         _v.stop_with_error('Unable to obtain role', 'role', errors)
 
-    organisationName = body.get('organisationName','') #TODO error if null...
     _dict = {
-        'name': name,
-        'description': 'Role: {} Organisation: {}'.format(role, organisationName)
+        'name': organisationName,
+        'description': '{}: {}'.format(role, name)
     }
     data.update(_dict)
 
