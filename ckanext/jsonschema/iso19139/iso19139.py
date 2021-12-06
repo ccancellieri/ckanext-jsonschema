@@ -30,35 +30,6 @@ TYPE_ISO19139='iso19139'
 SUPPORTED_DATASET_FORMATS = [TYPE_ISO19139]
 SUPPORTED_RESOURCE_FORMATS = []
 
-class JsonschemaIso19139(p.SingletonPlugin):
-    p.implements(_i.IBinder, inherit=True)
-
-    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
-        if version != _c.SCHEMA_VERSION:
-            # when version is not the default one we don't touch
-            return []
-
-        if dataset_type in SUPPORTED_DATASET_FORMATS:
-            #TODO should be a dic binding set of resources to dataset types 
-            return SUPPORTED_RESOURCE_FORMATS
-
-        return []
-
-    def supported_dataset_types(self, opt, version):
-        if version != _c.SCHEMA_VERSION:
-            # when version is not the default one we don't touch
-            return []
-
-        return SUPPORTED_DATASET_FORMATS
-
-    def before_extractor(self, body, type, opt, version, data, errors, context):
-            
-        if type == TYPE_ISO19139:
-            return _extract_iso(body, opt, version, data, errors, context)
-
-        return body, type, opt, version, data
-
-#############################################
 
 def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):
     nested_items_root = _t.as_list_of_dict(source, filter = lambda x : _t.get_nested(x, source_array_path))
@@ -720,3 +691,39 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
     resources = data.get('resources', [])
     resources.append(_new_resource_dict)
     data.update({'resources': resources})
+
+
+class JsonschemaIso19139(p.SingletonPlugin):
+    p.implements(_i.IBinder, inherit=True)
+
+    def extract_id(self, body, type, opt, version, errors, context):
+        if type == TYPE_ISO19139:
+            identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'))
+            return identification_info
+
+    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
+        if version != _c.SCHEMA_VERSION:
+            # when version is not the default one we don't touch
+            return []
+
+        if dataset_type in SUPPORTED_DATASET_FORMATS:
+            #TODO should be a dic binding set of resources to dataset types 
+            return SUPPORTED_RESOURCE_FORMATS
+
+        return []
+
+    def supported_dataset_types(self, opt, version):
+        if version != _c.SCHEMA_VERSION:
+            # when version is not the default one we don't touch
+            return []
+
+        return SUPPORTED_DATASET_FORMATS
+
+    def before_extractor(self, body, type, opt, version, data, errors, context):
+            
+        if type == TYPE_ISO19139:
+            return _extract_iso(body, opt, version, data, errors, context)
+
+        return body, type, opt, version, data
+
+#############################################

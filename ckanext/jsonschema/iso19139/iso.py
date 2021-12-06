@@ -103,6 +103,9 @@ class JsonschemaIso(p.SingletonPlugin):
     #     return self.ISO_VOCABULARY
         
     # IBinder
+    def extract_id(self, body, type, opt, version, errors, context):
+        if type == TYPE_ISO:
+            return body.get('fileIdentifier')
 
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
@@ -222,7 +225,7 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
 
 
 def _extract_iso_name(body, type, opt, version, data, errors, context):
-
+    
     # TODO generate if still none...
     # munge title to package name
     # For taking a title of a package and munging it to a readable and valid dataset id. Symbols and whitespeace are converted into dashes, with multiple dashes collapsed. Ensures that long titles with a year at the end preserves the year should it need to be shortened. Example:

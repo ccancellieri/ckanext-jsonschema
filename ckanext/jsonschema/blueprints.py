@@ -74,7 +74,6 @@ def read_template(schema_type):
 
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_TEMPLATE_PATH), view_func=read_template, endpoint='template', methods=[u'GET'])
 
-
 def resolve_module(schema_type):
     '''
     Dumps the url of a js module file name matching the schema type

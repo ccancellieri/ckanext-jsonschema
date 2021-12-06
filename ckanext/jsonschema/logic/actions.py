@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy.sql.operators import as_
 from sqlalchemy.sql.sqltypes import ARRAY, TEXT
 from ckan.logic import ValidationError
@@ -16,6 +18,7 @@ from sqlalchemy.sql import select
 
 import ckanext.jsonschema.utils as _u
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.validators as _v
 import json
 
 import ckan.plugins.toolkit as toolkit
@@ -69,28 +72,42 @@ def importer(context, data_dict):
         # e.error_summary = json.dumps(message)
         raise ValidationError(message)
 
-
     package_dict={}
     # IMPORTER_TYPE = 'iso19139'old
     _type = data_dict.get(_c.SCHEMA_TYPE_KEY)
     package_dict['type'] = _type
     package_dict['owner_org'] = data_dict.get('owner_org')
+    
 
     opt = dict(_c.SCHEMA_OPT)
+    
     opt.update({
         'imported' : True,
         'source_format':'xml' if from_xml else 'json',
-        'source_url': url})
+        'source_url': url,
+        'imported_on': str(datetime.datetime.now())
+        })
     extras = []
     package_dict['extras'] = extras
     extras.append({ 'key': _c.SCHEMA_BODY_KEY, 'value' : body })
     extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : _type })
     extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' :  opt })
-    extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })    
+    extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })
 
     #TODO resources store back to the package_dict
     try:
-        return toolkit.get_action('package_create')(context, package_dict)
+        is_package_update = asbool(data_dict.get('package_update', False))
+        if is_package_update:
+            errors=[]
+            for plugin in _v.JSONSCHEMA_PLUGINS:
+                if _type in plugin.supported_dataset_types(opt, _c.SCHEMA_VERSION):
+                    id = plugin.extract_id(json.loads(body), _type, opt, _c.SCHEMA_VERSION, errors, context)
+                    if id:
+                        package_dict['id'] = id
+                        return toolkit.get_action('package_update')(context, package_dict)
+            raise Exception('no rupport provided for this operation/format')
+        else:
+            return toolkit.get_action('package_create')(context, package_dict)
     except Exception as e:
         message = str(e)
         log.error(message)

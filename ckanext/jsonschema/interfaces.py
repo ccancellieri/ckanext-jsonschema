@@ -56,3 +56,10 @@ class IBinder(Interface):
         '''
         return body, type, opt, version, data
 
+    def extract_id(self, body, type, opt, verion, errors, context):
+        '''
+        Returns the ID of this metadata extracted from the body
+        Should be the same function used by name in extract_from_json
+        '''
+        pass
+

@@ -16,7 +16,7 @@
     </p>
 
     <p>
-        <label for="field-{{TYPE_KEY}}">{{_('Which destination type')}}</label>
+        <label for="field-{{TYPE_KEY}}">{{_('Source type is')}}</label>
         <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}">
             {% for dataset_type in dataset_types %}
                 <option value="{{ dataset_type }}">{{ dataset_type }}</option>
@@ -31,6 +31,16 @@
             <option value={{False}}>json</option>
         </select>
     </p>
+
+
+    <p>
+        <label for="field-format">{{_('Operation')}}</label>
+        <select id="field-format" name="package_update">
+            <option value={{True}} >package_update</option>
+            <option value={{False}} selected>package_create</option>
+        </select>
+    </p>
+    
 
     {% set organizations_available = h.organizations_available('create_dataset') %}
     <p>
@@ -50,5 +60,7 @@
     <button value="import" name="import" class="btn btn-primary pull-right">
         {{_('Import')}}
     </button>
+    {% else %}
+        <h1>{{_('Unauthorized: Please login')}}</h1>
     {% endif %}
 </form>
