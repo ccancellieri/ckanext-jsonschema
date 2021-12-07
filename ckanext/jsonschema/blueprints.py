@@ -97,8 +97,7 @@ def get_body(id):
     # TODO CREATE A MODEL!!!
     pkg = Package.get(id)
     if pkg.extras:
-        return Response(stream_with_context(pkg.extras[_c.SCHEMA_BODY_KEY]), mimetype='text/plain')
-        # return send_file(filename, mimetype='application/json')
+        return Response(stream_with_context(pkg.extras[_c.SCHEMA_BODY_KEY]), mimetype='application/json')
     return abort(404, _('Unable to resolve extras for id: {}'.format(id)))
     
 jsonschema.add_url_rule('{}/<id>'.format(_c.REST_GET_BODY_PATH), view_func=get_body, endpoint='body', methods=[u'GET'])

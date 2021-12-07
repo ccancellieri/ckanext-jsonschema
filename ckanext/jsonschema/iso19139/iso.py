@@ -308,8 +308,8 @@ def _extract_iso_resource_responsible(body, type, opt, version, data, errors, co
             _t.get_nested(body, ('onlineResource','name',))
     
     role = body.get('role','')
-    if not role:
-        _v.stop_with_error('Unable to obtain role', 'role', errors)
+    # if not role:
+    #     _v.stop_with_error('Unable to obtain role', 'role', errors)
 
     _dict = {
         'name': organisationName,

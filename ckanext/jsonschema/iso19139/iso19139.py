@@ -50,6 +50,11 @@ def _from_nested_list_extend_array_of_dict(source, source_array_path, get_mappin
 
 def __identification_info(identification_info, opt, version, data, errors, context):
     _identification_info = {}
+    if isinstance(identification_info,list):
+        for i in identification_info:
+            if i.get('gmd:MD_DataIdentification'):
+                identification_info = i
+                break
     if identification_info.get('gmd:MD_DataIdentification'):
         identification_fields = {
             # DATA IDENTIFICATION
