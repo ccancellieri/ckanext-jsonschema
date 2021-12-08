@@ -188,7 +188,7 @@ def render_notes(body, type, opt, version, data):
 # def render(template_name, extra_vars=None, *pargs, **kwargs):
 
     pkg = _g.get_pkg(body.get('fileIdentifier'))
-    # ############################################################ model.Resource.
+    # ############actually it's a markdown...
     return base.render('iso/description.html', extra_vars={'dataset': pkg })
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):

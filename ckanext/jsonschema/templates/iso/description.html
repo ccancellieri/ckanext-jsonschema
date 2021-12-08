@@ -28,7 +28,7 @@ Data {{date ['dateType']}}: {{ date['date'] }}
 		{% if contact.contactInfo %}
 			{% if contact.contactInfo.address
 				and contact.contactInfo.address.electronicMailAddress %}
-{{contact.role|capitalize}} : [{{contact.individualName}}]({{contact.contactInfo.address.electronicMailAddress}}) {{contact.organisationName}}
+{{contact.role|capitalize}} : [{{contact.individualName}}]({{'mailto:'+contact.contactInfo.address.electronicMailAddress}}) {{contact.organisationName}}
 			{% else %}
 {{contact.role|capitalize}} : {{contact.individualName}} {{contact.organisationName}}
 			{% endif %}
