@@ -173,7 +173,9 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.jsonschema_opt = self.options.option;
 
             // initialize editor
-            jsonschema.reload(jsonschema.jsonschema_type, editor = true, keep_old = true);
+            // editor=false // TODO remove only 2 DEBUG
+            editor = true
+            jsonschema.reload(jsonschema.jsonschema_type, editor = editor, keep_old = true);
         },
         getEditorAce: function (keep_old = true){
             this.isHowto=false

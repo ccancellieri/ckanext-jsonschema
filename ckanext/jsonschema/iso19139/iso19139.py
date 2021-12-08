@@ -446,7 +446,11 @@ def __dates(dates):
         # convert types
         # not json serializable
 #        _t.as_datetime(_d, ('date',))
-        _dates.append(_d)
+        date = _d.get('date')
+        if date:
+            from dateutil.parser import parse as dateutil_parse
+            _t.set_nested(_d, ('date',), str(dateutil_parse(date).date())) #.isoformat()+'Z'
+            _dates.append(_d)
 
     return _dates
 
