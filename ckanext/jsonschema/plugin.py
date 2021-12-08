@@ -128,11 +128,29 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_type_key': lambda : _c.SCHEMA_TYPE_KEY,
             'jsonschema_get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
             'jsonschema_get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
+
+            'jsonschema_get_body': lambda d_id, r_id = None : _t.get_body(d_id, r_id),
+            'jsonschema_get_type': lambda d_id, r_id = None : _t.get_type(d_id, r_id),
+            'jsonschema_get_opt': lambda d_id, r_id = None : _t.get_opt(d_id, r_id),
+            'jsonschema_get_version': lambda d_id, r_id = None : _t.get_version(d_id, r_id),
+
+            'jsonschema_get_dataset_body': lambda d = None : _t.as_dict(_t.get_dataset_body(d)),
+            'jsonschema_get_dataset_type': lambda d : _t.get_dataset_type(d),
+            'jsonschema_get_dataset_opt': lambda d : _t.as_dict(_t.get_dataset_opt(d)),
+            'jsonschema_get_dataset_version': lambda d : _t.get_dataset_version(d),
+
+            'jsonschema_get_resource': lambda r = None : _t.get(r),
+            'jsonschema_get_resource_body': lambda r = None : _t.as_dict(_t.get_resource_body(r)),
+            'jsonschema_get_resource_type': lambda r : _t.get_resource_type(r),
+            'jsonschema_get_resource_opt': lambda r : _t.as_dict(_t.get_resource_opt(r)),
+            'jsonschema_get_resource_version': lambda r : _t.get_resource_version(r),
+
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
             'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
-            'jsonschema_get_dataset_type': _v.get_dataset_type,
-            'jsonschema_resolve_extras': _v.resolve_extras,
-            'jsonschema_resolve_resource_extras': _v.resolve_resource_extras,
+            'jsonschema_get_dataset_type': _v.get_dataset_type, #TODO
+            'jsonschema_resolve_extras': _t.resolve_extras,
+            'jsonschema_resolve_resource_extras': _t.resolve_resource_extras,
+
             'jsonschema_handled_resource_types': handled_resource_types,
             'jsonschema_handled_dataset_types': handled_dataset_types,
             # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),

@@ -4,17 +4,8 @@
 
 {% import 'source/macros.html' as reader %}
 
-{% set extras = h.jsonschema_resolve_extras(pkg, True) %}
 
-{% set TYPE_KEY = h.jsonschema_get_type_key() %}
-{% set BODY_KEY = h.jsonschema_get_body_key() %}
-{% set OPT_KEY = h.jsonschema_get_opt_key() %}
-{% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
-{% set schema_type = extras[TYPE_KEY] %}
-{% set body = extras[BODY_KEY] %}
-{% set opt = extras[OPT_KEY] %}
-{% set version = extras[VERSION_KEY] %}
 
 {% block primary_content_inner %}
   {{ super() }}
@@ -36,7 +27,6 @@
         {% endif %}
       {% endblock %}
     </h1>
-  {#
     {% block package_notes %}
       {% if pkg.notes %}
         <div class="notes embedded-content">
@@ -44,7 +34,6 @@
         </div>
       {% endif %}
     {% endblock %}
-  #}
   {% endblock %}
   
   {% block package_resources %}
@@ -55,37 +44,126 @@
     {% snippet "package/snippets/tags.html", tags=pkg.tags %}
   {% endblock %}
 
-  {% for r in pkg.resources %} 
-    {# set resource = h.jsonschema_resolve_resource_extras(schema_type, r, True) #}
+  {% for r in pkg.resources %}
     {% if r.format in ['PNG','JPG','JPEG'] and r.url %}
     <p>
-      <h3>{{r.title}}</h3>
+      <h3>{{r.name}}</h3>
       <image src="{{r.url}}" style="width:80%;display:block;margin-left:auto;margin-right:auto;"\>
     </p>
     {% endif %}
   {% endfor %}
 
-  {% if schema_type %}
-  <p>
-    <h3>Type:</h3>
-    {{ schema_type }}
-  </p>
-  {% endif %}
-  {% if body %}
-  <p>
-    <h3>Metadata:</h3>
-    {{ reader.render_json(body) }}
-  </p>
-  {% endif %}
-  {% if opt %}
-  <p>
-    <h3>Options:</h3>
-    {{ reader.render_json(opt) }}
-  </p>
-  {% endif %}
+
+{% set body = h.jsonschema_get_dataset_body(pkg) %}
+
+{% set schema_type = h.jsonschema_get_dataset_type(pkg) %}
+
+{% set opt = h.jsonschema_get_dataset_opt(pkg) %}
+
+{% set version = h.jsonschema_get_dataset_version(pkg) %}
+<div>
+  <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#type" aria-expanded="false" aria-controls="type">Type</button>
+    <a class="btn btn-primary" data-toggle="collapse" href="#body" role="button" aria-expanded="false" aria-controls="body">Full Metadata</a>
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#opt" aria-expanded="false" aria-controls="opt">Options</button>
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#version" aria-expanded="false" aria-controls="version">Version</button>
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="body type opt version">All</button>
+  </div>
+  <div class="col">
+    <div class="row">
+      <div class="collapse multi-collapse" id="type">
+        <div class="card card-body">
+          {% if schema_type %}
+          <p>
+            <h3>Type:</h3>
+            {{ schema_type }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="collapse multi-collapse" id="body">
+        <div class="card card-body">          
+        {% if body %}
+        <p>
+          <h3>Metadata:</h3>
+          {{ reader.render_json(body) }}
+        </p>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="collapse multi-collapse" id="opt">
+        <div class="card card-body">
+          {% if opt %}
+          <p>
+            <h3>Options:</h3>
+            {{ reader.render_json(opt) }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="collapse multi-collapse" id="version">
+        <div class="card card-body">
+          {% if version %}
+          <p>
+            <h3>Version:</h3>
+            {{ version }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
 
   {% block package_additional_info %}
-    {% snippet "package/snippets/additional_info.html", pkg_dict=pkg %}
+  
+  <section class="additional-info">
+    <h3>{{ _('Additional Info') }}</h3>
+    <table class="table table-striped table-bordered table-condensed">
+      <thead>
+        <tr>
+          <th scope="col">{{ _('Field') }}</th>
+          <th scope="col">{{ _('Value') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% if pkg.url %}
+          <tr>
+            <th scope="row" class="dataset-label">{{ _('Source') }}</th>
+            {% if h.is_url(pkg.url) %}
+              <td class="dataset-details" property="foaf:homepage">{{ h.link_to(pkg.url, pkg.url, rel='foaf:homepage', target='_blank') }}</td>
+            {% else %}
+              <td class="dataset-details" property="foaf:homepage">{{ pkg.url }}</td>
+            {% endif %}
+          </tr>
+          {% endif %}
+          {% if pkg.metadata_modified %}
+          <tr>
+            <th scope="row" class="dataset-label">{{ _("Last Updated") }}</th>
+            <td class="dataset-details">
+                {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_modified %}
+            </td>
+          </tr>
+          {% endif %}
+          {% if pkg.metadata_created %}
+          <tr>
+            <th scope="row" class="dataset-label">{{ _("Created") }}</th>
+
+            <td class="dataset-details">
+                {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_created %}
+            </td>
+          </tr>
+          {% endif %}
+      </tbody>
+    </table>
+  </section>
   {% endblock %}
   
 {% endblock %}

@@ -19,7 +19,7 @@ ValidationError = logic.ValidationError
 
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
-# import ckanext.terriajs.utils as utils
+# import ckanext.jsonschema.utils as _u
 import logging
 log = logging.getLogger(__name__)
 
@@ -89,15 +89,29 @@ def resolve_module(schema_type):
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_MODULE_FILE_PATH), view_func=resolve_module, endpoint='module', methods=[u'GET'])
 
 
-import ckanext.jsonschema.validators as _v
-def get_body(id):
-    '''
-    Dumps the url of a js module file name matching the schema type
-    '''
-    # TODO CREATE A MODEL!!!
-    pkg = Package.get(id)
-    if pkg.extras:
-        return Response(stream_with_context(pkg.extras[_c.SCHEMA_BODY_KEY]), mimetype='application/json')
-    return abort(404, _('Unable to resolve extras for id: {}'.format(id)))
-    
-jsonschema.add_url_rule('{}/<id>'.format(_c.REST_GET_BODY_PATH), view_func=get_body, endpoint='body', methods=[u'GET'])
+###### GET API
+
+def get_body(dataset_id, resource_id = None):
+    #return Response(stream_with_context(_t.get_body(dataset_id, resource_id)), mimetype='application/json')
+    return Response(stream_with_context(json.dumps(_t.get_body(dataset_id, resource_id))), mimetype='application/json')
+
+jsonschema.add_url_rule('/{}/body/<dataset_id>/<resource_id>'.format(_c.TYPE,), view_func=get_body, methods=[u'GET'])
+jsonschema.add_url_rule('/{}/body/<dataset_id>'.format(_c.TYPE,), view_func=get_body, methods=[u'GET'])
+
+def get_type(dataset_id, resource_id = None):
+    return Response(stream_with_context(json.dumps(_t.get_type(dataset_id, resource_id))), mimetype='application/json')
+
+jsonschema.add_url_rule('/{}/type/<dataset_id>/<resource_id>'.format(_c.TYPE), view_func=get_type, methods=[u'GET'])
+jsonschema.add_url_rule('/{}/type/<dataset_id>'.format(_c.TYPE), view_func=get_type, methods=[u'GET'])
+
+def get_version(dataset_id, resource_id = None):
+    return Response(stream_with_context(json.dumps(_t.get_version(dataset_id, resource_id))), mimetype='application/json')
+
+jsonschema.add_url_rule('/{}/version/<dataset_id>/<resource_id>'.format(_c.TYPE), view_func=get_version, methods=[u'GET'])
+jsonschema.add_url_rule('/{}/version/<dataset_id>'.format(_c.TYPE), view_func=get_version, methods=[u'GET'])
+
+def get_opt(dataset_id, resource_id = None):
+    return Response(stream_with_context(json.dumps(_t.get_opt(dataset_id, resource_id))), mimetype='application/json')
+
+jsonschema.add_url_rule('/{}/opt/<dataset_id>/<resource_id>'.format(_c.TYPE), view_func=get_opt, methods=[u'GET'])
+jsonschema.add_url_rule('/{}/opt/<dataset_id>'.format(_c.TYPE), view_func=get_opt, methods=[u'GET'])

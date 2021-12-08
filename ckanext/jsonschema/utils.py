@@ -3,6 +3,24 @@ import os
 import json
 
 
+def dictize_pkg(pkg):
+    from six import binary_type
+    import ckan.lib.navl.dictization_functions as df
+    fd = df.flatten_dict(pkg)
+    for key in fd.keys():
+        value = fd[key]
+        if isinstance(fd[key], unicode):
+            value = value.encode('utf-8')
+
+        if isinstance(value, binary_type) or isinstance(value, str):
+            try: 
+                fd[key] = json.loads(value)
+            except:
+                fd[key] =  value
+
+    pkg = df.unflatten(fd)
+    return pkg
+
 def _json_load(folder, name):
     '''
     use with caution: the 'folder'

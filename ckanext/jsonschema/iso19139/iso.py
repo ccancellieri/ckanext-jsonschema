@@ -27,6 +27,7 @@ Invalid = df.Invalid
 
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.interfaces as _i
 
@@ -182,10 +183,13 @@ class JsonschemaIso(p.SingletonPlugin):
 
         return body, type, opt, version, data
 
+def render_notes(body, type, opt, version, data):
+    import ckan.lib.base as base
+# def render(template_name, extra_vars=None, *pargs, **kwargs):
 
-def render_notes(body, type, opt, version):
-    # TODO: jinja2 template?
-    pass
+    pkg = _g.get_pkg(body.get('fileIdentifier'))
+    # ############################################################ model.Resource.
+    return base.render('iso/description.html', extra_vars={'dataset': pkg })
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
     # _data = df.unflatten(data)
@@ -201,7 +205,7 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
 
         abstract = data_identification.get('abstract')
         if abstract:
-            _data['notes'] = abstract
+            _data['notes'] = render_notes(body, type, opt, version, _data)
 
         _data['tags'] = []
         descriptive_keywords = data_identification.get('descriptiveKeywords')

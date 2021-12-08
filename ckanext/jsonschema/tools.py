@@ -3,14 +3,17 @@ import ckan.plugins.toolkit as toolkit
 _ = toolkit._
 from requests.models import InvalidURL
 import json
+from six import binary_type
+_get_or_bust= toolkit.get_or_bust
 
+import ckanext.jsonschema.logic.get as _g
+import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.utils as utils
 # import ckanext.jsonschema.logic.get as get
-# import ckanext.jsonschema.validators as v
+
 import logging
 log = logging.getLogger(__name__)
 
-import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.utils as utils
 
 def read_all_module():
     return utils._find_all_js(_c.PATH_MODULE)
@@ -179,38 +182,253 @@ def get_template_of(type):
 def get_module_for(type):
     return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(type)
 
-import six
-import jinja2
-Environment = jinja2.environment.Environment
-FunctionLoader = jinja2.loaders.FunctionLoader 
-TemplateSyntaxError = jinja2.TemplateSyntaxError
+def get_body(dataset_id, resource_id = None):
+    return get(dataset_id, resource_id, _c.SCHEMA_BODY_KEY)
 
-# from jinja2.utils import select_autoescape
-def interpolate_fields(model, template):
-    ###########################################################################
-    # Jinja2 template
-    ###########################################################################
+def get_dataset_body(dataset):
+    return _extract_from_dataset(dataset, _c.SCHEMA_BODY_KEY)
+
+def get_resource_body(resource):
+    return _extract_from_resource(resource, _c.SCHEMA_BODY_KEY)
+
+def get_type(dataset_id, resource_id = None):
+    return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
+
+# TODO check also validators.get_dataset_type
+def get_dataset_type(dataset):
+    return _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)
+
+def get_resource_type(resource):
+    return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
+
+def get_version(dataset_id, resource_id = None):
+    return get(dataset_id, resource_id, _c.SCHEMA_VERSION_KEY)
+
+def get_dataset_version(dataset):
+    return _extract_from_dataset(dataset, _c.SCHEMA_VERSION_KEY)
+
+def get_resource_version(resource):
+    return _extract_from_resource(resource, _c.SCHEMA_VERSION_KEY)
+
+def get_opt(dataset_id, resource_id = None):
+    return get(dataset_id, resource_id, _c.SCHEMA_OPT_KEY)
+
+def get_dataset_opt(dataset):
+    return _extract_from_dataset(dataset, _c.SCHEMA_OPT_KEY)
+
+def get_resource_opt(resource):
+    return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
+
+def get(dataset_id, resource_id = None, domain = None):
+    pkg = _g.get_pkg(dataset_id)
+    if not pkg:
+        raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
+    if resource_id:
+        for resource in pkg.get('resources'):
+            _resource_id = resource.get('id')
+            if _resource_id == resource_id:
+                return _extract_from_resource(resource, domain)
+        raise Exception('Unable to find the requested resource {}'.format(resource_id))
+    return _extract_from_dataset(pkg, domain)
+
+# def get_from_package(pkg, resource_id):
+#     if not pkg:
+#         raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
+#     if resource_id:
+#         for resource in pkg.get('resources'):
+#             _resource_id = resource.get('id')
+#             if _resource_id == resource_id:
+#                 return _extract_from_resource(resource)
+#         raise Exception('Unable to find the requested resource {}'.format(resource_id))
+#     return _extract_from_dataset(pkg)
+
+def _extract_from_resource(resource, domain = None):
+    if not resource:
+        raise Exception('Unable to find the requested resource')
+    if domain:
+        return resource.get(domain)
+    return resource
+
+def _extract_from_dataset(dataset, domain = None):
+    if domain:
+        extras = dataset.get('extras')
+        if not extras:
+            raise Exception('Unable to extract from extras')
+        for e in extras:
+            if e['key'] == domain:
+                return e['value']
+    return dataset        
     
-    def functionLoader(name):
-        return template[name]
 
-    env = Environment(
-                loader=FunctionLoader(functionLoader),
-                # autoescape=select_autoescape(['html', 'xml']),
-                autoescape=True,
-                #newline_sequence='\r\n',
-                trim_blocks=False,
-                keep_trailing_newline=True)
 
-    for f in template.keys():
-        if isinstance(template[f],six.string_types):
-            try:
-                _template = env.get_template(f)
-                template[f] = _template.render(model)
-            except TemplateSyntaxError as e:
-                raise Exception(_('Unable to interpolate field \'{}\' line \'{}\''.format(f,str(e.lineno))))
-            except Exception as e:
-                raise Exception(_('Unable to interpolate field \'{}\': {}'.format(f,str(e))))
+# def update_resource_extras(resource, extras):
+#     resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+#     resource[_c.SCHEMA_TYPE_KEY]=extras.get(_c.SCHEMA_TYPE_KEY)
+#     resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
+#     resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
-    return template
-    ###########################################################################
+def update_resource_extras(resource, body, type, opt, version):
+    extras = resource.get('__extras')
+    if not extras:
+        extras = {}
+        resource['__extras'] = extras
+    
+    extras[_c.SCHEMA_BODY_KEY]=json.dumps(body)
+    extras[_c.SCHEMA_TYPE_KEY]=type
+    extras[_c.SCHEMA_VERSION_KEY]=version
+    extras[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
+
+def update_extras(data, extras):
+    # Checking extra data content for extration
+    for e in data.get('extras',[]):
+        key = e.get('key')
+        if not key:
+            raise Exception('Unable to resolve extras with an empty key')
+        if key == _c.SCHEMA_BODY_KEY:
+            e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+        elif key == _c.SCHEMA_TYPE_KEY:
+            e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
+        elif key == _c.SCHEMA_VERSION_KEY:
+            e['value'] = extras.get(_c.SCHEMA_VERSION_KEY)
+        elif key == _c.SCHEMA_OPT_KEY:
+            e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
+
+
+def update_extras(data, body, type, opt, version):
+    # Checking extra data content for extration
+    for e in data.get('extras',[]):
+        key = e.get('key')
+        if not key:
+            raise Exception('Unable to resolve extras with an empty key')
+        if key == _c.SCHEMA_BODY_KEY:
+            e['value'] = json.dumps(body)
+        elif key == _c.SCHEMA_TYPE_KEY:
+            e['value'] = type
+        elif key == _c.SCHEMA_VERSION_KEY:
+            e['value'] = version
+        elif key == _c.SCHEMA_OPT_KEY:
+            e['value'] = json.dumps(opt)
+
+# TODO check utils
+def as_dict(field):
+    value = field
+    if isinstance(field, unicode):
+        value = value.encode('utf-8')
+    if isinstance(value, dict) or isinstance(value, binary_type):
+        try: 
+            return json.loads(value)
+        except:
+            pass
+    elif isinstance(value, str):
+        try: 
+            return json.loads(value)
+        except:
+            pass
+    return value
+
+# TODO check utils
+def as_json(field):
+    value = field
+    if isinstance(field, unicode):
+        value = value.encode('utf-8')
+    if isinstance(value, dict):
+        try: 
+            return json.dumps(value)
+        except:
+            pass
+    elif isinstance(value, str):
+        try: 
+            return json.dumps(json.loads(value))
+        except:
+            pass
+    return value
+
+def resolve_resource_extras(dataset_type, resource, _as_dict = False):
+    from ckanext.jsonschema.plugin import handled_resource_types
+    # Pre-setting defaults
+    resource_types = handled_resource_types(dataset_type)
+    if resource_types:
+        _type = resource_types[0]
+        body = get_template_of(_type)
+    else:
+        _type = None
+        body = {}
+    
+    opt = dict(_c.SCHEMA_OPT)
+    version = _c.SCHEMA_VERSION
+
+    # Checking extra data content for extration
+    e = resource.get('__extras',{})
+    if not e:
+        # edit existing resource
+        e = resource
+
+    body = e.get(_c.SCHEMA_BODY_KEY, body)
+    _type = e.get(_c.SCHEMA_TYPE_KEY, _type)
+    version = e.get(_c.SCHEMA_VERSION_KEY, version)
+    opt = e.get(_c.SCHEMA_OPT_KEY, opt)
+    
+    if _as_dict:
+        body = as_dict(body)
+        opt = as_dict(opt)
+    else:
+        body = as_json(body)
+        opt = as_json(opt)
+    
+    return {
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY: _type,
+        _c.SCHEMA_VERSION_KEY: version
+    }
+
+def resolve_extras(data, _as_dict = False):
+    # Pre-setting defaults
+    _type = get_dataset_type(data)
+    body = get_template_of(_type)
+    opt = dict(_c.SCHEMA_OPT)
+    version = _c.SCHEMA_VERSION
+
+    # Checking extra data content for extration
+    for e in data.get('extras',[]):
+        key = e.get('key')
+        if not key:
+            raise Exception('Unable to resolve extras with an empty key')
+        if key == _c.SCHEMA_BODY_KEY:
+            body = e['value']
+        elif key == _c.SCHEMA_TYPE_KEY:
+            _type = e['value']
+        elif key == _c.SCHEMA_VERSION_KEY:
+            version = e['value']
+        elif key == _c.SCHEMA_OPT_KEY:
+            opt = e['value']
+    
+    if _as_dict:
+        body = as_dict(body)
+        opt = as_dict(opt)
+    else:
+        body = as_json(body)
+        opt = as_json(opt)
+    
+    return {
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY: _type,
+        _c.SCHEMA_VERSION_KEY: version
+    }
+
+# def serializer(key, data, errors, context):
+
+#     fd = data
+
+#     for key in fd.keys():
+#         value = fd[key]
+#         if isinstance(fd[key], unicode):
+#             value = value.encode('utf-8')
+
+#         if isinstance(value, binary_type) or isinstance(value, str):
+#             try: 
+#                 fd[key] = json.loads(value)
+#             except:
+#                 fd[key] =  value
+

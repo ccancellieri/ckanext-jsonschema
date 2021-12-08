@@ -1,0 +1,74 @@
+{% set resources = dataset.resources %}
+{% set body = h.jsonschema_get_dataset_body(dataset) %}
+
+{% set dataIdentification = body['dataIdentification'] %}
+
+{% if dataIdentification.abstract %}
+{{dataIdentification.abstract}}
+{% endif %}
+
+{% if dataIdentification.citation.dates %}
+	{% for date in dataIdentification.citation.dates  %}
+Data {{date ['dateType']}}: {{ date['date'] }}
+	{% endfor %}
+{% endif %}
+
+{% if dataIdentification.supplementalInformation %}
+**Supplemental Information :**
+
+{{ dataIdentification.supplementalInformation }}
+	
+{% endif %}
+
+**Contact points :**
+{% for resource in resources %}
+	{% set resource_type = h.jsonschema_get_resource_type(resource) %}
+	{% if resource_type == 'resource-contact' %}
+		{% set contact = h.jsonschema_get_resource_body(resource) %}
+		{% if contact.contactInfo %}
+			{% if contact.contactInfo.address
+				and contact.contactInfo.address.electronicMailAddress %}
+{{contact.role|capitalize}} : [{{contact.individualName}}]({{contact.contactInfo.address.electronicMailAddress}}) {{contact.organisationName}}
+			{% else %}
+{{contact.role|capitalize}} : {{contact.individualName}} {{contact.organisationName}}
+			{% endif %}
+		{% endif %}
+	{% endif %}
+{% endfor %}
+
+{% if dataIdentification.citation and 
+	dataIdentification.citation.series and
+		dataIdentification.citation.series.otherCitationDetails %}
+**Citation:**
+
+{{ dataIdentification.citation.series.otherCitationDetails }}
+
+{% endif %}
+
+{% if dataIdentification.resourceConstraints %}
+{% if dataIdentification.resourceConstraints.otherConstraints %}
+**Resource constraints:**
+
+	{% for constraint in dataIdentification.resourceConstraints  %}
+
+{{constraints}}
+
+	{% endfor %}
+{% endif %}
+{% endif %}
+
+**Online resources:**
+{% if resources %}
+	{% for resource in resources  %}
+	{% set resource_type = h.jsonschema_get_resource_type(resource) %}
+	{% if resource_type=='online-resource' %}
+			{% set body = h.jsonschema_get_resource_body(resource) %}
+			{% if body.protocol=='WWW:LINK-1.0-http--link' %}
+[{{resource.title or resource.name or resource.description or resource.url}}]({{resource.url}})
+			{% endif %}
+			{% if body.protocol=='WWW:Download-1.0-http-download' %}
+[{{resource.title or resource.name or resource.description or resource.url}}]({{resource.url}})
+			{% endif %}
+		{% endif %}
+	{% endfor %}
+{% endif %}

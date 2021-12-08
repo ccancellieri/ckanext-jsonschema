@@ -46,11 +46,9 @@
 {% endblock %}
 
 {% block package_basic_fields_license %}
-  {% if jsonschema %}
-    
-  {% else %}
-    {{super()}}
-  {% endif %}
+  
+  {{super()}}
+  
 {% endblock %}
 
 {% block package_basic_fields_org %}
