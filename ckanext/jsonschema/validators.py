@@ -189,19 +189,6 @@ def extractor(key, data, errors, context):
             #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
 
-# TODO CKAN contribution
-# TODO check also tools.get_dataset_type
-def get_dataset_type(data = None):
-    
-    _type = data and data.get('type')
-    if _type:
-        return _type
-
-    from ckan.common import c
-    # TODO: https://github.com/ckan/ckan/issues/6518
-    path = c.environ['CKAN_CURRENT_URL']
-    _type = path.split('/')[1]
-    return _type
 
 
 

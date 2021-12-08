@@ -129,10 +129,10 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
             'jsonschema_get_version_key': lambda : _c.SCHEMA_VERSION_KEY,
 
-            'jsonschema_get_body': lambda d_id, r_id = None : _t.get_body(d_id, r_id),
-            'jsonschema_get_type': lambda d_id, r_id = None : _t.get_type(d_id, r_id),
-            'jsonschema_get_opt': lambda d_id, r_id = None : _t.get_opt(d_id, r_id),
-            'jsonschema_get_version': lambda d_id, r_id = None : _t.get_version(d_id, r_id),
+            # 'jsonschema_get_body': lambda d_id, r_id = None : _t.get_body(d_id, r_id),
+            # 'jsonschema_get_type': lambda d_id, r_id = None : _t.get_type(d_id, r_id),
+            # 'jsonschema_get_opt': lambda d_id, r_id = None : _t.get_opt(d_id, r_id),
+            # 'jsonschema_get_version': lambda d_id, r_id = None : _t.get_version(d_id, r_id),
 
             'jsonschema_get_dataset_body': lambda d = None : _t.as_dict(_t.get_dataset_body(d)),
             'jsonschema_get_dataset_type': lambda d : _t.get_dataset_type(d),
@@ -147,7 +147,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
             'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
-            'jsonschema_get_dataset_type': _v.get_dataset_type, #TODO
+            'jsonschema_get_dataset_type': _t.get_dataset_type, #TODO
             'jsonschema_resolve_extras': _t.resolve_extras,
             'jsonschema_resolve_resource_extras': _t.resolve_resource_extras,
 

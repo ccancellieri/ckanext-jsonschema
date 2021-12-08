@@ -195,8 +195,9 @@ def get_type(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
 
 # TODO check also validators.get_dataset_type
-def get_dataset_type(dataset):
-    return _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)
+def get_dataset_type(dataset = None):
+    return _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)\
+        or _get_dataset_type(dataset)
 
 def get_resource_type(resource):
     return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
@@ -243,23 +244,34 @@ def get(dataset_id, resource_id = None, domain = None):
 #     return _extract_from_dataset(pkg)
 
 def _extract_from_resource(resource, domain = None):
-    if not resource:
-        raise Exception('Unable to find the requested resource')
-    if domain:
+    if resource and domain:
         return resource.get(domain)
     return resource
 
 def _extract_from_dataset(dataset, domain = None):
-    if domain:
+
+    if dataset and domain:
         extras = dataset.get('extras')
-        if not extras:
-            raise Exception('Unable to extract from extras')
-        for e in extras:
-            if e['key'] == domain:
-                return e['value']
-    return dataset        
+        if extras and isinstance(extras, list):
+            for e in extras:
+                if e['key'] == domain:
+                    return e['value']
+
     
 
+# TODO CKAN contribution
+# TODO check also tools.get_dataset_type
+def _get_dataset_type(data = None):
+    
+    _type = data and data.get('type')
+    if _type:
+        return _type
+
+    from ckan.common import c
+    # TODO: https://github.com/ckan/ckan/issues/6518
+    path = c.environ['CKAN_CURRENT_URL']
+    _type = path.split('/')[1]
+    return _type
 
 # def update_resource_extras(resource, extras):
 #     resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
