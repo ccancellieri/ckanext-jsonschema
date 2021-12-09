@@ -42,6 +42,9 @@ API:
 
 /jsonschema/importer
 
+Can be used to import an existing iso19139 xml into iso:
+(select source iso19139 format xml)
+
 GET:
 /jsonschema/{body|type|version|opt}/{DATASET_ID}[/RESOURCE_ID]
 
@@ -103,7 +106,7 @@ extension to provide an iso19139 binding from iso19139 and the below simplified 
 
 extension to provide a simplified but quite complet iso model
 
-## harvester_iso19139
+## harvester_iso19139 (deprecated, ise importer)
 
 An harvester from CSW to iso19139/iso
 
