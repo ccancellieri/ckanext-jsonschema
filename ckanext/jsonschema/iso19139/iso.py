@@ -79,8 +79,6 @@ class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
 
-
-
     # IConfigurer
     def update_config(self, config_):
         pass
@@ -189,7 +187,11 @@ def render_notes(body, type, opt, version, data):
 
     pkg = _g.get_pkg(body.get('fileIdentifier'))
     # ############actually it's a markdown...
-    return base.render('iso/description.html', extra_vars={'dataset': pkg })
+    if pkg:
+        try:
+            return base.render('iso/description.html', extra_vars={'dataset': pkg })
+        except Exception as e:
+            return None
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
     # _data = df.unflatten(data)
@@ -205,7 +207,7 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
 
         abstract = data_identification.get('abstract')
         if abstract:
-            _data['notes'] = render_notes(body, type, opt, version, _data)
+            _data['notes'] = render_notes(body, type, opt, version, _data) or abstract
 
         _data['tags'] = []
         descriptive_keywords = data_identification.get('descriptiveKeywords')

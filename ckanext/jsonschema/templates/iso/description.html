@@ -7,7 +7,7 @@
 {{dataIdentification.abstract}}
 {% endif %}
 
-{% if dataIdentification.citation.dates %}
+{% if dataIdentification.citation and dataIdentification.citation.dates %}
 	{% for date in dataIdentification.citation.dates  %}
 Data {{date ['dateType']}}: {{ date['date'] }}
 	{% endfor %}

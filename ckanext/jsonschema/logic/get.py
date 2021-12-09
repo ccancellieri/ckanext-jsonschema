@@ -1,6 +1,8 @@
 
 
 import ckan.plugins.toolkit as toolkit
+import ckan.logic as logic
+
 
 # # TODO model
 # class JsonSchema():
@@ -52,10 +54,11 @@ def get_pkg(dataset_id):
 
     if not dataset_id:
         raise Exception('we expect a dataset_id')
-
-    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
-    if not pkg:
-        raise Exception('Unable to find dataset, check input params')
+    try:
+        pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
+    except logic.NotFound as e:
+        #not found (could be a creation)
+        return None
 
     _pkg = _u.dictize_pkg(pkg)
 
