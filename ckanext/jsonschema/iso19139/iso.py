@@ -191,7 +191,10 @@ def render_notes(body, type, opt, version, data):
         try:
             return base.render('iso/description.html', extra_vars={'dataset': pkg })
         except Exception as e:
-            return None
+            # if e:
+            #     message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
+            #     log.error(message)
+            raise e
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
     # _data = df.unflatten(data)
@@ -268,13 +271,13 @@ def _extract_iso_online_resource(body, type, opt, version, data, errors, context
     _dict = dict(data)
 
     # name = munge.munge_filename(body.get('name'),'')
-    name = body.get('name')
-    if not name:
-        name = 'Online resource'
+    name = body.get('name','Online resource')
+    # if not name:
+    #     name = 'Online resource'
     # if not name:
     #     _v.stop_with_error('Unable to obtain {}'.format(key), errors)
     
-    description = body.get('description','')
+    description = body.get('description')
     _dict.update({
         'name': name,
         'description': description,

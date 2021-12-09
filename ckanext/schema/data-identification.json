@@ -32,7 +32,18 @@
                 "propertyOrder": 1,
                 "title": "Date",
                 "type": "string",
-                "format": "date"
+                "format": "date",
+                "options": {
+                  "grid_columns": 4,
+                  "inputAttributes": {
+                    "placeholder": "Enter datetime"
+                  },
+                  "flatpickr": {
+                    "inlineHideInput": true,
+                    "inline": true,
+                    "time_24hr": true
+                  }
+                }
               },
               "dateType": {
                 "type": "string",
