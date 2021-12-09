@@ -38,6 +38,18 @@ Provide an iso19139 implementation and a simplified profile
 
 Provide several extension points to introduce new dataset and resource formats
 
+API:
+
+/jsonschema/importer
+
+GET:
+/jsonschema/{body|type|version|opt}/{DATASET_ID}[/RESOURCE_ID]
+
+/jsonschema/schema/{type}.json
+
+/jsonschema/template/{type}.json
+
+
 ------------
 Requirements
 ------------
