@@ -40,25 +40,29 @@ Data {{date ['dateType']}}: {{ date['date'] }}
 	{% endif %}
 {% endfor %}
 
+{% set dataQualityInfo = body['dataQualityInfo'] %}
+{% if dataQualityInfo and
+	dataQualityInfo.lineage and
+	dataQualityInfo.lineage.statement %}
+**Data lineage:**
+{{dataQualityInfo.lineage.statement}}
+{% endif %}
+
 {% if dataIdentification.citation and
 		dataIdentification.citation.otherCitationDetails %}
-
 **Citation:**
-
 {{ dataIdentification.citation.otherCitationDetails }}
-
 {% endif %}
 
 {% if dataIdentification.resourceConstraints %}
-	{% if dataIdentification.resourceConstraints.otherConstraints %}
 **Resource constraints:**
-
-		{% for constraint in dataIdentification.resourceConstraints  %}
-
+	{% for constraint in dataIdentification.resourceConstraints  %}
+		{% if dataIdentification.resourceConstraints.otherConstraints %}
+			{% for other in dataIdentification.resourceConstraints.otherConstraints %}
 {{constraints}}
-
-		{% endfor %}
-	{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endfor %}
 {% endif %}
 
 {% if resources %}
