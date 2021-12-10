@@ -36,12 +36,12 @@
                 "options": {
                   "grid_columns": 4,
                   "inputAttributes": {
-                    "placeholder": "Enter datetime"
+                    "placeholder": "Enter date"
                   },
                   "flatpickr": {
                     "inlineHideInput": true,
-                    "inline": true,
-                    "time_24hr": true
+                    "wrap": true,
+                    "allowInput": true
                   }
                 }
               },
