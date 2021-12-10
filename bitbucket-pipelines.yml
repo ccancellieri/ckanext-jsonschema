@@ -1,0 +1,57 @@
+definitions:
+  steps:
+    - step: &ckan-2.9-test
+        name: ckan-test
+        script:
+            - export PLUGIN="jsonschema"
+            # - export PLUGIN=$BITBUCKT_REPO_SLUG
+
+            - git clone https://github.com/ckan/ckan.git
+            - cd ckan
+            # - git checkout tags/ckan-2.8.6
+            - git checkout tags/ckan-2.9.3
+            - cd ..
+            - cp contrib/docker/.env.template contrib/docker/.env
+            # - echo "PLUGIN=${PLUGIN}" >> contrib/docker/.env
+            - cd contrib/docker
+            # - docker-compose --verbose --log-level DEBUG up -d --build
+            # - docker-compose --verbose --log-level DEBUG build --build-arg PLUGIN=${PLUGIN} 
+            - docker-compose build --build-arg PLUGIN=${PLUGIN} --no-cache
+            - docker-compose up --exit-code-from ckan
+            # - docker-compose --verbose --log-level DEBUG up 
+            # - docker-compose run sut $CKAN_VENV/src/ckan/ckanext-$PLUGIN/run-test.sh
+            - echo "----------PS----------"
+            - docker ps
+            # - docker-compose logs solr
+            # - docker-compose logs ckan
+            # - docker-compose restart ckan
+            # - docker-compose logs db
+            - echo "----------PS----------"
+            # - docker ps | grep ckan
+            # - docker-compose logs ckan
+            # - docker network ls
+            # - docker network inspect -v docker_default
+            # - sleep 30
+            # - docker-compose logs db
+            - docker-compose logs ckan
+            # - docker-compose logs sut
+            # - curl -v http://127.0.0.1:8983/solr || true
+            # - curl 127.0.0.1:5000 || true
+            # - curl -v -d '{}' http://127.0.0.1:5000/api/action/package_list || true
+        services:
+          - docker
+        caches:
+          - docker
+        # artifacts:
+        #   - "*.tar"
+options:
+  docker: true
+image: atlassian/default-image:2
+#image: atlassian/bitbucket-server
+pipelines:
+  pull-requests:
+    '**':
+      - step: *ckan-2.9-test
+  branches:
+    master:
+      - step: *ckan-2.9-test
