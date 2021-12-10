@@ -58,8 +58,10 @@
 
 {% if dataIdentification.resourceConstraints %}
 **Resource constraints:**
-	{% if dataIdentification.resourceConstraints.otherConstraints %}
-		{% for other in dataIdentification.resourceConstraints.otherConstraints %}
+	{% if dataIdentification.resourceConstraints and
+		dataIdentification.resourceConstraints.legalConstraints and
+			dataIdentification.resourceConstraints.legalConstraints.otherConstraints %}
+		{% for other in dataIdentification.resourceConstraints.legalConstraints.otherConstraints %}
 {{other}}
 		{% endfor %}
 	{% endif %}
