@@ -448,8 +448,9 @@ def __dates(dates):
 #        _t.as_datetime(_d, ('date',))
         date = _d.get('date')
         if date:
-            from dateutil.parser import parse as dateutil_parse
-            _t.set_nested(_d, ('date',), str(dateutil_parse(date).date())) #.isoformat()+'Z'
+            # from dateutil.parser import parse as dateutil_parse
+            # str(dateutil_parse(date).date())
+            _t.set_nested(_d, ('date',), date) #.isoformat()+'Z'
             _dates.append(_d)
 
     return _dates
