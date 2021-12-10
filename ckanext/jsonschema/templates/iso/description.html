@@ -40,13 +40,12 @@ Data {{date ['dateType']}}: {{ date['date'] }}
 	{% endif %}
 {% endfor %}
 
-{% if dataIdentification.citation and 
-	dataIdentification.citation.series and
-		dataIdentification.citation.series.otherCitationDetails %}
+{% if dataIdentification.citation and
+		dataIdentification.citation.otherCitationDetails %}
 
 **Citation:**
 
-{{ dataIdentification.citation.series.otherCitationDetails }}
+{{ dataIdentification.citation.otherCitationDetails }}
 
 {% endif %}
 

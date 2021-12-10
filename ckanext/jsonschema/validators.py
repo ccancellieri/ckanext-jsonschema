@@ -59,13 +59,11 @@ def schema_check(key, data, errors, context):
 
     type = extra.get(_c.SCHEMA_TYPE_KEY)
 
-    # TODO extension point (we may want to plug other schema checkers)
     if not type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
 
     schema = _t.get_schema_of(type)
 
-    # TODO extension point (we may want to plug other schema checkers)
     if not schema:
         stop_with_error('Unable to load a valid json-schema for type {}'.format(type), key, errors)
 
@@ -156,8 +154,6 @@ def before_extractor(key, data, errors, context):
                 data.update(df.flatten_dict(__data))
         except Exception as e:
             stop_with_error(str(e),key,errors)
-            # log.error('Error before extracting dataset type {}\
-            #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
    
 
@@ -185,8 +181,6 @@ def extractor(key, data, errors, context):
                 data.update(df.flatten_dict(_data))
         except Exception as e:
             stop_with_error(str(e),key,errors)
-            # log.error('Error extracting dataset type {}\
-            #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
 
 
 
