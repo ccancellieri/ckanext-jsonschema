@@ -14,7 +14,7 @@
 {% endif %}
 
 {% if dataIdentification.supplementalInformation %}
-**Supplemental Information :**
+**Supplemental Information:**
 
 {{ dataIdentification.supplementalInformation }}
 	
@@ -32,9 +32,9 @@
 		{% if contact.contactInfo %}
 			{% if contact.contactInfo.address
 				and contact.contactInfo.address.electronicMailAddress %}
-{{contact.role|capitalize}} : [{{contact.individualName}}](mailto:{{contact.contactInfo.address.electronicMailAddress}}) {{contact.organisationName}}
+{{contact.role|capitalize}}: [{{contact.individualName}}](mailto:{{contact.contactInfo.address.electronicMailAddress}}) {{contact.organisationName}}
 			{% else %}
-{{contact.role|capitalize}} : {{contact.individualName}} {{contact.organisationName}}
+{{contact.role|capitalize}}: {{contact.individualName}} {{contact.organisationName}}
 			{% endif %}
 		{% endif %}
 	{% endif %}
