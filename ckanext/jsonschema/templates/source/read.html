@@ -61,64 +61,66 @@
 {% set opt = h.jsonschema_get_dataset_opt(pkg) %}
 
 {% set version = h.jsonschema_get_dataset_version(pkg) %}
-<div>
-  <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
-    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#type" aria-expanded="false" aria-controls="type">Type</button>
-    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#body" aria-expanded="false" aria-controls="body">Full Metadata</button>
-    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#opt" aria-expanded="false" aria-controls="opt">Options</button>
-    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#version" aria-expanded="false" aria-controls="version">Version</button>
+<p>
+  <div>
+    <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
+      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#body" aria-expanded="false" aria-controls="body">Full Metadata</button>
+      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#opt" aria-expanded="false" aria-controls="opt">Options</button>
+      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#type" aria-expanded="false" aria-controls="type">Type</button>
+      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#version" aria-expanded="false" aria-controls="version">Version</button>
+    </div>
+    <div class="col">
+      <div class="row">
+        <div class="collapse multi-collapse" id="body">
+          <div class="card card-body">          
+          {% if body %}
+          <p>
+            <h3>Metadata:</h3>
+            {{ reader.render_json(body) }}
+          </p>
+          {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="collapse multi-collapse" id="opt">
+          <div class="card card-body">
+            {% if opt %}
+            <p>
+              <h3>Options:</h3>
+              {{ reader.render_json(opt) }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="collapse multi-collapse" id="type">
+          <div class="card card-body">
+            {% if schema_type %}
+            <p>
+              <h3>Type:</h3>
+              {{ schema_type }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="collapse multi-collapse" id="version">
+          <div class="card card-body">
+            {% if version %}
+            <p>
+              <h3>Version:</h3>
+              {{ version }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="col">
-    <div class="row">
-      <div class="collapse multi-collapse" id="type">
-        <div class="card card-body">
-          {% if schema_type %}
-          <p>
-            <h3>Type:</h3>
-            {{ schema_type }}
-          </p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="collapse multi-collapse" id="body">
-        <div class="card card-body">          
-        {% if body %}
-        <p>
-          <h3>Metadata:</h3>
-          {{ reader.render_json(body) }}
-        </p>
-        {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="collapse multi-collapse" id="opt">
-        <div class="card card-body">
-          {% if opt %}
-          <p>
-            <h3>Options:</h3>
-            {{ reader.render_json(opt) }}
-          </p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="collapse multi-collapse" id="version">
-        <div class="card card-body">
-          {% if version %}
-          <p>
-            <h3>Version:</h3>
-            {{ version }}
-          </p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+</p>
   
 
   {% block package_additional_info %}

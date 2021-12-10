@@ -90,6 +90,7 @@
         },
         "series": {
           "type":"object",
+          "propertyOrder": 40,
           "properties":{
             "name":{
               "title": "Name",
@@ -106,18 +107,22 @@
           }
         },
         "otherCitationDetails":{
+          "propertyOrder": 50,
           "title": "Other Citation Details",
           "type":"string"
         },
         "collectiveTitle":{
+          "propertyOrder": 60,
           "title": "Collective title",
           "type":"string"
         },
         "ISBN":{
+          "propertyOrder": 70,
           "type":"string",
           "description": "International Standard Book Number"
         },
         "ISSN":{
+          "propertyOrder": 80,
           "type":"string",
           "description": "International Standard Serial Number"
         }

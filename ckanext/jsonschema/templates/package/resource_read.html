@@ -36,18 +36,6 @@
               </div>
               <div class="col">
                 <div class="row">
-                  <div class="collapse" id="type">
-                    <div class="card card-body">
-                      {% if schema_type %}
-                      <p>
-                        <h3>Type:</h3>
-                        {{ schema_type }}
-                      </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
                   <div class="" id="body">
                     <div class="card card-body">          
                     {% if body %}
@@ -66,6 +54,18 @@
                       <p>
                         <h3>Options:</h3>
                         {{ reader.render_json(opt) }}
+                      </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="collapse" id="type">
+                    <div class="card card-body">
+                      {% if schema_type %}
+                      <p>
+                        <h3>Type:</h3>
+                        {{ schema_type }}
                       </p>
                       {% endif %}
                     </div>
