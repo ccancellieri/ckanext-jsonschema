@@ -134,8 +134,6 @@ class JsonschemaIso(p.SingletonPlugin):
         elif type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
             
-
-
         elif type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
             return _extract_iso_online_resource(body, type, opt, version, data, errors, context)
             

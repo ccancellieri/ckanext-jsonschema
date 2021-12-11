@@ -74,9 +74,9 @@
 		{% set resource_type = h.jsonschema_get_resource_type(resource) %}
 		{% if resource_type == 'online-resource' %}
 			{% set body = h.jsonschema_get_resource_body(resource) %}
-			{% if body.protocol == 'WWW:LINK-1.0-http--link' %}
+			{% if body.protocol.lower() == 'www:link-1.0-http--link' %}
 [{{resource.description or resource.name}}]({{resource.url}})
-			{% elif body.protocol == 'WWW:Download-1.0-http-download' %}
+			{% elif body.protocol.lower() == 'www:download-1.0-http--download' %}
 [{{resource.description or resource.name}}]({{resource.url}})
 			{% endif %}
 		{% endif %}
