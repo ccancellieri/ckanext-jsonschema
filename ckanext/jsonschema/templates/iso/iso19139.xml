@@ -1,0 +1,592 @@
+{% macro responsible_party(resource) -%}
+<gmd:CI_ResponsibleParty>
+   
+   {% set body = h.jsonschema_get_resource_body(resource) %}
+      
+   <gmd:individualName>
+      <gco:CharacterString>{{body.individualName}}</gco:CharacterString>
+   </gmd:individualName>
+   <gmd:organisationName>
+      <gco:CharacterString>{{body.organisationName}}</gco:CharacterString>
+   </gmd:organisationName>
+   <gmd:positionName>
+      <gco:CharacterString>{{body.positionName}}</gco:CharacterString>
+   </gmd:positionName>
+   <gmd:contactInfo>
+   <gmd:CI_Contact>
+      {% if body.contactInfo.phone %}
+      <gmd:phone>
+            <gmd:CI_Telephone>
+               {% if body.contactInfo.phone.voice %}
+               <gmd:voice>
+               <gco:CharacterString>{{body.contactInfo.phone.voice}}</gco:CharacterString>
+               </gmd:voice>
+               {% endif %}
+               {% if body.contactInfo.phone.facsimile %}
+               <gmd:facsimile>
+               <gco:CharacterString>{{body}}</gco:CharacterString>
+               </gmd:facsimile>
+               {% endif %}
+            </gmd:CI_Telephone>
+      </gmd:phone>
+      {% endif %}
+      {% if body.contactInfo.address %}
+      <gmd:address>
+            <gmd:CI_Address>
+               <gmd:deliveryPoint>
+               <gco:CharacterString>{{body.contactInfo.deliveryPoint}}</gco:CharacterString>
+               </gmd:deliveryPoint>
+               <gmd:city>
+               <gco:CharacterString>{{body.contactInfo.city}}</gco:CharacterString>
+               </gmd:city>
+               <gmd:postalCode>
+               <gco:CharacterString>{{body.contactInfo.postalCode}}</gco:CharacterString>
+               </gmd:postalCode>
+               <gmd:country>
+               <gco:CharacterString>{{body.contactInfo.country}}</gco:CharacterString>
+               </gmd:country>
+               <gmd:electronicMailAddress>
+               <gco:CharacterString>{{body.contactInfo.electronicMailAddress}}</gco:CharacterString>
+               </gmd:electronicMailAddress>
+            </gmd:CI_Address>
+      </gmd:address>
+      {% endif %}
+      {% if body.contactInfo.onlineResource %}
+      {% set online = body.contactInfo.onlineResource %}
+      <gmd:onlineResource>
+            <gmd:CI_OnlineResource>
+               <gmd:linkage>
+               <gmd:URL>{{resource.url or online.linkage}}</gmd:URL>
+               </gmd:linkage>
+               <gmd:protocol>
+               <gco:CharacterString>{{online.protocol}}</gco:CharacterString>
+               </gmd:protocol>
+               <gmd:name>
+               <gco:CharacterString>{{online.name}}</gco:CharacterString>
+               </gmd:name>
+               <gmd:description>
+               <gco:CharacterString>{{online.description}}</gco:CharacterString>
+               </gmd:description>
+            </gmd:CI_OnlineResource>
+      </gmd:onlineResource>
+      {% endif %}
+   </gmd:CI_Contact>
+   </gmd:contactInfo>
+   {% if body.role %}
+   <gmd:role>
+   <gmd:CI_RoleCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_RoleCode"
+                        codeListValue="{{body.role}}"/>
+   </gmd:role>
+   {% endif %}
+</gmd:CI_ResponsibleParty>
+{%- endmacro %}
+
+
+{% macro online_resource(resource) %}
+{% set body = h.jsonschema_get_resource_body(resource) %}
+<gmd:onLine>
+   <gmd:CI_OnlineResource>
+      <gmd:linkage>
+         <gmd:URL>{{resource.url or body.linkage }}</gmd:URL>
+      </gmd:linkage>
+      <gmd:protocol>
+         <gco:CharacterString>{{body.protocol}}</gco:CharacterString>
+      </gmd:protocol>
+      <gmd:name>
+         <gco:CharacterString>{{body.name}}</gco:CharacterString>
+      </gmd:name>
+      <gmd:description>
+         <gco:CharacterString>{{body.description}}</gco:CharacterString>
+      </gmd:description>
+   </gmd:CI_OnlineResource>
+</gmd:onLine>
+{%- endmacro %}
+
+{% macro graphic_overview(resource) %}
+{% set body = h.jsonschema_get_resource_body(resource) %}
+<gmd:MD_BrowseGraphic>
+   <gmd:fileName>
+      <gco:CharacterString>{{resource.url}}</gco:CharacterString>
+   </gmd:fileName>
+   <gmd:fileDescription>
+      <gco:CharacterString>{{body.description}}</gco:CharacterString>
+   </gmd:fileDescription>
+</gmd:MD_BrowseGraphic>
+{%- endmacro %}
+
+
+<gmd:MD_Metadata xmlns:gts="http://www.isotc211.org/2005/gts"
+                 xmlns:gml="http://www.opengis.net/gml/3.2"
+                 xmlns:gmd="http://www.isotc211.org/2005/gmd"
+                 xmlns:gmx="http://www.isotc211.org/2005/gmx"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:srv="http://www.isotc211.org/2005/srv"
+                 xmlns:gco="http://www.isotc211.org/2005/gco"
+                 xmlns:gsr="http://www.isotc211.org/2005/gsr"
+                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                 xmlns:gmi="http://www.isotc211.org/2005/gmi"
+                 xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd">
+   <gmd:fileIdentifier>
+      <gco:CharacterString>{{metadata.fileIdentifier}}</gco:CharacterString>
+   </gmd:fileIdentifier>
+   <gmd:language>
+      <gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="{{metadata.language}}"/>
+   </gmd:language>
+   <gmd:characterSet>
+      <gmd:MD_CharacterSetCode codeListValue="{{metadata.characterSet}}"
+                               codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"/>
+  </gmd:characterSet>
+   <gmd:contact>
+    {% for resource in pkg.resources %}
+        {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+        <!-- TODO where is resource contact??? -->
+        {% if resource_type == 'resource-contact' or
+				resource_type == 'metadata-contact' %}
+         {{ responsible_party(resource)}}
+         <!-- TODO RESOURCES HERE -->
+        {% endif %}
+    {% endfor %}
+<!-- TODO RESOURCES HERE -->
+  </gmd:contact>
+   <gmd:dateStamp>
+      <gco:DateTime>{{pkg.modification_date}}</gco:DateTime>
+   </gmd:dateStamp>
+   <gmd:metadataStandardName>
+      <gco:CharacterString>{{metadata.metadataStandardName}}</gco:CharacterString>
+   </gmd:metadataStandardName>
+   <gmd:metadataStandardVersion>
+      <gco:CharacterString>{{metadata.metadataStandardVersion}}</gco:CharacterString>
+   </gmd:metadataStandardVersion>
+   <gmd:spatialRepresentationInfo>
+      <gmd:MD_GridSpatialRepresentation>
+         <gmd:numberOfDimensions>
+            <gco:Integer>2</gco:Integer>
+         </gmd:numberOfDimensions>
+         <gmd:axisDimensionProperties>
+            <gmd:MD_Dimension>
+               <gmd:dimensionName>
+                  <gmd:MD_DimensionNameTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_DimensionNameTypeCode"
+                                                codeListValue="column"/>
+               </gmd:dimensionName>
+               <gmd:dimensionSize>
+                  <gco:Integer>2345</gco:Integer>
+               </gmd:dimensionSize>
+               <gmd:resolution>
+                  <gco:Angle uom="degree">0.1</gco:Angle>
+               </gmd:resolution>
+            </gmd:MD_Dimension>
+         </gmd:axisDimensionProperties>
+         <gmd:cellGeometry>
+            <gmd:MD_CellGeometryCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CellGeometryCode"
+                                     codeListValue=""/>
+         </gmd:cellGeometry>
+         <gmd:transformationParameterAvailability>
+            <gco:Boolean>true</gco:Boolean>
+         </gmd:transformationParameterAvailability>
+      </gmd:MD_GridSpatialRepresentation>
+   </gmd:spatialRepresentationInfo>
+   <gmd:spatialRepresentationInfo>
+      <gmd:MD_VectorSpatialRepresentation>
+         <gmd:geometricObjects>
+            <gmd:MD_GeometricObjects>
+               <gmd:geometricObjectType>
+                  <gmd:MD_GeometricObjectTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_GeometricObjectTypeCode"
+                                                  codeListValue="complex"/>
+               </gmd:geometricObjectType>
+               <gmd:geometricObjectCount>
+                  <gco:Integer>23</gco:Integer>
+               </gmd:geometricObjectCount>
+            </gmd:MD_GeometricObjects>
+         </gmd:geometricObjects>
+      </gmd:MD_VectorSpatialRepresentation>
+   </gmd:spatialRepresentationInfo>
+   <gmd:referenceSystemInfo>
+      <gmd:MD_ReferenceSystem>
+         <gmd:referenceSystemIdentifier>
+            <gmd:RS_Identifier>
+               <gmd:code>
+                  <gco:CharacterString>{{metadata.referenceSystemIdentifier}}</gco:CharacterString>
+               </gmd:code>
+            </gmd:RS_Identifier>
+         </gmd:referenceSystemIdentifier>
+      </gmd:MD_ReferenceSystem>
+  </gmd:referenceSystemInfo>
+   <gmd:identificationInfo>
+      <gmd:MD_DataIdentification>
+         {% if metadata.dataIdentification.citation %}
+         {% set citation = metadata.dataIdentification.citation %}
+         <gmd:citation>
+            <gmd:CI_Citation>
+               <gmd:title>
+                  <gco:CharacterString>{{citation.title}}</gco:CharacterString>
+               </gmd:title>
+               <gmd:date>
+                  <gmd:CI_Date>
+                     <gmd:date>
+                        <gco:Date>2021-01-30</gco:Date>
+                     </gmd:date>
+                     <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeListValue="creation"
+                                             codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"/>
+                     </gmd:dateType>
+                  </gmd:CI_Date>
+               </gmd:date>
+               <gmd:date>
+                  <gmd:CI_Date>
+                     <gmd:date>
+                        <gco:Date>2021-10-05</gco:Date>
+                     </gmd:date>
+                     <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"
+                                             codeListValue="publication"/>
+                     </gmd:dateType>
+                  </gmd:CI_Date>
+               </gmd:date>
+               <gmd:date>
+                  <gmd:CI_Date>
+                     <gmd:date>
+                        <gco:Date>2021-11-02</gco:Date>
+                     </gmd:date>
+                     <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"
+                                             codeListValue="revision"/>
+                     </gmd:dateType>
+                  </gmd:CI_Date>
+               </gmd:date>
+               <gmd:edition>
+                  <gco:CharacterString>Version 2</gco:CharacterString>
+               </gmd:edition>
+               <gmd:citedResponsibleParty>
+               {% for resource in pkg.resources %}
+                  {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+                  {% if resource_type == 'cited-responsible-party' %}
+               {{ responsible_party(resource)}}
+                  {% endif %}
+               {% endfor %}
+               </gmd:citedResponsibleParty>
+               <gmd:presentationForm>
+                  <gmd:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_PresentationFormCode"
+                                               codeListValue="mapDigital"/>
+               </gmd:presentationForm>
+               <gmd:presentationForm>
+                  <gmd:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_PresentationFormCode"
+                                               codeListValue="documentHardcopy"/>
+               </gmd:presentationForm>
+               {% if metadata.dataIdentification.series %}
+               <gmd:series>
+                  <gmd:CI_Series>
+                     <gmd:name>
+                        <gco:CharacterString>{{metadata.dataIdentification.series.name}}</gco:CharacterString>
+                     </gmd:name>
+                     <gmd:issueIdentification>
+                        <gco:CharacterString>{{metadata.dataIdentification.series.issueIdentification}}</gco:CharacterString>
+                     </gmd:issueIdentification>
+                     <gmd:page>
+                        <gco:CharacterString>{{metadata.dataIdentification.series.page}}</gco:CharacterString>
+                     </gmd:page>
+                  </gmd:CI_Series>
+               </gmd:series>
+               {% endif %}
+               <gmd:otherCitationDetails>
+                  <gco:CharacterString>{{metadata.dataIdentification.otherCitationDetails}}</gco:CharacterString>
+               </gmd:otherCitationDetails>
+               <gmd:collectiveTitle>
+                  <gco:CharacterString>{{metadata.dataIdentification.collectiveTitle}}</gco:CharacterString>
+               </gmd:collectiveTitle>
+               <gmd:ISBN>
+                  <gco:CharacterString>{{metadata.dataIdentification.ISBN}}</gco:CharacterString>
+               </gmd:ISBN>
+               <gmd:ISSN>
+                  <gco:CharacterString>{{metadata.dataIdentification.ISSN}}</gco:CharacterString>
+               </gmd:ISSN>
+            </gmd:CI_Citation>
+         </gmd:citation>
+         {% endif %}
+         <gmd:abstract>
+            <gco:CharacterString>{{metadata.dataIdentification.abstract}}</gco:CharacterString>
+         </gmd:abstract>
+         <gmd:purpose>
+            <gco:CharacterString>{{metadata.dataIdentification.purpose}}</gco:CharacterString>
+         </gmd:purpose>
+         <gmd:status>
+            <gmd:MD_ProgressCode codeListValue="{{metadata.dataIdentification.status}}"
+                                 codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode"/>
+         </gmd:status>
+         <gmd:pointOfContact>
+         {% for resource in pkg.resources %}
+            {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+            {% if resource_type == 'point-of-contact' %}
+         {{ responsible_party(resource)}}
+            {% endif %}
+         {% endfor %}
+         </gmd:pointOfContact>
+         <gmd:resourceMaintenance>
+            <gmd:MD_MaintenanceInformation>
+               <gmd:maintenanceAndUpdateFrequency>
+                  <gmd:MD_MaintenanceFrequencyCode codeListValue="{{metadata.dataIdentification.maintenanceAndUpdateFrequency}}"
+                                                   codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"/>
+               </gmd:maintenanceAndUpdateFrequency>
+               <gmd:contact>
+                  {% for resource in pkg.resources %}
+                     {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+                     {% if resource_type == 'resource-maintainer' %}
+                  {{ responsible_party(resource)}}
+                     {% endif %}
+                  {% endfor %}
+               </gmd:contact>
+            </gmd:MD_MaintenanceInformation>
+         </gmd:resourceMaintenance>
+         <gmd:graphicOverview>
+            {% for resource in pkg.resources %}
+                  {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+                  {% if resource_type == 'graphic-overview' %}
+            {{ graphic_overview(resource)}}
+                  {% endif %}
+            {% endfor %}
+         </gmd:graphicOverview>
+         <gmd:descriptiveKeywords>
+            <gmd:MD_Keywords>
+               <gmd:keyword>
+                  <gco:CharacterString>Daily</gco:CharacterString>
+               </gmd:keyword>
+               <gmd:keyword>
+                  <gco:CharacterString>Logistics</gco:CharacterString>
+               </gmd:keyword>
+               <gmd:type>
+                  <gmd:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"
+                                          codeListValue="temporal"/>
+               </gmd:type>
+            </gmd:MD_Keywords>
+         </gmd:descriptiveKeywords>
+         <gmd:descriptiveKeywords>
+            <gmd:MD_Keywords>
+               <gmd:keyword>
+                  <gco:CharacterString>movies</gco:CharacterString>
+               </gmd:keyword>
+               <gmd:keyword>
+                  <gco:CharacterString>oscar</gco:CharacterString>
+               </gmd:keyword>
+               <gmd:keyword>
+                  <gco:CharacterString>cinema</gco:CharacterString>
+               </gmd:keyword>
+               <gmd:type>
+                  <gmd:MD_KeywordTypeCode codeListValue="theme"
+                                          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"/>
+               </gmd:type>
+            </gmd:MD_Keywords>
+         </gmd:descriptiveKeywords>
+         <gmd:descriptiveKeywords>
+            <gmd:MD_Keywords>
+               <gmd:keyword>
+                  <gco:CharacterString>Rome</gco:CharacterString>
+               </gmd:keyword>
+               <gmd:type>
+                  <gmd:MD_KeywordTypeCode codeListValue="place"
+                                          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"/>
+               </gmd:type>
+            </gmd:MD_Keywords>
+         </gmd:descriptiveKeywords>
+         <gmd:resourceConstraints>
+            <gmd:MD_LegalConstraints>
+               <gmd:useLimitation>
+                  <gco:CharacterString>Legal constrains</gco:CharacterString>
+               </gmd:useLimitation>
+               <gmd:accessConstraints>
+                  <gmd:MD_RestrictionCode codeListValue="copyright"
+                                          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode"/>
+               </gmd:accessConstraints>
+               <gmd:useConstraints>
+                  <gmd:MD_RestrictionCode codeListValue="license"
+                                          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode"/>
+               </gmd:useConstraints>
+               <gmd:otherConstraints>
+                  <gco:CharacterString>Creative Commons Attribution-NonCommercial-ShareAlike 3.0 IGO. More info at https://creativecommons.org/licenses/by-nc-sa/3.0/igo/</gco:CharacterString>
+               </gmd:otherConstraints>
+            </gmd:MD_LegalConstraints>
+         </gmd:resourceConstraints>
+         <gmd:resourceConstraints>
+            <gmd:MD_SecurityConstraints>
+               <gmd:useLimitation>
+                  <gco:CharacterString>Security constraints</gco:CharacterString>
+               </gmd:useLimitation>
+               <gmd:classification>
+                  <gmd:MD_ClassificationCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ClassificationCode"
+                                             codeListValue=""/>
+               </gmd:classification>
+            </gmd:MD_SecurityConstraints>
+         </gmd:resourceConstraints>
+         <gmd:resourceConstraints>
+            <gmd:MD_Constraints>
+               <gmd:useLimitation>
+                  <gco:CharacterString>Constraints</gco:CharacterString>
+               </gmd:useLimitation>
+            </gmd:MD_Constraints>
+         </gmd:resourceConstraints>
+         <gmd:spatialRepresentationType>
+            <gmd:MD_SpatialRepresentationTypeCode codeListValue="grid"
+                                                  codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"/>
+         </gmd:spatialRepresentationType>
+         <gmd:spatialRepresentationType>
+            <gmd:MD_SpatialRepresentationTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
+                                                  codeListValue="vector"/>
+         </gmd:spatialRepresentationType>
+         <gmd:spatialResolution>
+            <gmd:MD_Resolution>
+               <gmd:equivalentScale>
+                  <gmd:MD_RepresentativeFraction>
+                     <gmd:denominator>
+                        <gco:Integer>50000</gco:Integer>
+                     </gmd:denominator>
+                  </gmd:MD_RepresentativeFraction>
+               </gmd:equivalentScale>
+            </gmd:MD_Resolution>
+         </gmd:spatialResolution>
+         <gmd:spatialResolution>
+            <gmd:MD_Resolution>
+               <gmd:distance>
+                  <gco:Distance uom="m">10</gco:Distance>
+               </gmd:distance>
+            </gmd:MD_Resolution>
+         </gmd:spatialResolution>
+         <gmd:language>
+            <gco:CharacterString>eng</gco:CharacterString>
+         </gmd:language>
+         <gmd:characterSet>
+            <gmd:MD_CharacterSetCode codeListValue="utf8"
+                                     codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"/>
+         </gmd:characterSet>
+         <gmd:topicCategory>
+            <gmd:MD_TopicCategoryCode>climatologyMeteorologyAtmosphere</gmd:MD_TopicCategoryCode>
+         </gmd:topicCategory>
+         <gmd:topicCategory>
+            <gmd:MD_TopicCategoryCode>farming</gmd:MD_TopicCategoryCode>
+         </gmd:topicCategory>
+         <gmd:extent>
+            <gmd:EX_Extent>
+               <gmd:geographicElement>
+                  <gmd:EX_BoundingPolygon>
+                     <gmd:polygon>
+                        <gml:MultiSurface srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                           <gml:surfaceMember>
+                              <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                                 <gml:exterior>
+                                    <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
+                                       <gml:posList srsDimension="2">-8.714976511377259 17.87110269069672 -11.407042762887116 32.71484434604645 -17.456635502796217 16.699213385581974 -8.714976511377259 17.87110269069672</gml:posList>
+                                    </gml:LinearRing>
+                                 </gml:exterior>
+                              </gml:Polygon>
+                           </gml:surfaceMember>
+                        </gml:MultiSurface>
+                     </gmd:polygon>
+                  </gmd:EX_BoundingPolygon>
+               </gmd:geographicElement>
+               <gmd:geographicElement>
+                  <gmd:EX_GeographicBoundingBox>
+                     <gmd:westBoundLongitude>
+                        <gco:Decimal>0.9766</gco:Decimal>
+                     </gmd:westBoundLongitude>
+                     <gmd:eastBoundLongitude>
+                        <gco:Decimal>51.7578</gco:Decimal>
+                     </gmd:eastBoundLongitude>
+                     <gmd:southBoundLatitude>
+                        <gco:Decimal>-5.3511</gco:Decimal>
+                     </gmd:southBoundLatitude>
+                     <gmd:northBoundLatitude>
+                        <gco:Decimal>22.1897</gco:Decimal>
+                     </gmd:northBoundLatitude>
+                  </gmd:EX_GeographicBoundingBox>
+               </gmd:geographicElement>
+               <gmd:temporalElement/>
+               <gmd:temporalElement>
+                  <gmd:EX_TemporalExtent>
+                     <gmd:extent>
+                        <gml:TimePeriod gml:id="d6724228e526a1052958">
+                           <gml:beginPosition/>
+                           <gml:endPosition/>
+                        </gml:TimePeriod>
+                     </gmd:extent>
+                  </gmd:EX_TemporalExtent>
+               </gmd:temporalElement>
+               <gmd:verticalElement/>
+            </gmd:EX_Extent>
+         </gmd:extent>
+         <gmd:supplementalInformation>
+            <gco:CharacterString>More information about the data.</gco:CharacterString>
+         </gmd:supplementalInformation>
+      </gmd:MD_DataIdentification>
+   </gmd:identificationInfo>
+   <gmd:distributionInfo>
+      <gmd:MD_Distribution>
+         <gmd:distributionFormat>
+            {% for format in metadata.distributionFormat %}
+            <gmd:MD_Format>
+               <gmd:name>
+                  <gco:CharacterString>{{format.name}}</gco:CharacterString>
+               </gmd:name>
+               <gmd:version>
+                  <gco:CharacterString>{{format.version}}</gco:CharacterString>
+               </gmd:version>
+            </gmd:MD_Format>
+            {% endfor %}
+         </gmd:distributionFormat>
+         <gmd:distributor>
+            {% for resource in pkg.resources %}
+               {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+               {% if resource_type == 'distributor' %}
+               <gmd:MD_Distributor>
+                  <gmd:distributorContact>
+                     {{ responsible_party(resource)}}
+                  </gmd:distributorContact>
+                  <gmd:distributorFormat/>
+               </gmd:MD_Distributor>
+               {% endif %}
+            {% endfor %}
+         </gmd:distributor>
+            {% for resource in pkg.resources %}
+               {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+               {% if resource_type == 'online-resource' %}
+
+         <gmd:transferOptions>
+            <gmd:MD_DigitalTransferOptions>
+               <!-- <gmd:unitsOfDistribution>
+                  <gco:CharacterString></gco:CharacterString>
+               </gmd:unitsOfDistribution>
+               <gmd:transferSize>
+                  <gco:Real></gco:Real>
+               </gmd:transferSize> -->
+               {{ online_resource(resource) }}
+            </gmd:MD_DigitalTransferOptions>
+         </gmd:transferOptions>
+               {% endif %}
+            {% endfor %}
+      </gmd:MD_Distribution>
+  </gmd:distributionInfo>
+   <gmd:dataQualityInfo>
+      <gmd:DQ_DataQuality>
+         {% if metadata.scope %}
+         <gmd:scope>
+            <gmd:DQ_Scope>
+               <gmd:level>
+                  <gmd:MD_ScopeCode codeListValue="{{metadata.scope}}"
+                                    codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"/>
+               </gmd:level>
+               <gmd:levelDescription/>
+            </gmd:DQ_Scope>
+         </gmd:scope>
+         {% endif %}
+         {% if metadata.dataQualityInfo and
+            metadata.dataQualityInfo.lineage %}
+         <gmd:lineage>
+            <gmd:LI_Lineage>
+               <gmd:statement>
+                  <gco:CharacterString>{{metadata.dataQualityInfo.lineage.statement}}</gco:CharacterString>
+               </gmd:statement>
+               {% for s in metadata.dataQualityInfo.lineage.source %}
+               <gmd:source uuidref="{{s}}"/>
+               {% endfor %}
+            </gmd:LI_Lineage>
+         </gmd:lineage>
+         {% endif %}
+      </gmd:DQ_DataQuality>
+  </gmd:dataQualityInfo>
+</gmd:MD_Metadata>

@@ -397,7 +397,7 @@ def __graphic_overview(graphic_overview, _type, opt, version, data, errors, cont
             # url
             # ('gmd:MD_BrowseGraphic','gmd:fileName','gco:CharacterString',):('url',),
             # fileDescription
-            ('gmd:MD_BrowseGraphic','gmd:fileDescription','gco:CharacterString',):('fileDescription',),
+            ('gmd:MD_BrowseGraphic','gmd:fileDescription','gco:CharacterString',):('description',),
         }
         errors = _t.map_to(go, graphic_overview_fields, _p)
 

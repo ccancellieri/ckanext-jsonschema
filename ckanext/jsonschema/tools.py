@@ -246,7 +246,8 @@ def get(dataset_id, resource_id = None, domain = None):
 def _extract_from_resource(resource, domain = None):
     if resource and domain:
         return resource.get(domain)
-    return resource
+    else:
+        return resource
 
 def _extract_from_dataset(dataset, domain = None):
 
@@ -256,6 +257,8 @@ def _extract_from_dataset(dataset, domain = None):
             for e in extras:
                 if e['key'] == domain:
                     return e['value']
+    else:
+        return dataset
 
     
 
@@ -428,6 +431,9 @@ def resolve_extras(data, _as_dict = False):
         _c.SCHEMA_TYPE_KEY: _type,
         _c.SCHEMA_VERSION_KEY: version
     }
+
+
+
 
 # def serializer(key, data, errors, context):
 
