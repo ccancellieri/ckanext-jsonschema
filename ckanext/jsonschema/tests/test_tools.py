@@ -7,7 +7,7 @@ import ckan.tests.helpers as helpers
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 
-import conftest
+from conftest import get_jsonschema_resource
 
 
 def _test_getter(dataset_with_extras, func, is_json=True):
@@ -32,7 +32,7 @@ def _test_getter(dataset_with_extras, func, is_json=True):
 
     # Test get functions on the resource
     try:
-        resource = conftest._get_jsonschema_resource(dataset_with_extras)   
+        resource = get_jsonschema_resource(dataset_with_extras)   
         payload = func(dataset_with_extras.get('id'), resource.get('id')) 
         
         if is_json:

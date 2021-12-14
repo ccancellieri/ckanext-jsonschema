@@ -48,7 +48,7 @@ def dataset_with_extras(organization):
     return factories.Dataset(**body)
 
 
-def _get_jsonschema_resource(dataset):
+def get_jsonschema_resource(dataset):
 
     resource_body = {
         'package_id' : dataset.get('id'),
