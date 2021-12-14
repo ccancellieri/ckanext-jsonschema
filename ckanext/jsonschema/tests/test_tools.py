@@ -121,7 +121,7 @@ class TestTools(object):
 
     def test_body_of_resource_is_correct_for_jsonschema(self, dataset_with_extras):
         
-        resource = conftest._get_jsonschema_resource(dataset_with_extras)   
+        resource = get_jsonschema_resource(dataset_with_extras)   
         payload = _t.get_body(dataset_with_extras.get('id'), resource.get('id')) 
 
         assert payload == json.loads(resource[_c.SCHEMA_BODY_KEY])
