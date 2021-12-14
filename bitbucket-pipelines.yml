@@ -53,5 +53,5 @@ pipelines:
     '**':
       - step: *ckan-2.9-test
   branches:
-    master:
+    extra:
       - step: *ckan-2.9-test
