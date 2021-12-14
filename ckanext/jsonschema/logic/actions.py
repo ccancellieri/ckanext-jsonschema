@@ -1,25 +1,13 @@
 import datetime
 
 from sqlalchemy.sql.operators import as_
-from sqlalchemy.sql.sqltypes import ARRAY, TEXT
 from ckan.logic import ValidationError
-import ckan.plugins as plugins
-import ckanext.terriajs.constants as constants
 
-from ckan.model.resource_view import ResourceView
-from ckan.model.resource import Resource
 from ckan.model.package import Package
-from ckan.model.core import State
-
-from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.sql.expression import cast
-from sqlalchemy import func, Integer
-from sqlalchemy.sql import select
 
 import ckanext.jsonschema.utils as _u
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.validators as _v
-import json
 
 import ckan.plugins.toolkit as toolkit
 _ = toolkit._
@@ -98,21 +86,21 @@ def importer(context, data_dict):
         # # TODO has deep impact/implications over resources
         is_package_update = asbool(data_dict.get('package_update', False))
         if is_package_update:
-            errors=[]
-            for plugin in _v.JSONSCHEMA_PLUGINS:
-                if _type in plugin.supported_dataset_types(opt, _c.SCHEMA_VERSION):
-                    # _body = json.loads(body)
-                    _body = body
-                    id = plugin.extract_id(_body, _type, opt, _c.SCHEMA_VERSION, errors, context)
-                    if id:
-                        pkg = Package.get(id)
-                        if pkg and pkg.type == _type:
-                            context["package"] = pkg
-                            _dict={}
-                            _dict["id"] = pkg.id
-                            # _dict['type'] = pkg.type
-                            _dict['extras'] = extras
-                            return toolkit.get_action('package_update')(context, _dict)
+            # errors=[]
+            # for plugin in _v.JSONSCHEMA_PLUGINS:
+            #     if _type in plugin.supported_dataset_types(opt, _c.SCHEMA_VERSION):
+            #         # _body = json.loads(body)
+            #         _body = body
+            #         id = plugin.extract_id(_body, _type, opt, _c.SCHEMA_VERSION, errors, context)
+            #         if id:
+            #             pkg = Package.get(id)
+            #             if pkg and pkg.type == _type:
+            #                 context["package"] = pkg
+            #                 _dict={}
+            #                 _dict["id"] = pkg.id
+            #                 # _dict['type'] = pkg.type
+            #                 _dict['extras'] = extras
+            #                 return toolkit.get_action('package_update')(context, _dict)
             raise Exception('no rupport provided for this operation/format')
         else:
             return toolkit.get_action('package_create')(context, package_dict)
