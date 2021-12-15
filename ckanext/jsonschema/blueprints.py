@@ -19,6 +19,7 @@ ValidationError = logic.ValidationError
 
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.validators as _v
 # import ckanext.jsonschema.utils as _u
 import logging
 log = logging.getLogger(__name__)
@@ -115,3 +116,19 @@ def get_opt(dataset_id, resource_id = None):
 
 jsonschema.add_url_rule('/{}/opt/<dataset_id>/<resource_id>'.format(_c.TYPE), view_func=get_opt, methods=[u'GET'])
 jsonschema.add_url_rule('/{}/opt/<dataset_id>'.format(_c.TYPE), view_func=get_opt, methods=[u'GET'])
+
+
+# DUMP (#TODO package_show?)
+def get_format(dataset_id, format = 'json'):
+    if not format:
+        'json'
+    body =_v.dataset_dump(dataset_id, format)
+
+    # TODO MOVE ME
+    _mimetype = 'application/json'
+    if format == 'xml':
+        _mimetype = 'application/xml'
+
+    return Response(stream_with_context(body), mimetype=_mimetype)
+
+jsonschema.add_url_rule('/{}/<dataset_id>.<format>'.format(_c.TYPE), view_func=get_format, methods=[u'GET'])

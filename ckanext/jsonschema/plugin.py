@@ -49,6 +49,7 @@ from ckan.plugins import PluginImplementations
 # check IConfigurer
 HANDLED_DATASET_TYPES = []
 HANDLED_RESOURCES_TYPES = {}
+HANDLED_OUPTUT_TYPES = {}
 
 def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
 
@@ -97,6 +98,27 @@ def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = 
             raise Exception('Error resolving dataset json schema for type:\n{}'.format(type))
 
     return supported_dataset_types
+
+def handled_output_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
+
+    if HANDLED_OUPTUT_TYPES and not renew:
+        return HANDLED_OUPTUT_TYPES.get(dataset_type)
+
+    supported_output_types = []
+    for plugin in _v.JSONSCHEMA_PLUGINS:
+        try:
+            supported_output_types.extend(plugin.supported_output_types(dataset_type, opt, version))
+        except Exception as e:
+            log.error('Error resolving resource json types for dataset type: {}\n{}'.format(dataset_type,str(e)))
+    
+    for type in supported_output_types:
+        if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
+            raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
+    
+    HANDLED_OUPTUT_TYPES.update({dataset_type:supported_output_types})
+
+    return supported_output_types
+
 
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
@@ -153,6 +175,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             'jsonschema_handled_resource_types': handled_resource_types,
             'jsonschema_handled_dataset_types': handled_dataset_types,
+            'jsonschema_handled_output_types': handled_output_types,
             # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
         }
 

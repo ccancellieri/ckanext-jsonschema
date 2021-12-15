@@ -13,6 +13,8 @@ class IBinder(Interface):
 
     #     '''
     #     return opt
+    def supported_output_types(self, dataset_type, opt, version):
+        return []
 
     def supported_resource_types(self, dataset_type, opt, version):
         '''
@@ -33,7 +35,7 @@ class IBinder(Interface):
         # TODO jinja2 template body as model ?
         pass
 
-    def dump_to_xml(self, body, type, key, version, data, context):
+    def dump_to_output(self, body, type, opt, version, data, output_format, context):
         '''
         serialize to body the data model in the desired form
         '''

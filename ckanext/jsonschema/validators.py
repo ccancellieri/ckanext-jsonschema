@@ -45,10 +45,14 @@ from jsonschema import validate,RefResolver,Draft4Validator,Draft7Validator
 import json
 import ckan.model as model
 
+# TODO move me to tools
 _SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
 
+# TODO move me and relatives to plugin.pu
 JSONSCHEMA_PLUGINS = PluginImplementations(_i.IBinder)
 
+# TODO create validation in tools then call it from here.
+# TODO better message in case of validation Error (once in tools)
 def schema_check(key, data, errors, context):
     '''
     Validator providing schema check capabilities
@@ -183,13 +187,32 @@ def extractor(key, data, errors, context):
             stop_with_error(str(e),key,errors)
 
 
+# TODO PACKAGE_SHOW ??
+def dataset_dump(dataset_id, format = None):
 
+    _data = _t.get(dataset_id)
 
+    if format == None:
+        return _data
 
+    extra = _t.resolve_extras(_data, True)
+    # TODO mapping?
+    dataset_type = extra.get(_c.SCHEMA_TYPE_KEY)
 
+    opt = extra.get(_c.SCHEMA_OPT_KEY, _c.SCHEMA_OPT)
 
-
-
+    version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
+    
+    for plugin in JSONSCHEMA_PLUGINS:
+        if dataset_type in plugin.supported_output_types(dataset_type, opt, version):
+        
+            body = extra.get(_c.SCHEMA_BODY_KEY)
+            errors = []
+            context = {}
+            # resource.get('__extras')
+            body = plugin.dump_to_output(body, dataset_type, opt, version, _data, format, context)
+            # port back changes from body (and other extras) to the data model
+            return body
 
 
 ########### UNUSED
@@ -222,4 +245,3 @@ def _get_body(key, data, errors, context):
         stop_with_error('Unable to load a valid json schema body', key, errors)
 
     return body
-

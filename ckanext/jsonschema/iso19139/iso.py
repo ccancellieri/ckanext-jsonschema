@@ -102,9 +102,41 @@ class JsonschemaIso(p.SingletonPlugin):
     #     return self.ISO_VOCABULARY
         
     # IBinder
-    def extract_id(self, body, type, opt, version, errors, context):
-        if type == TYPE_ISO:
+    def extract_id(self, body, dataset_type, opt, version, errors, context):
+        if dataset_type == TYPE_ISO:
             return body.get('fileIdentifier')
+
+    def supported_output_types(self, dataset_type, opt, version):
+        if dataset_type == TYPE_ISO:
+            return ['iso']
+        return []
+
+    def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
+        import ckan.lib.base as base
+
+        pkg = _g.get_pkg(body.get('fileIdentifier'))
+        # TODO why not use data as model is get_pkg a good model??
+
+        if pkg:
+            try:
+                ######################
+                # TODO so we have to use format and mimetype
+                # format 'can' be 1:1 with dataset_type
+                ##########
+                if dataset_type == 'iso':
+                    if output_format == 'xml':
+                        return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
+                    elif output_format == 'json':
+                        return json.dumps(data)
+                # if dataset_type == 'iso19139' and output_format == 'xml':
+                #     return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
+                
+                raise Exception('Unsupported requested format {}'.format(dataset_type))
+            except Exception as e:
+                # if e:
+                #     message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
+                #     log.error(message)
+                raise e
 
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
