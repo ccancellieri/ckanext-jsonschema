@@ -157,49 +157,96 @@
    <gmd:metadataStandardVersion>
       <gco:CharacterString>{{metadata.metadataStandardVersion}}</gco:CharacterString>
    </gmd:metadataStandardVersion>
+
+   <!-- TODO -->
+   <!-- spatialRepresentationInfo is an array -->
+   {% if metadata.spatialRepresentationInfo %}
+      {% if metadata.spatialRepresentationInfo.gridSpatialRepresentation %}
+         {% for gridSpatialRepresentation in metadata.spatialRepresentationInfo.gridSpatialRepresentation %}
+   
    <gmd:spatialRepresentationInfo>
+
       <gmd:MD_GridSpatialRepresentation>
          <gmd:numberOfDimensions>
-            <gco:Integer>2</gco:Integer>
+            <gco:Integer>{{ gridSpatialRepresentation.numberOfDimensions }}</gco:Integer>
          </gmd:numberOfDimensions>
-         <gmd:axisDimensionProperties>
-            <gmd:MD_Dimension>
-               <gmd:dimensionName>
-                  <gmd:MD_DimensionNameTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_DimensionNameTypeCode"
-                                                codeListValue="column"/>
-               </gmd:dimensionName>
-               <gmd:dimensionSize>
-                  <gco:Integer>2345</gco:Integer>
-               </gmd:dimensionSize>
-               <gmd:resolution>
-                  <gco:Angle uom="degree">0.1</gco:Angle>
-               </gmd:resolution>
-            </gmd:MD_Dimension>
-         </gmd:axisDimensionProperties>
+         
+         {% if gridSpatialRepresentation.dimension %}
+
+            <gmd:axisDimensionProperties>
+               {% for dimension in gridSpatialRepresentation.dimension %}
+                  <gmd:MD_Dimension>
+                     <gmd:dimensionName>
+                        <gmd:MD_DimensionNameTypeCode 
+                           codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_DimensionNameTypeCode"
+                           codeListValue="{{ dimension.dimensionName }}"/> 
+                     </gmd:dimensionName>
+                     <gmd:dimensionSize>
+                        <gco:Integer>{{ dimension.dimensionSize }}</gco:Integer>
+                     </gmd:dimensionSize>
+
+                     {% if dimension.resolution %}
+                        {% set resolution = dimension.resolution %}
+                        <gmd:resolution>
+                           <gco:Angle uom={{ resolution.uom }}>{{ resolution.value }}</gco:Angle>
+                        </gmd:resolution>
+                     {% endif %}             
+
+                  </gmd:MD_Dimension>
+               {% endfor %}
+            </gmd:axisDimensionProperties>
+
+         {% endif %}
+
          <gmd:cellGeometry>
-            <gmd:MD_CellGeometryCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CellGeometryCode"
-                                     codeListValue=""/>
+            <gmd:MD_CellGeometryCode 
+               codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CellGeometryCode"
+               codeListValue="{{ gridSpatialRepresentation.cellGeometry }}" />
          </gmd:cellGeometry>
+
          <gmd:transformationParameterAvailability>
-            <gco:Boolean>true</gco:Boolean>
+            <gco:Boolean>{{ gridSpatialRepresentation.transformationParameterAvailability }}</gco:Boolean>
          </gmd:transformationParameterAvailability>
+
       </gmd:MD_GridSpatialRepresentation>
-   </gmd:spatialRepresentationInfo>
+      </gmd:spatialRepresentationInfo>
+         {% endfor %}
+      {% endif %}
+
+      {% if metadata.spatialRepresentationInfo.vectorSpatialRepresentation %}
+         {% for vectorSpatialRepresentation in metadata.spatialRepresentationInfo.vectorSpatialRepresentation %}
    <gmd:spatialRepresentationInfo>
       <gmd:MD_VectorSpatialRepresentation>
-         <gmd:geometricObjects>
-            <gmd:MD_GeometricObjects>
-               <gmd:geometricObjectType>
-                  <gmd:MD_GeometricObjectTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_GeometricObjectTypeCode"
-                                                  codeListValue="complex"/>
-               </gmd:geometricObjectType>
-               <gmd:geometricObjectCount>
-                  <gco:Integer>23</gco:Integer>
-               </gmd:geometricObjectCount>
-            </gmd:MD_GeometricObjects>
-         </gmd:geometricObjects>
+
+
+         {% if vectorSpatialRepresentation.geometricObjects %}
+            <gmd:geometricObjects>
+
+            {% for geometricObject in vectorSpatialRepresentation.geometricObjects %}
+
+               <gmd:MD_GeometricObjects>
+                  <gmd:geometricObjectType>
+                     <gmd:MD_GeometricObjectTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_GeometricObjectTypeCode"
+                                                codeListValue="{{ geometricObject.geometricObjectType }}"/>
+                  </gmd:geometricObjectType>
+                  <gmd:geometricObjectCount>
+                     <gco:Integer>{{ geometricObject.geometricObjectCount }}</gco:Integer>
+                  </gmd:geometricObjectCount>
+
+               </gmd:MD_GeometricObjects>
+
+            {% endfor %}
+
+            </gmd:geometricObjects>
+         {% endif %}
+       
       </gmd:MD_VectorSpatialRepresentation>
    </gmd:spatialRepresentationInfo>
+         {% endfor %}
+      {% endif %}
+
+   {% endif %}
+
    <gmd:referenceSystemInfo>
       <gmd:MD_ReferenceSystem>
          <gmd:referenceSystemIdentifier>
@@ -212,6 +259,8 @@
       </gmd:MD_ReferenceSystem>
   </gmd:referenceSystemInfo>
    <gmd:identificationInfo>
+      <!-- TODO -->
+      <!-- MD_DataIdentification could be an array -->
       <gmd:MD_DataIdentification>
          {% if metadata.dataIdentification.citation %}
          {% set citation = metadata.dataIdentification.citation %}
@@ -562,6 +611,8 @@
       </gmd:MD_Distribution>
   </gmd:distributionInfo>
    <gmd:dataQualityInfo>
+      <!-- TODO -->
+      <!-- DQ_DataQuality could be an array -->
       <gmd:DQ_DataQuality>
          {% if metadata.scope %}
          <gmd:scope>
