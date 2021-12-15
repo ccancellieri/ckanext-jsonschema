@@ -180,10 +180,7 @@ class JsonschemaIso(p.SingletonPlugin):
             
         elif type == TYPE_ISO_RESOURCE_MAINTAINER:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
-            
-        elif type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
-            return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
-            
+                        
         elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
             return _extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
             

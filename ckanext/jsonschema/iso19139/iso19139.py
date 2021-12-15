@@ -61,14 +61,14 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
             # citation (see below)
 
-            ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString'):('abstract',),
-            ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString'):('purpose',),
+            ('gmd:MD_DataIdentification','gmd:abstract','gco:CharacterString',):('abstract',),
+            ('gmd:MD_DataIdentification','gmd:purpose','gco:CharacterString',):('purpose',),
             ('gmd:MD_DataIdentification','gmd:status','gmd:MD_ProgressCode','@codeListValue',):('status',),
 
             # pointOfContact (see below)
             
             # resourceMaintenance maintenanceAndUpdateFrequency
-            ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue'):('resourceMaintenance','maintenanceAndUpdateFrequency',),
+            ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation','gmd:maintenanceAndUpdateFrequency','gmd:MD_MaintenanceFrequencyCode','@codeListValue',):('resourceMaintenance','maintenanceAndUpdateFrequency',),
             # resourceMaintenance (see below)
             
             # graphic-overview (see below) (resources)
@@ -96,7 +96,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             # aggregationInfo (see below)
 
             # alternate title (not present into iso profile???)
-            # ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString'):('alternateTitle',)
+            # ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation','gmd:alternateTitle','gco:CharacterString',):('alternateTitle',)
         }
         # map body to ckan fields (_data)
         errors = _t.map_to(identification_info, identification_fields, _identification_info)
@@ -111,7 +111,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
             _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_RESOURCE_CONTACT, opt, version, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
-        resourceMaintenance = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:contact',))
+        resourceMaintenance = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation', 'gmd:contact',))
         if resourceMaintenance:
             _resourceMaintenance = __responsible_parties(resourceMaintenance, TYPE_ISO_RESOURCE_MAINTAINER, opt, version, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
@@ -359,13 +359,13 @@ def __responsible_parties(cited_responsible_party, _type, opt, version, data, er
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:country','gco:CharacterString',):('contactInfo','address','country',),
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:address','gmd:CI_Address','gmd:electronicMailAddress','gco:CharacterString',):('contactInfo','address','electronicMailAddress',),
             # phone
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:phone','gmd:voice','gco:CharacterString',):('phone','voice'),
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:phone','gmd:facsimile','gco:CharacterString',):('phone','facsimile'),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:phone', 'gmd:CI_Telephone','gmd:voice','gco:CharacterString',):('contactInfo','phone','voice',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:phone', 'gmd:CI_Telephone','gmd:facsimile','gco:CharacterString',):('contactInfo','phone','facsimile',),
             # online resource
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:name', 'gco:CharacterString') : ('onlineResource', 'name',),
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:description', 'gco:CharacterString') : ('onlineResource', 'description',),
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:protocol', 'gco:CharacterString') : ('onlineResource', 'protocol',),
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:linkage', 'gco:CharacterString') : ('onlineResource', 'linkage',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:name', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'name',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:description', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'description',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:protocol', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'protocol',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:linkage', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'linkage',),
         }
         errors = _t.map_to(party, party_fields, _p)
 
@@ -533,7 +533,7 @@ def _extract_iso(body, opt, version, data, errors, context):
     _iso_profile = {}
     _iso_profile_fields = {
         # fileIdentifier
-        ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'):('fileIdentifier',),
+        ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString',):('fileIdentifier',),
         # TODO
         #  
         # "gmd:fileIdentifier":{
@@ -552,13 +552,13 @@ def _extract_iso(body, opt, version, data, errors, context):
 
         # metadataStandardName
         # TODO could this be an array?
-        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString'):('metadataStandardName',),
+        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString',):('metadataStandardName',),
         
         # metadataStandardVersion
-        ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString'):('metadataStandardVersion',),
+        ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString',):('metadataStandardVersion',),
         
         # parentIdentifier
-        ('gmd:MD_Metadata','gmd:parentIdentifier','gco:CharacterString'):('parentIdentifier',),
+        ('gmd:MD_Metadata','gmd:parentIdentifier','gco:CharacterString',):('parentIdentifier',),
         
         # dataIdentification (see below)
         

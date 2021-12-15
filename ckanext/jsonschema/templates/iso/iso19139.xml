@@ -1,52 +1,54 @@
 {% macro responsible_party(resource) -%}
 <gmd:CI_ResponsibleParty>
-   
    {% set body = h.jsonschema_get_resource_body(resource) %}
-      
    <gmd:individualName>
       <gco:CharacterString>{{body.individualName}}</gco:CharacterString>
    </gmd:individualName>
    <gmd:organisationName>
       <gco:CharacterString>{{body.organisationName}}</gco:CharacterString>
    </gmd:organisationName>
+   {% if body.positionName %}
    <gmd:positionName>
       <gco:CharacterString>{{body.positionName}}</gco:CharacterString>
    </gmd:positionName>
+   {% endif %}
    <gmd:contactInfo>
    <gmd:CI_Contact>
       {% if body.contactInfo.phone %}
+      {% set phone = body.contactInfo.phone %}
       <gmd:phone>
             <gmd:CI_Telephone>
-               {% if body.contactInfo.phone.voice %}
+               {% if phone.voice %}
                <gmd:voice>
-               <gco:CharacterString>{{body.contactInfo.phone.voice}}</gco:CharacterString>
+               <gco:CharacterString>{{phone.voice}}</gco:CharacterString>
                </gmd:voice>
                {% endif %}
-               {% if body.contactInfo.phone.facsimile %}
+               {% if phone.facsimile %}
                <gmd:facsimile>
-               <gco:CharacterString>{{body}}</gco:CharacterString>
+               <gco:CharacterString>{{phone.facsimile}}</gco:CharacterString>
                </gmd:facsimile>
                {% endif %}
             </gmd:CI_Telephone>
       </gmd:phone>
       {% endif %}
       {% if body.contactInfo.address %}
+      {% set address = body.contactInfo.address %}
       <gmd:address>
             <gmd:CI_Address>
                <gmd:deliveryPoint>
-               <gco:CharacterString>{{body.contactInfo.deliveryPoint}}</gco:CharacterString>
+               <gco:CharacterString>{{address.deliveryPoint}}</gco:CharacterString>
                </gmd:deliveryPoint>
                <gmd:city>
-               <gco:CharacterString>{{body.contactInfo.city}}</gco:CharacterString>
+               <gco:CharacterString>{{address.city}}</gco:CharacterString>
                </gmd:city>
                <gmd:postalCode>
-               <gco:CharacterString>{{body.contactInfo.postalCode}}</gco:CharacterString>
+               <gco:CharacterString>{{address.postalCode}}</gco:CharacterString>
                </gmd:postalCode>
                <gmd:country>
-               <gco:CharacterString>{{body.contactInfo.country}}</gco:CharacterString>
+               <gco:CharacterString>{{address.country}}</gco:CharacterString>
                </gmd:country>
                <gmd:electronicMailAddress>
-               <gco:CharacterString>{{body.contactInfo.electronicMailAddress}}</gco:CharacterString>
+               <gco:CharacterString>{{address.electronicMailAddress}}</gco:CharacterString>
                </gmd:electronicMailAddress>
             </gmd:CI_Address>
       </gmd:address>
@@ -102,6 +104,7 @@
 </gmd:onLine>
 {%- endmacro %}
 
+
 {% macro graphic_overview(resource) %}
 {% set body = h.jsonschema_get_resource_body(resource) %}
 <gmd:MD_BrowseGraphic>
@@ -139,17 +142,16 @@
    <gmd:contact>
     {% for resource in pkg.resources %}
         {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-        <!-- TODO where is resource contact??? -->
-        {% if resource_type == 'resource-contact' or
-				resource_type == 'metadata-contact' %}
+
+        {% if resource_type == 'metadata-contact' %}
          {{ responsible_party(resource)}}
-         <!-- TODO RESOURCES HERE -->
+
         {% endif %}
     {% endfor %}
-<!-- TODO RESOURCES HERE -->
+
   </gmd:contact>
    <gmd:dateStamp>
-      <gco:DateTime>{{pkg.modification_date}}</gco:DateTime>
+      <gco:DateTime>{{pkg.metadata_created}}</gco:DateTime>
    </gmd:dateStamp>
    <gmd:metadataStandardName>
       <gco:CharacterString>{{metadata.metadataStandardName}}</gco:CharacterString>
@@ -204,9 +206,11 @@
                codeListValue="{{ gridSpatialRepresentation.cellGeometry }}" />
          </gmd:cellGeometry>
 
+         {% if gridSpatialRepresentation.transformationParameterAvailability %}
          <gmd:transformationParameterAvailability>
-            <gco:Boolean>{{ gridSpatialRepresentation.transformationParameterAvailability }}</gco:Boolean>
+            <gco:Boolean>{{ gridSpatialRepresentation.transformationParameterAvailability|string|lower }}</gco:Boolean>
          </gmd:transformationParameterAvailability>
+         {% endif %}
 
       </gmd:MD_GridSpatialRepresentation>
       </gmd:spatialRepresentationInfo>
@@ -269,42 +273,26 @@
                <gmd:title>
                   <gco:CharacterString>{{citation.title}}</gco:CharacterString>
                </gmd:title>
+               {% for date in citation.dates %}
                <gmd:date>
                   <gmd:CI_Date>
+                     {% if date.date %}
                      <gmd:date>
-                        <gco:Date>2021-01-30</gco:Date>
+                        <gco:Date>{{date.date}}</gco:Date>
                      </gmd:date>
+                     {% endif %}
                      <gmd:dateType>
-                        <gmd:CI_DateTypeCode codeListValue="creation"
+                        <gmd:CI_DateTypeCode codeListValue="{{date.dateType}}"
                                              codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"/>
                      </gmd:dateType>
                   </gmd:CI_Date>
                </gmd:date>
-               <gmd:date>
-                  <gmd:CI_Date>
-                     <gmd:date>
-                        <gco:Date>2021-10-05</gco:Date>
-                     </gmd:date>
-                     <gmd:dateType>
-                        <gmd:CI_DateTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"
-                                             codeListValue="publication"/>
-                     </gmd:dateType>
-                  </gmd:CI_Date>
-               </gmd:date>
-               <gmd:date>
-                  <gmd:CI_Date>
-                     <gmd:date>
-                        <gco:Date>2021-11-02</gco:Date>
-                     </gmd:date>
-                     <gmd:dateType>
-                        <gmd:CI_DateTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"
-                                             codeListValue="revision"/>
-                     </gmd:dateType>
-                  </gmd:CI_Date>
-               </gmd:date>
+               {% endfor %}
+               {% if citation.edition %}
                <gmd:edition>
-                  <gco:CharacterString>Version 2</gco:CharacterString>
+                  <gco:CharacterString>{{ citation.edition }}</gco:CharacterString>
                </gmd:edition>
+               {% endif %}
                <gmd:citedResponsibleParty>
                {% for resource in pkg.resources %}
                   {% set resource_type = h.jsonschema_get_resource_type(resource) %}
@@ -313,40 +301,38 @@
                   {% endif %}
                {% endfor %}
                </gmd:citedResponsibleParty>
+               {% for presentationForm in citation.presentationForm %}
                <gmd:presentationForm>
                   <gmd:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_PresentationFormCode"
-                                               codeListValue="mapDigital"/>
+                                               codeListValue="{{presentationForm}}"/>
                </gmd:presentationForm>
-               <gmd:presentationForm>
-                  <gmd:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_PresentationFormCode"
-                                               codeListValue="documentHardcopy"/>
-               </gmd:presentationForm>
-               {% if metadata.dataIdentification.series %}
+               {% endfor %}
+               {% if citation.series %}
                <gmd:series>
                   <gmd:CI_Series>
                      <gmd:name>
-                        <gco:CharacterString>{{metadata.dataIdentification.series.name}}</gco:CharacterString>
+                        <gco:CharacterString>{{citation.series.name}}</gco:CharacterString>
                      </gmd:name>
                      <gmd:issueIdentification>
-                        <gco:CharacterString>{{metadata.dataIdentification.series.issueIdentification}}</gco:CharacterString>
+                        <gco:CharacterString>{{citation.series.issueIdentification}}</gco:CharacterString>
                      </gmd:issueIdentification>
                      <gmd:page>
-                        <gco:CharacterString>{{metadata.dataIdentification.series.page}}</gco:CharacterString>
+                        <gco:CharacterString>{{citation.series.page}}</gco:CharacterString>
                      </gmd:page>
                   </gmd:CI_Series>
                </gmd:series>
                {% endif %}
                <gmd:otherCitationDetails>
-                  <gco:CharacterString>{{metadata.dataIdentification.otherCitationDetails}}</gco:CharacterString>
+                  <gco:CharacterString>{{citation.otherCitationDetails}}</gco:CharacterString>
                </gmd:otherCitationDetails>
                <gmd:collectiveTitle>
-                  <gco:CharacterString>{{metadata.dataIdentification.collectiveTitle}}</gco:CharacterString>
+                  <gco:CharacterString>{{citation.collectiveTitle}}</gco:CharacterString>
                </gmd:collectiveTitle>
                <gmd:ISBN>
-                  <gco:CharacterString>{{metadata.dataIdentification.ISBN}}</gco:CharacterString>
+                  <gco:CharacterString>{{citation.ISBN}}</gco:CharacterString>
                </gmd:ISBN>
                <gmd:ISSN>
-                  <gco:CharacterString>{{metadata.dataIdentification.ISSN}}</gco:CharacterString>
+                  <gco:CharacterString>{{citation.ISSN}}</gco:CharacterString>
                </gmd:ISSN>
             </gmd:CI_Citation>
          </gmd:citation>
@@ -364,15 +350,17 @@
          <gmd:pointOfContact>
          {% for resource in pkg.resources %}
             {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-            {% if resource_type == 'point-of-contact' %}
+            {% if resource_type == 'resource-contact' %}
          {{ responsible_party(resource)}}
             {% endif %}
          {% endfor %}
          </gmd:pointOfContact>
+         {% if metadata.dataIdentification.resourceMaintenance %}
+         {% set resourceMaintenance = metadata.dataIdentification.resourceMaintenance %}
          <gmd:resourceMaintenance>
             <gmd:MD_MaintenanceInformation>
                <gmd:maintenanceAndUpdateFrequency>
-                  <gmd:MD_MaintenanceFrequencyCode codeListValue="{{metadata.dataIdentification.maintenanceAndUpdateFrequency}}"
+                  <gmd:MD_MaintenanceFrequencyCode codeListValue="{{resourceMaintenance.maintenanceAndUpdateFrequency}}"
                                                    codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"/>
                </gmd:maintenanceAndUpdateFrequency>
                <gmd:contact>
@@ -385,56 +373,30 @@
                </gmd:contact>
             </gmd:MD_MaintenanceInformation>
          </gmd:resourceMaintenance>
-         <gmd:graphicOverview>
+         {% endif %}
             {% for resource in pkg.resources %}
                   {% set resource_type = h.jsonschema_get_resource_type(resource) %}
                   {% if resource_type == 'graphic-overview' %}
+         <gmd:graphicOverview>
             {{ graphic_overview(resource)}}
+         </gmd:graphicOverview>
                   {% endif %}
             {% endfor %}
-         </gmd:graphicOverview>
+         {% for descriptiveKeyword in metadata.dataIdentification.descriptiveKeywords %}
          <gmd:descriptiveKeywords>
             <gmd:MD_Keywords>
+               {% for keyword in descriptiveKeyword.keywords %}
                <gmd:keyword>
-                  <gco:CharacterString>Daily</gco:CharacterString>
+                  <gco:CharacterString>{{ keyword }}</gco:CharacterString>
                </gmd:keyword>
-               <gmd:keyword>
-                  <gco:CharacterString>Logistics</gco:CharacterString>
-               </gmd:keyword>
+               {% endfor %}
                <gmd:type>
                   <gmd:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"
-                                          codeListValue="temporal"/>
+                                          codeListValue="{{ descriptiveKeyword.type }}"/>
                </gmd:type>
             </gmd:MD_Keywords>
-         </gmd:descriptiveKeywords>
-         <gmd:descriptiveKeywords>
-            <gmd:MD_Keywords>
-               <gmd:keyword>
-                  <gco:CharacterString>movies</gco:CharacterString>
-               </gmd:keyword>
-               <gmd:keyword>
-                  <gco:CharacterString>oscar</gco:CharacterString>
-               </gmd:keyword>
-               <gmd:keyword>
-                  <gco:CharacterString>cinema</gco:CharacterString>
-               </gmd:keyword>
-               <gmd:type>
-                  <gmd:MD_KeywordTypeCode codeListValue="theme"
-                                          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"/>
-               </gmd:type>
-            </gmd:MD_Keywords>
-         </gmd:descriptiveKeywords>
-         <gmd:descriptiveKeywords>
-            <gmd:MD_Keywords>
-               <gmd:keyword>
-                  <gco:CharacterString>Rome</gco:CharacterString>
-               </gmd:keyword>
-               <gmd:type>
-                  <gmd:MD_KeywordTypeCode codeListValue="place"
-                                          codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"/>
-               </gmd:type>
-            </gmd:MD_Keywords>
-         </gmd:descriptiveKeywords>
+         </gmd:descriptiveKeywords>         
+         {% endfor %}
          <gmd:resourceConstraints>
             <gmd:MD_LegalConstraints>
                <gmd:useLimitation>
@@ -471,45 +433,48 @@
                </gmd:useLimitation>
             </gmd:MD_Constraints>
          </gmd:resourceConstraints>
+         {% for spatialRepresentationType in metadata.dataIdentification.spatialRepresentationType %}  
          <gmd:spatialRepresentationType>
-            <gmd:MD_SpatialRepresentationTypeCode codeListValue="grid"
+            <gmd:MD_SpatialRepresentationTypeCode codeListValue="{{spatialRepresentationType}}"
                                                   codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"/>
          </gmd:spatialRepresentationType>
-         <gmd:spatialRepresentationType>
-            <gmd:MD_SpatialRepresentationTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
-                                                  codeListValue="vector"/>
-         </gmd:spatialRepresentationType>
+         {% endfor %}
+         {% for spatialResolution in metadata.dataIdentification.spatialResolution %}
          <gmd:spatialResolution>
             <gmd:MD_Resolution>
+            {% if spatialResolution.scaleDenominator %}
                <gmd:equivalentScale>
                   <gmd:MD_RepresentativeFraction>
                      <gmd:denominator>
-                        <gco:Integer>50000</gco:Integer>
+                        <gco:Integer>{{spatialResolution.scaleDenominator}}</gco:Integer>
                      </gmd:denominator>
                   </gmd:MD_RepresentativeFraction>
                </gmd:equivalentScale>
-            </gmd:MD_Resolution>
-         </gmd:spatialResolution>
-         <gmd:spatialResolution>
-            <gmd:MD_Resolution>
+            {% endif %}
+            {% if spatialResolution.distance %}
                <gmd:distance>
-                  <gco:Distance uom="m">10</gco:Distance>
+                  <gco:Distance uom="{{spatialResolution.unit}}">{{spatialResolution.distance}}</gco:Distance>
                </gmd:distance>
+            {% endif %}
             </gmd:MD_Resolution>
          </gmd:spatialResolution>
+         {% endfor %} 
+         {% if metadata.dataIdentification.language %}
          <gmd:language>
-            <gco:CharacterString>eng</gco:CharacterString>
+            <gco:CharacterString>{{metadata.dataIdentification.language}}</gco:CharacterString>
          </gmd:language>
+         {% endif %}
+         {% if metadata.dataIdentification.characterSet %}
          <gmd:characterSet>
-            <gmd:MD_CharacterSetCode codeListValue="utf8"
+            <gmd:MD_CharacterSetCode codeListValue="{{metadata.dataIdentification.characterSet}}"
                                      codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"/>
          </gmd:characterSet>
+         {% endif %}
+         {% for topicCategory in metadata.dataIdentification.topicCategory %}
          <gmd:topicCategory>
-            <gmd:MD_TopicCategoryCode>climatologyMeteorologyAtmosphere</gmd:MD_TopicCategoryCode>
+            <gmd:MD_TopicCategoryCode>{{topicCategory}}</gmd:MD_TopicCategoryCode>
          </gmd:topicCategory>
-         <gmd:topicCategory>
-            <gmd:MD_TopicCategoryCode>farming</gmd:MD_TopicCategoryCode>
-         </gmd:topicCategory>
+         {% endfor %}
          <gmd:extent>
             <gmd:EX_Extent>
                <gmd:geographicElement>
@@ -566,18 +531,19 @@
    </gmd:identificationInfo>
    <gmd:distributionInfo>
       <gmd:MD_Distribution>
-         <gmd:distributionFormat>
             {% for format in metadata.distributionFormat %}
-            <gmd:MD_Format>
-               <gmd:name>
-                  <gco:CharacterString>{{format.name}}</gco:CharacterString>
-               </gmd:name>
-               <gmd:version>
-                  <gco:CharacterString>{{format.version}}</gco:CharacterString>
-               </gmd:version>
-            </gmd:MD_Format>
+            <!-- TODO check this update -->
+            <gmd:distributionFormat>
+               <gmd:MD_Format>
+                  <gmd:name>
+                     <gco:CharacterString>{{format.name}}</gco:CharacterString>
+                  </gmd:name>
+                  <gmd:version>
+                     <gco:CharacterString>{{format.version}}</gco:CharacterString>
+                  </gmd:version>
+               </gmd:MD_Format>
+            </gmd:distributionFormat>
             {% endfor %}
-         </gmd:distributionFormat>
          <gmd:distributor>
             {% for resource in pkg.resources %}
                {% set resource_type = h.jsonschema_get_resource_type(resource) %}
@@ -591,10 +557,6 @@
                {% endif %}
             {% endfor %}
          </gmd:distributor>
-            {% for resource in pkg.resources %}
-               {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-               {% if resource_type == 'online-resource' %}
-
          <gmd:transferOptions>
             <gmd:MD_DigitalTransferOptions>
                <!-- <gmd:unitsOfDistribution>
@@ -603,41 +565,56 @@
                <gmd:transferSize>
                   <gco:Real></gco:Real>
                </gmd:transferSize> -->
+            {% for resource in pkg.resources %}
+               {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+               {% if resource_type == 'online-resource' %}
                {{ online_resource(resource) }}
-            </gmd:MD_DigitalTransferOptions>
-         </gmd:transferOptions>
                {% endif %}
             {% endfor %}
+            </gmd:MD_DigitalTransferOptions>
+         </gmd:transferOptions>
       </gmd:MD_Distribution>
   </gmd:distributionInfo>
    <gmd:dataQualityInfo>
       <!-- TODO -->
       <!-- DQ_DataQuality could be an array -->
+      {% if metadata.dataQualityInfo %}
+      {% set dataQualityInfo = metadata.dataQualityInfo %}
       <gmd:DQ_DataQuality>
-         {% if metadata.scope %}
+         {% if dataQualityInfo.scope %}
          <gmd:scope>
             <gmd:DQ_Scope>
                <gmd:level>
-                  <gmd:MD_ScopeCode codeListValue="{{metadata.scope}}"
+                  <gmd:MD_ScopeCode codeListValue="{{dataQualityInfo.scope}}"
                                     codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ScopeCode"/>
                </gmd:level>
                <gmd:levelDescription/>
             </gmd:DQ_Scope>
          </gmd:scope>
          {% endif %}
-         {% if metadata.dataQualityInfo and
-            metadata.dataQualityInfo.lineage %}
+         {% if dataQualityInfo.lineage %}
          <gmd:lineage>
             <gmd:LI_Lineage>
                <gmd:statement>
-                  <gco:CharacterString>{{metadata.dataQualityInfo.lineage.statement}}</gco:CharacterString>
+                  <gco:CharacterString>{{dataQualityInfo.lineage.statement}}</gco:CharacterString>
                </gmd:statement>
-               {% for s in metadata.dataQualityInfo.lineage.source %}
+               <gmd:processStep>
+                  <gmd:LI_ProcessStep>
+                     <gmd:description>
+                        <gco:CharacterString>Last Updated</gco:CharacterString>
+                     </gmd:description>
+                     <gmd:dateTime>
+                        <gco:DateTime>{{ pkg.metadata_modified }}</gco:DateTime>
+                     </gmd:dateTime>
+                  </gmd:LI_ProcessStep>
+               </gmd:processStep>
+               {% for s in dataQualityInfo.lineage.source %}
                <gmd:source uuidref="{{s}}"/>
                {% endfor %}
             </gmd:LI_Lineage>
          </gmd:lineage>
          {% endif %}
       </gmd:DQ_DataQuality>
+      {% endif %}
   </gmd:dataQualityInfo>
 </gmd:MD_Metadata>
