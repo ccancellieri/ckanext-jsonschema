@@ -76,9 +76,9 @@
 			{% set body = h.jsonschema_get_resource_body(resource) %}
 			{% if body.protocol %}
 				{% if body.protocol.lower() == 'www:link-1.0-http--link' %}
-	[{{resource.description or resource.name}}]({{resource.url}})
+[{{resource.description or resource.name}}]({{resource.url}})
 				{% elif body.protocol.lower() == 'www:download-1.0-http--download' %}
-	[{{resource.description or resource.name}}]({{resource.url}})
+[{{resource.description or resource.name}}]({{resource.url}})
 				{% endif %}
 			{% endif %}
 		{% endif %}
