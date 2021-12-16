@@ -1,5 +1,5 @@
 {
     "type":"string",
     "description":"The character-set used",
-    "enum":["utf8","TODO","http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"]
+    "enum":["utf8"]
 }

@@ -319,7 +319,7 @@ def _extract_iso_online_resource(body, type, opt, version, data, errors, context
 
 def _extract_iso_graphic_overview(body, type, opt, version, data, errors, context):
 
-    name = body.get('fileDescription', 'Graphic overview')
+    name = body.get('name', 'Graphic overview')
     
     description = body.get('description')
     _dict = {
