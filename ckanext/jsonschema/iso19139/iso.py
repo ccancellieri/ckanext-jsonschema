@@ -319,12 +319,12 @@ def _extract_iso_online_resource(body, type, opt, version, data, errors, context
 
 def _extract_iso_graphic_overview(body, type, opt, version, data, errors, context):
 
-    name = body.get('fileDescription')
-    if not name:
-        name = 'Graphic overview'
-        # _v.stop_with_error('Unable to obtain \'fileDescription\'', 'fileDescription', errors)
+    name = body.get('fileDescription', 'Graphic overview')
+    
+    description = body.get('description')
     _dict = {
-        'name': name
+        'name': name,
+        'description': description,
     } 
     format = get_format(body.get('protocol',''), data.get('url',''))
     if format:
