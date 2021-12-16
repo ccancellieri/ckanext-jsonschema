@@ -167,6 +167,8 @@ def extractor(key, data, errors, context):
 
     extra = _t.resolve_extras(_data, True)
 
+    # _body = json.loads(_t.get_dataset_body(_data)
+
     body = extra.get(_c.SCHEMA_BODY_KEY)
 
     type = extra.get(_c.SCHEMA_TYPE_KEY)
@@ -182,7 +184,7 @@ def extractor(key, data, errors, context):
                 # port back changes from body (and other extras) to the data model
                 _t.update_extras(__data, body, type, opt, version)
                 # update datamodel
-                data.update(df.flatten_dict(_data))
+                data.update(df.flatten_dict(__data))
         except Exception as e:
             stop_with_error(str(e),key,errors)
 

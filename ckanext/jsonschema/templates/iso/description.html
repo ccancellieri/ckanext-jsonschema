@@ -20,6 +20,13 @@
 	
 {% endif %}
 
+{% if dataIdentification.citation and
+	dataIdentification.citation.otherCitationDetails %}
+**Citation:**
+
+{{ dataIdentification.citation.otherCitationDetails }}
+{% endif %}
+
 **Contact points:**
 {% for resource in resources %}
 	{% set resource_type = h.jsonschema_get_resource_type(resource) %}
@@ -49,13 +56,6 @@
 {{dataQualityInfo.lineage.statement}}
 {% endif %}
 
-{% if dataIdentification.citation and
-		dataIdentification.citation.otherCitationDetails %}
-**Citation:**
-
-{{ dataIdentification.citation.otherCitationDetails }}
-{% endif %}
-
 {% if dataIdentification.resourceConstraints %}
 	{% if dataIdentification.resourceConstraints and
 		dataIdentification.resourceConstraints.legalConstraints and
@@ -74,10 +74,12 @@
 		{% set resource_type = h.jsonschema_get_resource_type(resource) %}
 		{% if resource_type == 'online-resource' %}
 			{% set body = h.jsonschema_get_resource_body(resource) %}
-			{% if body.protocol.lower() == 'www:link-1.0-http--link' %}
-[{{resource.description or resource.name}}]({{resource.url}})
-			{% elif body.protocol.lower() == 'www:download-1.0-http--download' %}
-[{{resource.description or resource.name}}]({{resource.url}})
+			{% if body.protocol %}
+				{% if body.protocol.lower() == 'www:link-1.0-http--link' %}
+	[{{resource.description or resource.name}}]({{resource.url}})
+				{% elif body.protocol.lower() == 'www:download-1.0-http--download' %}
+	[{{resource.description or resource.name}}]({{resource.url}})
+				{% endif %}
 			{% endif %}
 		{% endif %}
 	{% endfor %}

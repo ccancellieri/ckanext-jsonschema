@@ -109,7 +109,8 @@
         "otherCitationDetails":{
           "propertyOrder": 50,
           "title": "Other Citation Details",
-          "type":"string"
+          "type":"string",
+          "format": "textarea"
         },
         "collectiveTitle":{
           "propertyOrder": 60,
@@ -138,7 +139,8 @@
     "purpose": {
       "propertyOrder": 20,
       "title": "Purpose",
-      "type": "string"
+      "type": "string",
+      "format": "textarea"
     },
     "status": {
       "propertyOrder": 30,
