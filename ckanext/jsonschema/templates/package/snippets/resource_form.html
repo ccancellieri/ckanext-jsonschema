@@ -54,17 +54,18 @@
       
       <div class="input-group">
         <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}"" type="hidden" class="form-control"/>
-      
-        <label for="field-{{TYPE_KEY}}">Which type </label>
-        <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
-          {% for resource_type in resource_types %}
-            {% if resource_type == schema_type %}
-              <option value="{{ resource_type }}" selected>{{ resource_type }}</option>
-            {% else %}
-              <option value="{{ resource_type }}" >{{ resource_type }}</option>
-            {% endif %}
-          {% endfor %}
-        </select>
+        <p>
+          <label for="field-{{TYPE_KEY}}">Which type</label>
+          <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
+            {% for resource_type in resource_types %}
+              {% if resource_type == schema_type %}
+                <option value="{{ resource_type }}" selected>{{ resource_type }}</option>
+              {% else %}
+                <option value="{{ resource_type }}" >{{ resource_type }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </p>
         <!-- <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/> -->
       
         <input id="field-{{OPT_KEY}}" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
