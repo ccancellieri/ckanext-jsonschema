@@ -33,15 +33,19 @@
 	{% set contact = h.jsonschema_get_resource_body(resource) %}
 	{% set _label = resource_type %}
 	{% if resource_type == 'resource-contact' %}
-		{% set _label = 'Contact' %}
+	  {% set _label = 'Contact' %}
+	{% elif resource_type == 'graphic-overview' %}
+		{% set _label = 'Graphic overview' %}
+	{% elif resource_type == 'online-resource' %}
+	  {% set _label = 'Online resource' %}
 	{% elif resource_type == 'resource-maintainer' %}
-		{% set _label = 'Maintainer' %}
+	  {% set _label = 'Maintainer' %}
 	{% elif resource_type == 'point-of-contact' %}
-		{% set _label = 'Point of contact' %}
+	  {% set _label = 'Point of contact' %}
 	{% elif resource_type == 'metadata-contact' %}
-		{% set _label = 'Metadata contact' %}
+	  {% set _label = 'Metadata contact' %}
 	{% elif resource_type == 'cited-responsible-party' %}
-		{% set _label = 'Cited contact' %}
+	  {% set _label = 'Cited contact' %}
 	{% endif %}
 	{% if contact.contactInfo %}
 		{% if contact.contactInfo.address
