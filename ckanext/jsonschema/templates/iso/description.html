@@ -57,10 +57,10 @@
 {% endif %}
 
 {% if dataIdentification.resourceConstraints %}
-**Resource constraints:**
 	{% if dataIdentification.resourceConstraints and
 		dataIdentification.resourceConstraints.legalConstraints and
 			dataIdentification.resourceConstraints.legalConstraints.otherConstraints %}
+**Resource constraints:**
 		{% for other in dataIdentification.resourceConstraints.legalConstraints.otherConstraints %}
 {{other}}
 		{% endfor %}
