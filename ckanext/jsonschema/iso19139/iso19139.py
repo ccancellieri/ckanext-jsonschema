@@ -161,10 +161,10 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 _identification_info,
                 ('resourceConstraints','securityConstraints','useLimitation',))
 
-                # ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('securityConstraints','classification',),
+            # ('gmd:MD_SecurityConstraints','gmd:classification','gco:MD_ClassificationCode','@codeListValue',):('securityConstraints','classification',),
             _from_nested_list_extend_array(resourceConstraints,
                 ('gmd:MD_SecurityConstraints','gmd:classification',),
-                ('gco:MD_ClassificationCode','@codeListValue',),
+                ('gmd:MD_ClassificationCode','@codeListValue',),
                 _identification_info,
                 ('resourceConstraints','securityConstraints','classification',))
 
@@ -179,12 +179,6 @@ def __identification_info(identification_info, opt, version, data, errors, conte
                 ('gco:CharacterString',),
                 _identification_info,
                 ('resourceConstraints','securityConstraints','classificationSystem',))
-
-            _from_nested_list_extend_array(resourceConstraints,
-                ('gmd:MD_SecurityConstraints','gmd:useLimitation',),
-                ('gco:CharacterString',),
-                _identification_info,
-                ('resourceConstraints','securityConstraints','useLimitation',))
             
             _from_nested_list_extend_array(resourceConstraints,
                 ('gmd:MD_SecurityConstraints','gmd:handlingDescription',),
@@ -365,7 +359,7 @@ def __responsible_parties(cited_responsible_party, _type, opt, version, data, er
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:name', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'name',),
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:description', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'description',),
             ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:protocol', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'protocol',),
-            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:linkage', 'gco:CharacterString',) : ('contactInfo','onlineResource', 'linkage',),
+            ('gmd:CI_ResponsibleParty','gmd:contactInfo','gmd:CI_Contact','gmd:onlineResource','gmd:CI_OnlineResource', 'gmd:linkage', 'gmd:URL',) : ('contactInfo','onlineResource', 'linkage',),
         }
         errors = _t.map_to(party, party_fields, _p)
 
@@ -486,7 +480,8 @@ def __spatial_representation_info(spatial_representation_info):
                 axis_fields = {
                     ('gmd:MD_Dimension','gmd:dimensionSize','gco:Integer',):('dimensionSize',),
                     ('gmd:MD_Dimension','gmd:dimensionName','gmd:MD_DimensionNameTypeCode','@codeListValue',):('dimensionName',),
-                    ('gmd:MD_Dimension','gmd:resolution','gco:Boolean',):('transformationParameterAvailability',),
+                    ('gmd:MD_Dimension','gmd:resolution','gco:Angle', '#text',):('resolution','value',),
+                    ('gmd:MD_Dimension','gmd:resolution','gco:Angle', '@uom',):('resolution','uom',),
                 }
                 errors = _t.map_to(axis, axis_fields, _axis)
                 _dimensions.append(_axis)
@@ -563,7 +558,7 @@ def _extract_iso(body, opt, version, data, errors, context):
         # dataIdentification (see below)
         
         # referenceSystemIdentifier
-        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
+        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:referenceSystemIdentifier', 'gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
 
         # spatialRepresentationInfo (see below)
 

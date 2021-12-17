@@ -1,91 +1,102 @@
-{% macro responsible_party(resource) -%}
+<?xml version="1.0" encoding="UTF-8"?>
+{%- macro responsible_party(resource) -%}
 <gmd:CI_ResponsibleParty>
-   {% set body = h.jsonschema_get_resource_body(resource) %}
+   {%- set body = h.jsonschema_get_resource_body(resource) %}
    <gmd:individualName>
       <gco:CharacterString>{{body.individualName}}</gco:CharacterString>
    </gmd:individualName>
    <gmd:organisationName>
       <gco:CharacterString>{{body.organisationName}}</gco:CharacterString>
    </gmd:organisationName>
-   {% if body.positionName %}
+   {%- if body.positionName %}
    <gmd:positionName>
       <gco:CharacterString>{{body.positionName}}</gco:CharacterString>
    </gmd:positionName>
-   {% endif %}
+   {%- endif %}
    <gmd:contactInfo>
    <gmd:CI_Contact>
-      {% if body.contactInfo.phone %}
-      {% set phone = body.contactInfo.phone %}
+      {%- if body.contactInfo.phone %}
+      {%- set phone = body.contactInfo.phone %}
       <gmd:phone>
             <gmd:CI_Telephone>
-               {% if phone.voice %}
+               {%- if phone.voice %}
                <gmd:voice>
                <gco:CharacterString>{{phone.voice}}</gco:CharacterString>
                </gmd:voice>
-               {% endif %}
-               {% if phone.facsimile %}
+               {%- endif %}
+               {%- if phone.facsimile %}
                <gmd:facsimile>
                <gco:CharacterString>{{phone.facsimile}}</gco:CharacterString>
                </gmd:facsimile>
-               {% endif %}
+               {%- endif %}
             </gmd:CI_Telephone>
       </gmd:phone>
-      {% endif %}
-      {% if body.contactInfo.address %}
-      {% set address = body.contactInfo.address %}
+      {%- endif %}
+      {%- if body.contactInfo.address %}
+      {%- set address = body.contactInfo.address %}
       <gmd:address>
             <gmd:CI_Address>
+               {%- if address.deliveryPoint %}
                <gmd:deliveryPoint>
-               <gco:CharacterString>{{address.deliveryPoint}}</gco:CharacterString>
+                  <gco:CharacterString>{{address.deliveryPoint}}</gco:CharacterString>
                </gmd:deliveryPoint>
+               {%- endif %}
+               {%- if address.city %}
                <gmd:city>
-               <gco:CharacterString>{{address.city}}</gco:CharacterString>
+                  <gco:CharacterString>{{address.city}}</gco:CharacterString>
                </gmd:city>
+               {%- endif %}
+               {%- if address.postalCode %}
                <gmd:postalCode>
-               <gco:CharacterString>{{address.postalCode}}</gco:CharacterString>
+                  <gco:CharacterString>{{address.postalCode}}</gco:CharacterString>
                </gmd:postalCode>
+               {%- endif %}
+               {%- if address.country %}
                <gmd:country>
-               <gco:CharacterString>{{address.country}}</gco:CharacterString>
+                  <gco:CharacterString>{{address.country}}</gco:CharacterString>
                </gmd:country>
+               {%- endif %}
+               {%- if address.electronicMailAddress %}
                <gmd:electronicMailAddress>
-               <gco:CharacterString>{{address.electronicMailAddress}}</gco:CharacterString>
+                  <gco:CharacterString>{{address.electronicMailAddress}}</gco:CharacterString>
                </gmd:electronicMailAddress>
+               {%- endif %}
             </gmd:CI_Address>
       </gmd:address>
-      {% endif %}
-      {% if body.contactInfo.onlineResource %}
-      {% set online = body.contactInfo.onlineResource %}
+      {%- endif %}
+      {%- if body.contactInfo.onlineResource %}
+      {%- set online = body.contactInfo.onlineResource %}
       <gmd:onlineResource>
             <gmd:CI_OnlineResource>
                <gmd:linkage>
-               <gmd:URL>{{resource.url or online.linkage}}</gmd:URL>
+                  <gmd:URL>{{resource.url or online.linkage}}</gmd:URL>
                </gmd:linkage>
                <gmd:protocol>
-               <gco:CharacterString>{{online.protocol}}</gco:CharacterString>
+                  <gco:CharacterString>{{online.protocol}}</gco:CharacterString>
                </gmd:protocol>
                <gmd:name>
-               <gco:CharacterString>{{online.name}}</gco:CharacterString>
+                  <gco:CharacterString>{{online.name}}</gco:CharacterString>
                </gmd:name>
                <gmd:description>
-               <gco:CharacterString>{{online.description}}</gco:CharacterString>
+                  <gco:CharacterString>{{online.description}}</gco:CharacterString>
                </gmd:description>
             </gmd:CI_OnlineResource>
       </gmd:onlineResource>
-      {% endif %}
+      {%- endif %}
    </gmd:CI_Contact>
    </gmd:contactInfo>
-   {% if body.role %}
+   {%- if body.role %}
    <gmd:role>
-   <gmd:CI_RoleCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_RoleCode"
+      <gmd:CI_RoleCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_RoleCode"
                         codeListValue="{{body.role}}"/>
    </gmd:role>
-   {% endif %}
+   {%- endif %}
 </gmd:CI_ResponsibleParty>
 {%- endmacro %}
 
 
-{% macro online_resource(resource) %}
-{% set body = h.jsonschema_get_resource_body(resource) %}
+{%- macro online_resource(resource) %}
+{%- set body = h.jsonschema_get_resource_body(resource) %}
 <gmd:onLine>
    <gmd:CI_OnlineResource>
       <gmd:linkage>
@@ -105,8 +116,8 @@
 {%- endmacro %}
 
 
-{% macro graphic_overview(resource) %}
-{% set body = h.jsonschema_get_resource_body(resource) %}
+{%- macro graphic_overview(resource) %}
+{%- set body = h.jsonschema_get_resource_body(resource) %}
 <gmd:MD_BrowseGraphic>
    <gmd:fileName>
       <gco:CharacterString>{{resource.url}}</gco:CharacterString>
@@ -117,18 +128,14 @@
 </gmd:MD_BrowseGraphic>
 {%- endmacro %}
 
+{%- set date_format = '%Y-%m-%dT%H:%M:%S' %}
 
-<gmd:MD_Metadata xmlns:gts="http://www.isotc211.org/2005/gts"
-                 xmlns:gml="http://www.opengis.net/gml/3.2"
-                 xmlns:gmd="http://www.isotc211.org/2005/gmd"
-                 xmlns:gmx="http://www.isotc211.org/2005/gmx"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<gmd:MD_Metadata xmlns:gmd="http://www.isotc211.org/2005/gmd"
                  xmlns:srv="http://www.isotc211.org/2005/srv"
                  xmlns:gco="http://www.isotc211.org/2005/gco"
-                 xmlns:gsr="http://www.isotc211.org/2005/gsr"
-                 xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xmlns:gmi="http://www.isotc211.org/2005/gmi"
-                 xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd">
+                 xmlns:gml="http://www.opengis.net/gml"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://www.isotc211.org/2005/gmd https://www.isotc211.org/2005/gmd/gmd.xsd http://www.isotc211.org/2005/gmx https://www.isotc211.org/2005/gmx/gmx.xsd http://www.isotc211.org/2005/srv http://schemas.opengis.net/iso/19139/20060504/srv/srv.xsd">
    <gmd:fileIdentifier>
       <gco:CharacterString>{{metadata.fileIdentifier}}</gco:CharacterString>
    </gmd:fileIdentifier>
@@ -140,43 +147,38 @@
                                codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"/>
   </gmd:characterSet>
    <gmd:contact>
-    {% for resource in pkg.resources %}
-        {% set resource_type = h.jsonschema_get_resource_type(resource) %}
+    {%- for resource in pkg.resources %}
+        {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
 
-        {% if resource_type == 'metadata-contact' %}
+        {%- if resource_type == 'metadata-contact' %}
          {{ responsible_party(resource)}}
 
-        {% endif %}
-    {% endfor %}
+        {%- endif %}
+    {%- endfor %}
 
   </gmd:contact>
+   {%- if pkg.metadata_created %}
    <gmd:dateStamp>
       <gco:DateTime>{{pkg.metadata_created}}</gco:DateTime>
    </gmd:dateStamp>
+   {%- endif %}
    <gmd:metadataStandardName>
       <gco:CharacterString>{{metadata.metadataStandardName}}</gco:CharacterString>
    </gmd:metadataStandardName>
    <gmd:metadataStandardVersion>
       <gco:CharacterString>{{metadata.metadataStandardVersion}}</gco:CharacterString>
    </gmd:metadataStandardVersion>
-
-   <!-- TODO -->
-   <!-- spatialRepresentationInfo is an array -->
-   {% if metadata.spatialRepresentationInfo %}
-      {% if metadata.spatialRepresentationInfo.gridSpatialRepresentation %}
-         {% for gridSpatialRepresentation in metadata.spatialRepresentationInfo.gridSpatialRepresentation %}
-   
+   {%- if metadata.spatialRepresentationInfo %}
+      {%- if metadata.spatialRepresentationInfo.gridSpatialRepresentation %}
+         {%- for gridSpatialRepresentation in metadata.spatialRepresentationInfo.gridSpatialRepresentation %}
    <gmd:spatialRepresentationInfo>
-
       <gmd:MD_GridSpatialRepresentation>
          <gmd:numberOfDimensions>
             <gco:Integer>{{ gridSpatialRepresentation.numberOfDimensions }}</gco:Integer>
          </gmd:numberOfDimensions>
-         
-         {% if gridSpatialRepresentation.dimension %}
-
-            <gmd:axisDimensionProperties>
-               {% for dimension in gridSpatialRepresentation.dimension %}
+         {%- if gridSpatialRepresentation.dimension %}
+               {%- for dimension in gridSpatialRepresentation.dimension %}
+               <gmd:axisDimensionProperties>
                   <gmd:MD_Dimension>
                      <gmd:dimensionName>
                         <gmd:MD_DimensionNameTypeCode 
@@ -186,48 +188,41 @@
                      <gmd:dimensionSize>
                         <gco:Integer>{{ dimension.dimensionSize }}</gco:Integer>
                      </gmd:dimensionSize>
-
-                     {% if dimension.resolution %}
-                        {% set resolution = dimension.resolution %}
+                     {%- if dimension.resolution %}
+                        {%- set resolution = dimension.resolution %}
                         <gmd:resolution>
-                           <gco:Angle uom={{ resolution.uom }}>{{ resolution.value }}</gco:Angle>
+                           <gco:Angle uom="{{ resolution.uom }}">{{ resolution.value }}</gco:Angle>
                         </gmd:resolution>
-                     {% endif %}             
-
+                     {%- endif %}             
                   </gmd:MD_Dimension>
-               {% endfor %}
-            </gmd:axisDimensionProperties>
-
-         {% endif %}
-
+               </gmd:axisDimensionProperties>
+               {%- endfor %}
+         {%- endif %}
          <gmd:cellGeometry>
             <gmd:MD_CellGeometryCode 
                codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CellGeometryCode"
                codeListValue="{{ gridSpatialRepresentation.cellGeometry }}" />
          </gmd:cellGeometry>
-
-         {% if gridSpatialRepresentation.transformationParameterAvailability %}
+         {%- if gridSpatialRepresentation.transformationParameterAvailability %}
          <gmd:transformationParameterAvailability>
             <gco:Boolean>{{ gridSpatialRepresentation.transformationParameterAvailability|string|lower }}</gco:Boolean>
          </gmd:transformationParameterAvailability>
-         {% endif %}
-
+         {%- endif %}
       </gmd:MD_GridSpatialRepresentation>
       </gmd:spatialRepresentationInfo>
-         {% endfor %}
-      {% endif %}
-
-      {% if metadata.spatialRepresentationInfo.vectorSpatialRepresentation %}
-         {% for vectorSpatialRepresentation in metadata.spatialRepresentationInfo.vectorSpatialRepresentation %}
+         {%- endfor %}
+      {%- endif %}
+      {%- if metadata.spatialRepresentationInfo.vectorSpatialRepresentation %}
+         {%- for vectorSpatialRepresentation in metadata.spatialRepresentationInfo.vectorSpatialRepresentation %}
    <gmd:spatialRepresentationInfo>
       <gmd:MD_VectorSpatialRepresentation>
-
-
-         {% if vectorSpatialRepresentation.geometricObjects %}
+         <gmd:topologyLevel>
+            <gmd:MD_TopologyLevelCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_TopologyLevelCode"
+                                      codeListValue="{{vectorSpatialRepresentation.topologyLevel}}"/>
+         </gmd:topologyLevel>
+         {%- if vectorSpatialRepresentation.geometricObjects %}
             <gmd:geometricObjects>
-
-            {% for geometricObject in vectorSpatialRepresentation.geometricObjects %}
-
+            {%- for geometricObject in vectorSpatialRepresentation.geometricObjects %}
                <gmd:MD_GeometricObjects>
                   <gmd:geometricObjectType>
                      <gmd:MD_GeometricObjectTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_GeometricObjectTypeCode"
@@ -236,20 +231,16 @@
                   <gmd:geometricObjectCount>
                      <gco:Integer>{{ geometricObject.geometricObjectCount }}</gco:Integer>
                   </gmd:geometricObjectCount>
-
                </gmd:MD_GeometricObjects>
-
-            {% endfor %}
-
+            {%- endfor %}
             </gmd:geometricObjects>
-         {% endif %}
-       
+         {%- endif %}
       </gmd:MD_VectorSpatialRepresentation>
    </gmd:spatialRepresentationInfo>
-         {% endfor %}
-      {% endif %}
+         {%- endfor %}
+      {%- endif %}
 
-   {% endif %}
+   {%- endif %}
 
    <gmd:referenceSystemInfo>
       <gmd:MD_ReferenceSystem>
@@ -263,51 +254,49 @@
       </gmd:MD_ReferenceSystem>
   </gmd:referenceSystemInfo>
    <gmd:identificationInfo>
-      <!-- TODO -->
-      <!-- MD_DataIdentification could be an array -->
       <gmd:MD_DataIdentification>
-         {% if metadata.dataIdentification.citation %}
-         {% set citation = metadata.dataIdentification.citation %}
+         {%- if metadata.dataIdentification.citation %}
+         {%- set citation = metadata.dataIdentification.citation %}
          <gmd:citation>
             <gmd:CI_Citation>
                <gmd:title>
                   <gco:CharacterString>{{citation.title}}</gco:CharacterString>
                </gmd:title>
-               {% for date in citation.dates %}
+               {%- for date in citation.dates %}
                <gmd:date>
                   <gmd:CI_Date>
-                     {% if date.date %}
+                     {%- if date.date %}
                      <gmd:date>
                         <gco:Date>{{date.date}}</gco:Date>
                      </gmd:date>
-                     {% endif %}
+                     {%- endif %}
                      <gmd:dateType>
                         <gmd:CI_DateTypeCode codeListValue="{{date.dateType}}"
                                              codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_DateTypeCode"/>
                      </gmd:dateType>
                   </gmd:CI_Date>
                </gmd:date>
-               {% endfor %}
-               {% if citation.edition %}
+               {%- endfor %}
+               {%- if citation.edition %}
                <gmd:edition>
                   <gco:CharacterString>{{ citation.edition }}</gco:CharacterString>
                </gmd:edition>
-               {% endif %}
+               {%- endif %}
                <gmd:citedResponsibleParty>
-               {% for resource in pkg.resources %}
-                  {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-                  {% if resource_type == 'cited-responsible-party' %}
+               {%- for resource in pkg.resources %}
+                  {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
+                  {%- if resource_type == 'cited-responsible-party' %}
                {{ responsible_party(resource)}}
-                  {% endif %}
-               {% endfor %}
+                  {%- endif %}
+               {%- endfor %}
                </gmd:citedResponsibleParty>
-               {% for presentationForm in citation.presentationForm %}
+               {%- for presentationForm in citation.presentationForm %}
                <gmd:presentationForm>
                   <gmd:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#CI_PresentationFormCode"
                                                codeListValue="{{presentationForm}}"/>
                </gmd:presentationForm>
-               {% endfor %}
-               {% if citation.series %}
+               {%- endfor %}
+               {%- if citation.series %}
                <gmd:series>
                   <gmd:CI_Series>
                      <gmd:name>
@@ -321,7 +310,7 @@
                      </gmd:page>
                   </gmd:CI_Series>
                </gmd:series>
-               {% endif %}
+               {%- endif %}
                <gmd:otherCitationDetails>
                   <gco:CharacterString>{{citation.otherCitationDetails}}</gco:CharacterString>
                </gmd:otherCitationDetails>
@@ -336,7 +325,7 @@
                </gmd:ISSN>
             </gmd:CI_Citation>
          </gmd:citation>
-         {% endif %}
+         {%- endif %}
          <gmd:abstract>
             <gco:CharacterString>{{metadata.dataIdentification.abstract}}</gco:CharacterString>
          </gmd:abstract>
@@ -348,15 +337,15 @@
                                  codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ProgressCode"/>
          </gmd:status>
          <gmd:pointOfContact>
-         {% for resource in pkg.resources %}
-            {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-            {% if resource_type == 'resource-contact' %}
+         {%- for resource in pkg.resources %}
+            {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
+            {%- if resource_type == 'resource-contact' %}
          {{ responsible_party(resource)}}
-            {% endif %}
-         {% endfor %}
+            {%- endif %}
+         {%- endfor %}
          </gmd:pointOfContact>
-         {% if metadata.dataIdentification.resourceMaintenance %}
-         {% set resourceMaintenance = metadata.dataIdentification.resourceMaintenance %}
+         {%- if metadata.dataIdentification.resourceMaintenance %}
+         {%- set resourceMaintenance = metadata.dataIdentification.resourceMaintenance %}
          <gmd:resourceMaintenance>
             <gmd:MD_MaintenanceInformation>
                <gmd:maintenanceAndUpdateFrequency>
@@ -364,85 +353,121 @@
                                                    codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"/>
                </gmd:maintenanceAndUpdateFrequency>
                <gmd:contact>
-                  {% for resource in pkg.resources %}
-                     {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-                     {% if resource_type == 'resource-maintainer' %}
+                  {%- for resource in pkg.resources %}
+                     {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
+                     {%- if resource_type == 'resource-maintainer' %}
                   {{ responsible_party(resource)}}
-                     {% endif %}
-                  {% endfor %}
+                     {%- endif %}
+                  {%- endfor %}
                </gmd:contact>
             </gmd:MD_MaintenanceInformation>
          </gmd:resourceMaintenance>
-         {% endif %}
-            {% for resource in pkg.resources %}
-                  {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-                  {% if resource_type == 'graphic-overview' %}
+         {%- endif %}
+            {%- for resource in pkg.resources %}
+                  {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
+                  {%- if resource_type == 'graphic-overview' %}
          <gmd:graphicOverview>
             {{ graphic_overview(resource)}}
          </gmd:graphicOverview>
-                  {% endif %}
-            {% endfor %}
-         {% for descriptiveKeyword in metadata.dataIdentification.descriptiveKeywords %}
+                  {%- endif %}
+            {%- endfor %}
+         {%- for descriptiveKeyword in metadata.dataIdentification.descriptiveKeywords %}
          <gmd:descriptiveKeywords>
             <gmd:MD_Keywords>
-               {% for keyword in descriptiveKeyword.keywords %}
+               {%- for keyword in descriptiveKeyword.keywords %}
                <gmd:keyword>
                   <gco:CharacterString>{{ keyword }}</gco:CharacterString>
                </gmd:keyword>
-               {% endfor %}
+               {%- endfor %}
                <gmd:type>
                   <gmd:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_KeywordTypeCode"
                                           codeListValue="{{ descriptiveKeyword.type }}"/>
                </gmd:type>
             </gmd:MD_Keywords>
          </gmd:descriptiveKeywords>         
-         {% endfor %}
+         {%- endfor %}
+         {%- if metadata.dataIdentification.resourceConstraints %}
+            {%- set resourceConstraints = metadata.dataIdentification.resourceConstraints %}
+            {%- if resourceConstraints.legalConstraints %}
          <gmd:resourceConstraints>
             <gmd:MD_LegalConstraints>
+               {%- for useLimitation in resourceConstraints.legalConstraints.useLimitation %}
                <gmd:useLimitation>
-                  <gco:CharacterString>Legal constrains</gco:CharacterString>
+                  <gco:CharacterString>{{useLimitation}}</gco:CharacterString>
                </gmd:useLimitation>
+               {%- endfor %}
+               {%- for accessConstraint in resourceConstraints.legalConstraints.accessConstraints %}
                <gmd:accessConstraints>
-                  <gmd:MD_RestrictionCode codeListValue="copyright"
+                  <gmd:MD_RestrictionCode codeListValue="{{accessConstraint}}"
                                           codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode"/>
                </gmd:accessConstraints>
+               {%- endfor %}
+               {%- for useConstraint in resourceConstraints.legalConstraints.useConstraints %}
                <gmd:useConstraints>
-                  <gmd:MD_RestrictionCode codeListValue="license"
+                  <gmd:MD_RestrictionCode codeListValue="{{useConstraint}}"
                                           codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode"/>
                </gmd:useConstraints>
+               {%- endfor %}
+               {%- for otherConstraint in resourceConstraints.legalConstraints.otherConstraints %}
                <gmd:otherConstraints>
-                  <gco:CharacterString>Creative Commons Attribution-NonCommercial-ShareAlike 3.0 IGO. More info at https://creativecommons.org/licenses/by-nc-sa/3.0/igo/</gco:CharacterString>
+                  <gco:CharacterString>{{otherConstraint}}</gco:CharacterString>
                </gmd:otherConstraints>
+               {%- endfor %}
             </gmd:MD_LegalConstraints>
          </gmd:resourceConstraints>
+            {%- endif %}
+            {%- if resourceConstraints.securityConstraints %}
          <gmd:resourceConstraints>
             <gmd:MD_SecurityConstraints>
+               {%- for useLimitation in resourceConstraints.securityConstraints.useLimitation %}
                <gmd:useLimitation>
-                  <gco:CharacterString>Security constraints</gco:CharacterString>
+                  <gco:CharacterString>{{useLimitation}}</gco:CharacterString>
                </gmd:useLimitation>
+               {%- endfor %}
+               {%- for classification in resourceConstraints.securityConstraints.classification %}
                <gmd:classification>
                   <gmd:MD_ClassificationCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_ClassificationCode"
-                                             codeListValue=""/>
+                                             codeListValue="{{classification}}" />
                </gmd:classification>
+               {%- endfor %}
+               {%- for userNote in resourceConstraints.securityConstraints.userNote %}
+               <gmd:userNote>
+                  <gco:CharacterString>{{userNote}}</gco:CharacterString>
+               </gmd:userNote>
+               {%- endfor %}
+               {%- for classificationSystem in resourceConstraints.securityConstraints.classificationSystem %}
+               <gmd:classificationSystem>
+                  <gco:CharacterString>{{classificationSystem}}</gco:CharacterString>
+               </gmd:classificationSystem>
+               {%- endfor %}
+               {%- for handlingDescription in resourceConstraints.securityConstraints.handlingDescription %}  
+               <gmd:handlingDescription>
+                  <gco:CharacterString>{{handlingDescription}}</gco:CharacterString>
+               </gmd:handlingDescription>
+               {%- endfor %}
             </gmd:MD_SecurityConstraints>
          </gmd:resourceConstraints>
+            {%- endif %}
+            {%- if resourceConstraints.constraints %}
          <gmd:resourceConstraints>
             <gmd:MD_Constraints>
                <gmd:useLimitation>
-                  <gco:CharacterString>Constraints</gco:CharacterString>
+                  <gco:CharacterString>{{resourceConstraints.constraints.useLimitation}}</gco:CharacterString>
                </gmd:useLimitation>
             </gmd:MD_Constraints>
          </gmd:resourceConstraints>
-         {% for spatialRepresentationType in metadata.dataIdentification.spatialRepresentationType %}  
+            {%- endif %}
+         {%- endif %}
+         {%- for spatialRepresentationType in metadata.dataIdentification.spatialRepresentationType %}  
          <gmd:spatialRepresentationType>
             <gmd:MD_SpatialRepresentationTypeCode codeListValue="{{spatialRepresentationType}}"
                                                   codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"/>
          </gmd:spatialRepresentationType>
-         {% endfor %}
-         {% for spatialResolution in metadata.dataIdentification.spatialResolution %}
+         {%- endfor %}
+         {%- for spatialResolution in metadata.dataIdentification.spatialResolution %}
          <gmd:spatialResolution>
             <gmd:MD_Resolution>
-            {% if spatialResolution.scaleDenominator %}
+            {%- if spatialResolution.scaleDenominator %}
                <gmd:equivalentScale>
                   <gmd:MD_RepresentativeFraction>
                      <gmd:denominator>
@@ -450,33 +475,38 @@
                      </gmd:denominator>
                   </gmd:MD_RepresentativeFraction>
                </gmd:equivalentScale>
-            {% endif %}
-            {% if spatialResolution.distance %}
+            {%- endif %}
+            {%- if spatialResolution.distance %}
                <gmd:distance>
                   <gco:Distance uom="{{spatialResolution.unit}}">{{spatialResolution.distance}}</gco:Distance>
                </gmd:distance>
-            {% endif %}
+            {%- endif %}
             </gmd:MD_Resolution>
          </gmd:spatialResolution>
-         {% endfor %} 
-         {% if metadata.dataIdentification.language %}
+         {%- endfor %} 
+         {%- if metadata.dataIdentification.language %}
          <gmd:language>
             <gco:CharacterString>{{metadata.dataIdentification.language}}</gco:CharacterString>
          </gmd:language>
-         {% endif %}
-         {% if metadata.dataIdentification.characterSet %}
+         {%- endif %}
+         {%- if metadata.dataIdentification.characterSet %}
          <gmd:characterSet>
             <gmd:MD_CharacterSetCode codeListValue="{{metadata.dataIdentification.characterSet}}"
                                      codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_CharacterSetCode"/>
          </gmd:characterSet>
-         {% endif %}
-         {% for topicCategory in metadata.dataIdentification.topicCategory %}
+         {%- endif %}
+         {%- for topicCategory in metadata.dataIdentification.topicCategory %}
          <gmd:topicCategory>
             <gmd:MD_TopicCategoryCode>{{topicCategory}}</gmd:MD_TopicCategoryCode>
          </gmd:topicCategory>
-         {% endfor %}
+         {%- endfor %}
+         {%- if metadata.dataIdentification.extent %}
+         {%- for extent in metadata.dataIdentification.extent %}
          <gmd:extent>
             <gmd:EX_Extent>
+               {%- if extent.geographic %}
+                  {%- if extent.geographic.polygon %}
+                  {%- set polygon = extent.geographic.polygon %}
                <gmd:geographicElement>
                   <gmd:EX_BoundingPolygon>
                      <gmd:polygon>
@@ -485,7 +515,7 @@
                               <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.6:4326">
                                  <gml:exterior>
                                     <gml:LinearRing srsName="urn:ogc:def:crs:EPSG:6.6:4326">
-                                       <gml:posList srsDimension="2">-8.714976511377259 17.87110269069672 -11.407042762887116 32.71484434604645 -17.456635502796217 16.699213385581974 -8.714976511377259 17.87110269069672</gml:posList>
+                                       <gml:posList srsDimension="2">{{polygon.geospatial}}</gml:posList>
                                     </gml:LinearRing>
                                  </gml:exterior>
                               </gml:Polygon>
@@ -494,45 +524,51 @@
                      </gmd:polygon>
                   </gmd:EX_BoundingPolygon>
                </gmd:geographicElement>
+                  {%- endif %}
+                  {%- if extent.geographic.bbox %}
+                  {%- set bbox = extent.geographic.bbox %}
                <gmd:geographicElement>
                   <gmd:EX_GeographicBoundingBox>
                      <gmd:westBoundLongitude>
-                        <gco:Decimal>0.9766</gco:Decimal>
+                        <gco:Decimal>{{bbox.west}}</gco:Decimal>
                      </gmd:westBoundLongitude>
                      <gmd:eastBoundLongitude>
-                        <gco:Decimal>51.7578</gco:Decimal>
+                        <gco:Decimal>{{bbox.east}}</gco:Decimal>
                      </gmd:eastBoundLongitude>
                      <gmd:southBoundLatitude>
-                        <gco:Decimal>-5.3511</gco:Decimal>
+                        <gco:Decimal>{{bbox.south}}</gco:Decimal>
                      </gmd:southBoundLatitude>
                      <gmd:northBoundLatitude>
-                        <gco:Decimal>22.1897</gco:Decimal>
+                        <gco:Decimal>{{bbox.north}}</gco:Decimal>
                      </gmd:northBoundLatitude>
                   </gmd:EX_GeographicBoundingBox>
                </gmd:geographicElement>
-               <gmd:temporalElement/>
+                  {%- endif %}
+               {%- endif %}
+               {% if extent.temporal %}
                <gmd:temporalElement>
                   <gmd:EX_TemporalExtent>
                      <gmd:extent>
                         <gml:TimePeriod gml:id="d6724228e526a1052958">
-                           <gml:beginPosition/>
-                           <gml:endPosition/>
+                           <gml:beginPosition>{{extent.temporal.beginDate}}</gml:beginPosition>
+                           <gml:endPosition>{{extent.temporal.endDate}}</gml:endPosition>
                         </gml:TimePeriod>
                      </gmd:extent>
                   </gmd:EX_TemporalExtent>
                </gmd:temporalElement>
-               <gmd:verticalElement/>
+               {% endif %}
             </gmd:EX_Extent>
          </gmd:extent>
+         {%- endfor %}
+         {%- endif %}
          <gmd:supplementalInformation>
-            <gco:CharacterString>More information about the data.</gco:CharacterString>
+            <gco:CharacterString>{{metadata.dataIdentification.supplementalInformation}}</gco:CharacterString>
          </gmd:supplementalInformation>
       </gmd:MD_DataIdentification>
    </gmd:identificationInfo>
    <gmd:distributionInfo>
       <gmd:MD_Distribution>
-            {% for format in metadata.distributionFormat %}
-            <!-- TODO check this update -->
+            {%- for format in metadata.distributionFormat %}
             <gmd:distributionFormat>
                <gmd:MD_Format>
                   <gmd:name>
@@ -543,19 +579,19 @@
                   </gmd:version>
                </gmd:MD_Format>
             </gmd:distributionFormat>
-            {% endfor %}
+            {%- endfor %}
          <gmd:distributor>
-            {% for resource in pkg.resources %}
-               {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-               {% if resource_type == 'distributor' %}
+            {%- for resource in pkg.resources %}
+               {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
+               {%- if resource_type == 'distributor' %}
                <gmd:MD_Distributor>
                   <gmd:distributorContact>
                      {{ responsible_party(resource)}}
                   </gmd:distributorContact>
                   <gmd:distributorFormat/>
                </gmd:MD_Distributor>
-               {% endif %}
-            {% endfor %}
+               {%- endif %}
+            {%- endfor %}
          </gmd:distributor>
          <gmd:transferOptions>
             <gmd:MD_DigitalTransferOptions>
@@ -565,23 +601,21 @@
                <gmd:transferSize>
                   <gco:Real></gco:Real>
                </gmd:transferSize> -->
-            {% for resource in pkg.resources %}
-               {% set resource_type = h.jsonschema_get_resource_type(resource) %}
-               {% if resource_type == 'online-resource' %}
+            {%- for resource in pkg.resources %}
+               {%- set resource_type = h.jsonschema_get_resource_type(resource) %}
+               {%- if resource_type == 'online-resource' %}
                {{ online_resource(resource) }}
-               {% endif %}
-            {% endfor %}
-            </gmd:MD_DigitalTransferOptions>
-         </gmd:transferOptions>
+               {%- endif %}
+            {%- endfor %}
+               </gmd:MD_DigitalTransferOptions>
+            </gmd:transferOptions>
       </gmd:MD_Distribution>
   </gmd:distributionInfo>
    <gmd:dataQualityInfo>
-      <!-- TODO -->
-      <!-- DQ_DataQuality could be an array -->
-      {% if metadata.dataQualityInfo %}
-      {% set dataQualityInfo = metadata.dataQualityInfo %}
+      {%- if metadata.dataQualityInfo %}
+      {%- set dataQualityInfo = metadata.dataQualityInfo %}
       <gmd:DQ_DataQuality>
-         {% if dataQualityInfo.scope %}
+         {%- if dataQualityInfo.scope %}
          <gmd:scope>
             <gmd:DQ_Scope>
                <gmd:level>
@@ -591,8 +625,8 @@
                <gmd:levelDescription/>
             </gmd:DQ_Scope>
          </gmd:scope>
-         {% endif %}
-         {% if dataQualityInfo.lineage %}
+         {%- endif %}
+         {%- if dataQualityInfo.lineage %}
          <gmd:lineage>
             <gmd:LI_Lineage>
                <gmd:statement>
@@ -608,13 +642,13 @@
                      </gmd:dateTime>
                   </gmd:LI_ProcessStep>
                </gmd:processStep>
-               {% for s in dataQualityInfo.lineage.source %}
+               {%- for s in dataQualityInfo.lineage.source %}
                <gmd:source uuidref="{{s}}"/>
-               {% endfor %}
+               {%- endfor %}
             </gmd:LI_Lineage>
          </gmd:lineage>
-         {% endif %}
+         {%- endif %}
       </gmd:DQ_DataQuality>
-      {% endif %}
+      {%- endif %}
   </gmd:dataQualityInfo>
 </gmd:MD_Metadata>
