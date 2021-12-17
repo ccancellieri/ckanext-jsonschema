@@ -134,10 +134,10 @@ class JsonschemaIso(p.SingletonPlugin):
                 
                 raise Exception('Unsupported requested format {}'.format(dataset_type))
             except Exception as e:
-                # if e:
-                #     message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
-                #     log.error(message)
-                raise e
+                if e:
+                    message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
+                    log.error(message)
+                # raise e
 
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):

@@ -408,6 +408,11 @@
                                           codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode"/>
                </gmd:useConstraints>
                {%- endfor %}
+               {% if pkg.license_title and pkg.license_id and pkg.license_url %}
+                  <gmd:otherConstraints>
+                     <gco:CharacterString>{{pkg.license_title}} ({{pkg.license_id}}) {{pkg.license_url}}</gco:CharacterString>
+                  </gmd:otherConstraints>
+               {% endif %}
                {%- for otherConstraint in resourceConstraints.legalConstraints.otherConstraints %}
                <gmd:otherConstraints>
                   <gco:CharacterString>{{otherConstraint}}</gco:CharacterString>

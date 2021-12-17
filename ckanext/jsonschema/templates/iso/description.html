@@ -77,11 +77,11 @@
 {{other}}
 			{% endfor %}
 		{% elif legalConstraints.accessConstraints %}
-			{% for access in legalConstraints.accessConstraints % }
+			{% for access in legalConstraints.accessConstraints %}
 {{access}}
 			{% endfor %}
 		{% elif legalConstraints.useConstraints %}
-			{% for use in legalConstraints.useConstraints % }
+			{% for use in legalConstraints.useConstraints %}
 {{use}}
 			{% endfor %}
 		{% endif %}		
