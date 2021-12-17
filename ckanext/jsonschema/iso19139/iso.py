@@ -65,6 +65,7 @@ SUPPORTED_ISO_RESOURCE_FORMATS = [
     TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
     # TYPE_ISO_RESOURCE_DATASET,
     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW,
+    TYPE_ISO_RESOURCE_DISTRIBUTOR,
 
     TYPE_ISO_RESOURCE_METADATA_CONTACT,
     # TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY,
@@ -437,12 +438,12 @@ def get_format(protocol = None, url = None):
         'ogc:wps':'wps', # ogc-wps web processing service
         #'ogc:ows-c':'', # ogc ows context
         'tms':'tms', # tiled map service
-        'www:download-1.0-ftp-download':'ftp', # file for download through ftp
-        'www:download-1.0-http-download':'http', # file for download
+        'www:download-1.0-ftp--download':'ftp', # file for download through ftp
+        'www:download-1.0-http--download':'http', # file for download
         #'file:geo':'', # gis file
         #'file:raster':'', # gis raster file
-        'www:link-1.0-http-ical':'ical', # icalendar (url)
-        'www:link-1.0-http-link':'http', # web address (url)
+        'www:link-1.0-http--ical':'ical', # icalendar (url)
+        'www:link-1.0-http--link':'http', # web address (url)
         #'doi':'', # digital object identifier (doi)
         'www:link-1.0-http-partners':'http', # partner web address (url)
         'www:link-1.0-http-related':'http', # related link (url)

@@ -55,7 +55,7 @@
       <div class="input-group">
         <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}"" type="hidden" class="form-control"/>
         <p>
-          <label for="field-{{TYPE_KEY}}">Which type</label>
+          <label for="field-{{TYPE_KEY}}">Resource type</label>
           <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
             {% for resource_type in resource_types %}
               {% set _label = resource_type %}
@@ -67,8 +67,8 @@
                 {% set _label = 'Online resource' %}
               {% elif resource_type == 'resource-maintainer' %}
                 {% set _label = 'Maintainer' %}
-              {% elif resource_type == 'point-of-contact' %}
-                {% set _label = 'Point of contact' %}
+              {% elif resource_type == 'distributor' %}
+                {% set _label = 'Distributor' %}
               {% elif resource_type == 'metadata-contact' %}
                 {% set _label = 'Metadata contact' %}
               {% elif resource_type == 'cited-responsible-party' %}
