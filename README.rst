@@ -42,8 +42,17 @@ API:
 
 /jsonschema/importer
 
-Can be used to import an existing iso19139 xml into iso:
-(select source iso19139 format xml)
+Login is required to use this functionality.
+
+It is used to import an existing iso19139 package into CKAN.
+The package is internally represented as an iso (a custom profile)
+When importing, select iso19139 as source type; also select the correct source format and the organization where to create the package.
+The only operation supported is "package_create".
+
+When the operation is successfully, a detailed json of the imported package is returned; otherwise the return payload is a json with 
+the error that causated the failure.
+
+
 
 GET:
 /jsonschema/{body|type|version|opt}/{DATASET_ID}[/RESOURCE_ID]
@@ -51,6 +60,11 @@ GET:
 /jsonschema/schema/{type}.json
 
 /jsonschema/template/{type}.json
+
+/jsonschema/{DATASET_NAME}.xml
+
+Exports a CKAN iso19139 representation into the standard XML.
+Please note that this representation is calculated each time it is requested, so it could be not fully correct (import/export are not fully bijective)
 
 
 ------------

@@ -66,14 +66,25 @@
 {{dataQualityInfo.lineage.statement}}
 {% endif %}
 
+
 {% if dataIdentification.resourceConstraints %}
 	{% if dataIdentification.resourceConstraints and
-		dataIdentification.resourceConstraints.legalConstraints and
-			dataIdentification.resourceConstraints.legalConstraints.otherConstraints %}
+		dataIdentification.resourceConstraints.legalConstraints %}
 **Resource constraints:**
-		{% for other in dataIdentification.resourceConstraints.legalConstraints.otherConstraints %}
+	{% set legalConstraints = dataIdentification.resourceConstraints.legalConstraints %}
+		{% if legalConstraints.otherConstraints %}
+			{% for other in legalConstraints.otherConstraints %}
 {{other}}
-		{% endfor %}
+			{% endfor %}
+		{% elif legalConstraints.accessConstraints %}
+			{% for access in legalConstraints.accessConstraints % }
+{{access}}
+			{% endfor %}
+		{% elif legalConstraints.useConstraints %}
+			{% for use in legalConstraints.useConstraints % }
+{{use}}
+			{% endfor %}
+		{% endif %}		
 	{% endif %}
 {% endif %}
 
