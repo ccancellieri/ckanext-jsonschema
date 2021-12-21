@@ -1,0 +1,4 @@
+{
+    "title": "Stac collection",
+    "$ref":"stac-spec/collection-spec/collection.json"
+}
