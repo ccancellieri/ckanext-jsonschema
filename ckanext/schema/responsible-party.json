@@ -92,23 +92,13 @@
                 "onlineResource": {
                     "propertyOrder": 20,
                     "title": "Web link",
-                    "type": "object",
+                    "$ref": "online-resource.json",
                     "properties": {
-                        "description": {
-                            "type": "string"
-                        },
-                        "protocol": {
-                            "type": "string",
-                            "enum": [
-                                "http"
-                            ]
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "linkage": {
-                            "type": "string"
-                        }
+                        "linkage":{
+                            "propertyOrder": 40,
+                            "type":"string",
+                            "title": "Linkage"
+                          }
                     }
                 }
             }
