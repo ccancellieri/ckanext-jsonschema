@@ -64,10 +64,7 @@
         "referenceSystemIdentifier": {
             "propertyOrder": 80,
             "title": "Reference System",
-            "type": "string",
-            "enum": [
-                "EPSG:4326 - WGS84"
-            ]
+            "type": "string"
         },
         "spatialRepresentationInfo": {
             "propertyOrder": 90,
