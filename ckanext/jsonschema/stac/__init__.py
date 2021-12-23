@@ -1,1 +1,1 @@
-from ckanext.jsonschema.stac.plugin import JsonSchemaStac 
+from ckanext.jsonschema.stac.stac import JsonSchemaStac 

@@ -167,6 +167,8 @@ ckan.module('jsonschema', function (jQuery, _) {
                 function (){$(this).on('click', jsonschema.onSubmit.bind(jsonschema));});
 
             // initialize previous value (from jinja2 dataset form)
+
+            //TODO if schema changes, keep_old should be false (jsonschema_schema != options.schema)
             jsonschema.jsonschema_schema = self.options.schema;
             jsonschema.jsonschema_body = self.options.body;
             jsonschema.jsonschema_type = self.options.type;

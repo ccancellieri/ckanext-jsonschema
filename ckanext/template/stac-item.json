@@ -1,0 +1,28 @@
+{
+  "type": "Feature",
+  "properties": {
+    "datetime": "+00:00"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      1,
+      1
+    ],
+    "bbox": [
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "bbox": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "assets": {},
+  "links": [],
+  "stac_version": "1.0.0"
+}
