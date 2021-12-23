@@ -14,6 +14,13 @@ import ckanext.jsonschema.utils as utils
 import logging
 log = logging.getLogger(__name__)
 
+def reload():
+    # Append all the rest of the available schemas
+    _c.JSON_CATALOG.update({
+        _c.JSON_SCHEMA_KEY: read_all_schema(),
+        _c.JSON_TEMPLATE_KEY: read_all_template(),
+        _c.JS_MODULE_KEY: read_all_module()
+    })
 
 def read_all_module():
     return utils._find_all_js(_c.PATH_MODULE)

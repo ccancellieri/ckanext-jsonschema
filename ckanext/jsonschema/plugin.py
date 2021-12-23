@@ -132,8 +132,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #IActions
     def get_actions(self):
         from ckanext.jsonschema.logic.actions import importer
+        from ckanext.jsonschema.logic.get import reload
+
         actions = {
-            'jsonschema_importer': importer
+            'jsonschema_importer': importer,
+            'jsonschema_reload': reload
         }
         return actions
 
@@ -223,12 +226,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
-        # Append all the rest of the available schemas
-        _c.JSON_CATALOG.update({
-                    _c.JSON_SCHEMA_KEY:_t.read_all_schema(),
-                    _c.JSON_TEMPLATE_KEY:_t.read_all_template(),
-                    _c.JS_MODULE_KEY:_t.read_all_module()
-            })
+        _t.reload()
         
         HANDLED_DATASET_TYPES = handled_dataset_types(renew = True)
 
