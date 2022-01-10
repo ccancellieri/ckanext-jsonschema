@@ -1,9 +1,29 @@
-import uuid, ckan.lib.helpers as h, ckan.lib.munge as munge, ckanext.jsonschema.validators as _v
+import json
+import uuid
+
+import ckan.lib.helpers as h
+import ckan.lib.munge as munge
+import ckanext.jsonschema.constants as _jsonschema_c
+import ckanext.jsonschema.validators as _v
 from ckanext.jsonschema.stac import constants as _c
+
 
 def _extract_id(dataset_type, body):
     if dataset_type == _c.TYPE_STAC:
         return body.get('id')
+
+
+def _extract_from_json(body, type, opt, version, data, errors, context):
+    
+    try:
+        _extract_json_name(body, type, opt, version, data, errors, context)
+        _extract_json_body(body, type, opt, version, data, errors, context)
+        _extract_json_resources(body, type, opt, version, data, errors, context)
+
+    except Exception as e:
+        _v.stop_with_error(('Error decoding metadata identification: {}').format(str(e)), 'metadata identifier', errors)
+
+    return (body, type, opt, version, data)
 
 
 def _extract_json_name(body, type, opt, version, data, errors, context):
@@ -24,11 +44,61 @@ def _extract_json_name(body, type, opt, version, data, errors, context):
     data.update(_dict)
 
 
-def _extract_from_json(body, type, opt, version, data, errors, context):
+def _extract_json_body(body, type, opt, version, data, errors, context):
     
-    try:
-        _extract_json_name(body, type, opt, version, data, errors, context)
-    except Exception as e:
-        _v.stop_with_error(('Error decoding metadata identification: {}').format(str(e)), 'metadata identifier', errors)
+    _dict = None    
 
-    return (body, type, opt, version, data)
+    properties = body.get('properties')
+
+    if properties:
+        _dict = {
+            'title': properties.get('title'),
+            'notes': properties.get('description')
+            #'metadata_modified': properties.get('updated'),
+            #'metadata_created': properties.get('created'),
+        }
+
+    version = body.get('stac_version')
+    if version:
+        _dict['version'] = version
+
+    if _dict: 
+        data.update(_dict)
+
+def _extract_json_resources(body, type, opt, version, data, errors, context):
+    """
+    This methods extract the resources from the body of the stac-item (which are in a domain-specific position)
+    and stores them in the "resources" field of the data, so that they can be processed later by the
+    resource_extractor validator
+    """
+
+    # We use pop so that the assets are not retained in the original body, because we are going
+    # to use them as resources
+    _assets = body.pop('assets', {})
+    _resources = []
+
+    for _asset_role in _assets:
+
+        _asset = {_asset_role: _assets[_asset_role]}
+        _name = _asset[_asset_role].get('title'),
+
+
+        _url = _asset[_asset_role].get('href')
+        if _url:
+            # if there is an href in the asset, we remove it from the json so it can be consistentely
+            # be managed using the resource field "url"
+            _asset[_asset_role].pop('href')
+
+        
+        _new_resource_dict = {
+            _jsonschema_c.SCHEMA_OPT_KEY: json.dumps(opt),
+            _jsonschema_c.SCHEMA_VERSION_KEY: version,
+            _jsonschema_c.SCHEMA_BODY_KEY: _asset,
+            _jsonschema_c.SCHEMA_TYPE_KEY: _c.TYPE_STAC_RESOURCE,
+            'url': _url,
+            'name': _name
+        }
+
+        _resources.append(_new_resource_dict)
+  
+    data.update({'resources': _resources})

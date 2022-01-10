@@ -56,5 +56,5 @@ class JsonSchemaStac(plugins.SingletonPlugin):
 
     def extract_from_json(self, body, type, opt, version, data, errors, context):
         if type == _c.TYPE_STAC:
-            _extract_from_json(self, body, type, opt, version, data, errors, context)
+            _extract_from_json(body, type, opt, version, data, errors, context)
         return (body, type, opt, version, data)
