@@ -132,7 +132,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #IActions
     def get_actions(self):
         from ckanext.jsonschema.logic.actions import importer
-        from ckanext.jsonschema.logic.get import reload
+        from ckanext.jsonschema.logic.action.get import reload
 
         actions = {
             'jsonschema_importer': importer,
