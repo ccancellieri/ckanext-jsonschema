@@ -53,7 +53,8 @@ def _extract_json_body(body, type, opt, version, data, errors, context):
     if properties:
         _dict = {
             'title': properties.get('title'),
-            'notes': properties.get('description')
+            'notes': properties.get('description'),
+            'license_id': properties.get('license')
             #'metadata_modified': properties.get('updated'),
             #'metadata_created': properties.get('created'),
         }
@@ -80,8 +81,8 @@ def _extract_json_resources(body, type, opt, version, data, errors, context):
     for _asset_role in _assets:
 
         _asset = {_asset_role: _assets[_asset_role]}
-        _name = _asset[_asset_role].get('title'),
-
+        _name = _asset[_asset_role].get('title')
+        _mimetype = _asset[_asset_role].get('type')
 
         _url = _asset[_asset_role].get('href')
         if _url:
@@ -96,7 +97,8 @@ def _extract_json_resources(body, type, opt, version, data, errors, context):
             _jsonschema_c.SCHEMA_BODY_KEY: _asset,
             _jsonschema_c.SCHEMA_TYPE_KEY: _c.TYPE_STAC_RESOURCE,
             'url': _url,
-            'name': _name
+            'name': _name,
+            'mimetype': _mimetype
         }
 
         _resources.append(_new_resource_dict)
