@@ -5,7 +5,7 @@ import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
 from ckanext.jsonschema.stac import constants as _c
-from ckanext.jsonschema.stac.extractor import _extract_from_json, _extract_id
+from ckanext.jsonschema.stac.extractor import _extract_item_from_json, _extract_catalog_from_json, _extract_collection_from_json, _extract_id
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,9 @@ class JsonSchemaStac(plugins.SingletonPlugin):
         toolkit.add_resource('fanstatic', 'stac')
 
     def package_types(self):
-        return ['stac-item']
+        # We want a generic type "stac" in the interface
+        # We will discriminate a more specific type later based on the data
+        return [_c.TYPE_STAC]
 
     def extract_id(self, body, dataset_type, opt, verion, errors, context):
         return _extract_id(dataset_type, body)
@@ -55,6 +57,16 @@ class JsonSchemaStac(plugins.SingletonPlugin):
         return _c.SUPPORTED_DATASET_FORMATS
 
     def extract_from_json(self, body, type, opt, version, data, errors, context):
-        if type == _c.TYPE_STAC:
-            _extract_from_json(body, type, opt, version, data, errors, context)
+
+        _type = body.get('type')
+
+        if _type == _c.TYPE_STAC_ITEM:
+            _extract_item_from_json(body, type, opt, version, data, errors, context)
+            
+        elif _type == _c.TYPE_STAC_CATALOG:
+            _extract_catalog_from_json(body, type, opt, version, data, errors, context)
+
+        elif _type == _c.TYPE_STAC_COLLECTION:
+            _extract_collection_from_json(body, type, opt, version, data, errors, context)
+
         return (body, type, opt, version, data)

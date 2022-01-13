@@ -1,4 +1,0 @@
-{
-    "title": "Stac catalog",
-    "$ref":"stac-spec/catalog-spec/catalog.json"
-}

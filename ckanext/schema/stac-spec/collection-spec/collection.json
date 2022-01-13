@@ -175,7 +175,7 @@
           }
         },
         "assets": {
-          "$ref": "../../item-spec/json-schema/item.json#/definitions/assets"
+          "$ref": "../item-spec/item.json#/definitions/assets"
         },
         "links": {
           "title": "Links",

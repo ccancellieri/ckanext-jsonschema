@@ -8,22 +8,12 @@ import ckanext.jsonschema.validators as _v
 from ckanext.jsonschema.stac import constants as _c
 
 
+# TODO
+# Eventually refactor in StacExtractor -> ItemExtractor, CatalogExtractor, CollectionExtractor
+
 def _extract_id(dataset_type, body):
     if dataset_type == _c.TYPE_STAC:
         return body.get('id')
-
-
-def _extract_from_json(body, type, opt, version, data, errors, context):
-    
-    try:
-        _extract_json_name(body, type, opt, version, data, errors, context)
-        _extract_json_body(body, type, opt, version, data, errors, context)
-        _extract_json_resources(body, type, opt, version, data, errors, context)
-
-    except Exception as e:
-        _v.stop_with_error(('Error decoding metadata identification: {}').format(str(e)), 'metadata identifier', errors)
-
-    return (body, type, opt, version, data)
 
 
 def _extract_json_name(body, type, opt, version, data, errors, context):
@@ -43,10 +33,27 @@ def _extract_json_name(body, type, opt, version, data, errors, context):
        }
     data.update(_dict)
 
+#### COMMON ####
 
-def _extract_json_body(body, type, opt, version, data, errors, context):
+################
+
+##### ITEM ##### 
+
+def _extract_item_from_json(body, type, opt, version, data, errors, context):
     
-    _dict = None    
+    try:
+        _extract_json_name(body, type, opt, version, data, errors, context)
+        _extract_item_json_body(body, type, opt, version, data, errors, context)
+        _extract_json_resources(body, type, opt, version, data, errors, context)
+
+    except Exception as e:
+        _v.stop_with_error(('Error decoding metadata identification: {}').format(str(e)), 'metadata identifier', errors)
+
+    return (body, type, opt, version, data)
+
+def _extract_item_json_body(body, type, opt, version, data, errors, context):
+    
+    _dict = {}    
 
     properties = body.get('properties')
 
@@ -104,3 +111,73 @@ def _extract_json_resources(body, type, opt, version, data, errors, context):
         _resources.append(_new_resource_dict)
   
     data.update({'resources': _resources})
+
+
+##################
+
+##### CATALOG ##### 
+
+def _extract_catalog_from_json(body, type, opt, version, data, errors, context):
+    
+    try:
+        _extract_json_name(body, type, opt, version, data, errors, context)
+        _extract_catalog_json_body(body, type, opt, version, data, errors, context)
+
+    except Exception as e:
+        _v.stop_with_error(('Error decoding metadata identification: {}').format(str(e)), 'metadata identifier', errors)
+
+    return (body, type, opt, version, data)
+
+
+def _extract_catalog_json_body(body, type, opt, version, data, errors, context):
+    
+    _dict = {
+        'title': body.get('title'),
+        'notes': body.get('description'),
+        'license_id': body.get('license'),
+        'version': body.get('stac_version')
+    }
+
+    data.update(_dict)
+
+
+######################
+
+##### COLLECTION ##### 
+
+def _extract_collection_from_json(body, type, opt, version, data, errors, context):
+    
+    try:
+        _extract_json_name(body, type, opt, version, data, errors, context)
+        _extract_collection_json_body(body, type, opt, version, data, errors, context)
+
+    except Exception as e:
+        _v.stop_with_error(('Error decoding metadata identification: {}').format(str(e)), 'metadata identifier', errors)
+
+    return (body, type, opt, version, data)
+
+
+def _extract_collection_json_body(body, type, opt, version, data, errors, context):
+    
+    _dict = {
+        'title': body.get('title'),
+        'notes': body.get('description'),
+        'license_id': body.get('license'),
+        'version': body.get('stac_version')
+    }
+    data.update(_dict)
+
+    
+    # KEYWORDS
+    if 'tags' not in data:
+        data['tags'] = []
+
+    keywords = body.get('keywords', [])
+                
+    for keyword in keywords:
+        data['tags'].append({'name': munge.munge_tag(keyword)})
+        
+
+
+
+    return (body, type, opt, version, data)

@@ -1,0 +1,17 @@
+{
+    "title": "Generic stac object",
+    "oneOf": [
+        {
+            "title": "Stac item",
+            "$ref": "stac-spec/item-spec/item.json"
+        },
+        {
+            "title": "Stac catalog",
+            "$ref": "stac-spec/catalog-spec/catalog.json"
+        },
+        {
+            "title": "Stac collection",
+            "$ref": "stac-spec/collection-spec/collection.json"
+        }
+      ]
+}
