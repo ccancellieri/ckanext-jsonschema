@@ -5,7 +5,7 @@ import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
 from ckanext.jsonschema.stac import constants as _c
-from ckanext.jsonschema.stac.extractor import _extract_item_from_json, _extract_catalog_from_json, _extract_collection_from_json, _extract_id
+from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalaogExtractor, CollectionExtractor, extract_id
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class JsonSchemaStac(plugins.SingletonPlugin):
         return [_c.TYPE_STAC]
 
     def extract_id(self, body, dataset_type, opt, verion, errors, context):
-        return _extract_id(dataset_type, body)
+        return extract_id(dataset_type, body)
 
 
     def supported_output_types(self, dataset_type, opt, version):
@@ -59,14 +59,18 @@ class JsonSchemaStac(plugins.SingletonPlugin):
     def extract_from_json(self, body, type, opt, version, data, errors, context):
 
         _type = body.get('type')
+        extractor = None
 
         if _type == _c.TYPE_STAC_ITEM:
-            _extract_item_from_json(body, type, opt, version, data, errors, context)
+            extractor = ItemExtractor()
             
         elif _type == _c.TYPE_STAC_CATALOG:
-            _extract_catalog_from_json(body, type, opt, version, data, errors, context)
+            extractor = CatalaogExtractor()
 
         elif _type == _c.TYPE_STAC_COLLECTION:
-            _extract_collection_from_json(body, type, opt, version, data, errors, context)
+            extractor = CollectionExtractor()
+
+        if extractor:
+            extractor.extract_from_json(body, type, opt, version, data, errors, context)
 
         return (body, type, opt, version, data)
