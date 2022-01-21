@@ -57,10 +57,18 @@ class TestPlugin(object):
 
     def test_modify_package_schema(self):
 
+        from six import PY3
+
         schema = default_create_package_schema()
         schema = _modify_package_schema(schema)
 
         for modified_schema_function in ['schema_check', 'before_extractor', 'extractor', 'resource_extractor']:
-            found = len([fun for fun in schema['__before'] if fun.func_name == modified_schema_function]) > 0
+
+            if PY3:
+                funcs = [fun for fun in schema['__before'] if fun.__name__ == modified_schema_function]
+            else:
+                funcs = [fun for fun in schema['__before'] if fun.func_name == modified_schema_function]
+            
+            found = len(funcs) > 0
             assert found
  
