@@ -54,16 +54,7 @@ class TestTools(object):
         # to be tested.
         if not ckan.plugins.plugin_loaded('jsonschema'):
             ckan.plugins.load('jsonschema')
-
-
-    # TODO
-    # Test plugin/handled_resource_types
-
-
-    # TODO 
-    # Test plugin/handled_dataset_types
-
-
+            
 
     def test_get_schema_of(self):
 
@@ -72,7 +63,7 @@ class TestTools(object):
             
             assert schema is not None
             
-            # We want to check that the result is dumpable; if it fails, it is catched 
+            # We want to check that the result is dumpable
             json.dumps(schema)
 
 
@@ -84,23 +75,22 @@ class TestTools(object):
 
             template = _t.get_template_of(schema_type)
 
-            if schema_type in _c.SUPPORTED_RESOURCE_FORMATS:
-
-                # Templates are optional, can be None but should not break
-                json.dumps(template)
-                assert template is not None
-
-            else:
-                assert template is None
+            # Templates are optional, can be None but should not break    
+            json.dumps(template)
+            assert True
         
 
-    # def test_get_module_for(self):
+    def test_get_module_for(self):
 
-    #     schema_type = "iso"
-    #     # Modules are optional, can be None but should not break
-    #     module = _t.get_module_for(schema_type)
+        schema_types = ['iso', 'not-found']
 
-    #     assert module
+        for schema_type in schema_types:
+
+            module = _t.get_module_for(schema_type)
+
+            # Modules are optional, can be None but should not break
+            json.dumps(module)
+            assert True
 
 
     def test_get_body(self, dataset_with_extras):
@@ -125,3 +115,17 @@ class TestTools(object):
         payload = _t.get_body(dataset_with_extras.get('id'), resource.get('id')) 
 
         assert payload == json.loads(resource[_c.SCHEMA_BODY_KEY])
+
+
+    def test_read_jsons(self):
+        
+        jsons = _t.read_all_module()
+        assert type(jsons) is dict
+
+        jsons = _t.read_all_schema()
+        assert type(jsons) is dict
+
+        jsons = _t.read_all_template()
+        assert type(jsons) is dict
+        
+        
