@@ -28,4 +28,4 @@ The ETL:
 
 ##### Usage example:
 
-python importer.py  --file "aquastat_prod.csv"  --key "ckan-auth-key"  --url "https://data.review.fao.org/ckanx/api/action/jsonschema_importer" --surl "https://data.apps.fao.org/map/catalog"
+python importer.py  --file "aquastat_prod.csv"  --key "ckan-auth-key"  --url "url" --surl "surl"

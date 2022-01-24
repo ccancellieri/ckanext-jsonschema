@@ -58,11 +58,10 @@ def _read_all_json(root, prefix=""):
 
                 key_prefix = ""
                 if root != subdir:
-                    path_from_root = subdir.replace(root, "")
-                    key_prefix = path_from_root + '/'
+                    key_prefix = subdir.replace(root + os.sep, "")
 
                 filename_no_ext = os.path.splitext(filename)[0]
-                key = key_prefix + filename_no_ext
+                key = os.path.join(key_prefix, filename_no_ext)
 
                 _dict[key]=_json_load(subdir,filename)
 

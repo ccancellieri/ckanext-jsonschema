@@ -67,7 +67,7 @@ def read_schema_file(filename, path=None):
     filename = os.path.splitext(filename)[0]
 
     if path:
-        item = '/' + path + '/' + filename #TODO use format and replace "/" with CONST PATH_SEPARATOR
+        item = os.path.join(path, filename)
     else:
         item = filename
 
