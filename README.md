@@ -68,7 +68,7 @@ The validations happens both at frontend and backend.
 
 
 
-![image-20220121132432873](README-resources\validation.png)
+![image-20220121132432873](README-resources/validation.png)
 
 
 
