@@ -54,16 +54,39 @@ def read_schema(schema_type):
 
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_SCHEMA_PATH), view_func=read_schema, endpoint='schema', methods=[u'GET'])
 
-def read_schema_file(filename):
+
+
+def read_schema_file(filename, path=None):
     '''
     Dumps the content of a local schema file.
     The file resolution is based on the configured schema folder and the (argument) json file name
     '''
+
     import os
-    return read_schema(os.path.splitext(filename)[0])
+
+    filename = os.path.splitext(filename)[0]
+
+    if path:
+        item = '/' + path + '/' + filename #TODO use format and replace "/" with CONST PATH_SEPARATOR
+    else:
+        item = filename
+
+    return read_schema(item)
 
 
 jsonschema.add_url_rule('{}/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='schema_file', methods=[u'GET'])
+
+
+def read_nested_schema_file(path, filename):
+    '''
+    Dumps the content of a local schema file, nested in folders.
+    The file resolution is based on the configured schema folder and the (arguments) path and the json file name
+    The file is searched at <configured_schema_folder>/<path>/<filename>
+    '''
+    
+    return read_schema_file(filename, path)
+
+jsonschema.add_url_rule('{}/<path:path>/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_nested_schema_file, endpoint='nested_schema_file', methods=[u'GET'])
 
 
 def read_template(schema_type):
