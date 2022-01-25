@@ -124,21 +124,27 @@ class JsonschemaIso(p.SingletonPlugin):
                 # TODO so we have to use format and mimetype
                 # format 'can' be 1:1 with dataset_type
                 ##########
+
                 if dataset_type == 'iso':
                     if output_format == 'xml':
                         return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
                     elif output_format == 'json':
                         return json.dumps(data)
+                    elif output_format == 'html':
+                        return base.render('iso/fullview.html', extra_vars={'dataset': pkg})
+                        
                 # if dataset_type == 'iso19139' and output_format == 'xml':
                 #     return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
                 
                 raise Exception('Unsupported requested format {}'.format(dataset_type))
             except Exception as e:
-                if e:
-                    message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
+                try:
+                    message = 'Error on: {} line: {} Message:{}'.format(e.name, e.lineno, e.message)
                     log.error(message)
+                except:
+                    log.error('Exception: {}'.format(type(e)))
+                    log.error(str(e))
                 # raise e
-
 
     def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
         if version != _c.SCHEMA_VERSION:
