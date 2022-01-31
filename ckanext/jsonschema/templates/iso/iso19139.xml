@@ -456,9 +456,11 @@
             {%- if resourceConstraints.constraints %}
          <gmd:resourceConstraints>
             <gmd:MD_Constraints>
+               {%- for useLimitation in resourceConstraints.constraints.useLimitation %}
                <gmd:useLimitation>
-                  <gco:CharacterString>{{resourceConstraints.constraints.useLimitation}}</gco:CharacterString>
+                  <gco:CharacterString>{{useLimitation}}</gco:CharacterString>
                </gmd:useLimitation>
+               {%- endfor %}
             </gmd:MD_Constraints>
          </gmd:resourceConstraints>
             {%- endif %}
