@@ -1,8 +1,8 @@
-from sqlalchemy.sql.expression import true
-
 import ckan.lib.helpers as h
-import ckan.plugins.toolkit as toolkit
 import ckan.lib.munge as munge
+import ckan.plugins.toolkit as toolkit
+import six
+from sqlalchemy.sql.expression import true
 
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
@@ -25,25 +25,27 @@ missing = df.missing
 StopOnError = df.StopOnError
 Invalid = df.Invalid
 
-import ckanext.jsonschema.validators as _v
+import logging
+
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.interfaces as _i
+import ckanext.jsonschema.validators as _v
 
-import logging
 log = logging.getLogger(__name__)
 
 
 #############################################
 
-import jsonschema
-from jsonschema import validate,RefResolver,Draft4Validator,Draft7Validator
 import json
-import ckan.model as model
+import uuid
 
 import ckan.lib.navl.dictization_functions as df
-import uuid
+import ckan.model as model
+import jsonschema
+from jsonschema import Draft4Validator, Draft7Validator, RefResolver, validate
+
 config = toolkit.config
 
 TYPE_ISO = 'iso'
@@ -290,9 +292,16 @@ def _extract_iso_name(body, type, opt, version, data, errors, context):
     # let's port back to body the new identifier ...
     body['fileIdentifier'] = name
 
+    # should check CKAN version 
+    if six.PY3:
+        controller = 'dataset'
+    else:
+        controller = 'package'
+
+
     _dict = {
         'name': name,
-        'url': h.url_for(controller = 'package', action = 'read', id = name, _external = True),
+        'url': h.url_for(controller = controller, action = 'read', id = name, _external = True),
     }
     data.update(_dict)
 

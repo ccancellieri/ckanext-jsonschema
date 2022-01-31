@@ -26,13 +26,9 @@ Invalid = df.Invalid
 
 def stop_with_error(message, key, errors):
 
-    print(message)
-    print(key)
-    print(errors)
-
-    log.error(message)
-    log.error(key)
-    log.error(errors)
+    log.error('Stopped with error: {}'.format(message))
+    log.error('on key: {}'.format(key))
+    log.error('Errors: {}'.format(str(errors)))
 
     errors[key].append(_(message))
     raise StopOnError(_(message))
@@ -92,23 +88,10 @@ def schema_check(key, data, errors, context):
 
     except jsonschema.exceptions.ValidationError as e:
         #DEBUG
-        import traceback
-        traceback.print_exc()
+        #import traceback
+        #traceback.print_exc()
         #TODO better message based on KEY mapping from IBinder plugin
         
-        print('Exception message: {}'.format(e.message))
-        print('Exception validator: {}'.format(str(e.validator)))
-
-
-        log.error('Exception message: {}'.format(e.message))
-        log.error('Exception validator: {}'.format(str(e.validator)))
-        log.error('Exception validator value: {}'.format(str(e.validator_value)))
-        log.error('Exception schema: {}'.format(str(e.schema)))
-        log.error('Exception schema path: {}'.format(str(e.schema_path)))
-        log.error('Exception schema instance: {}'.format(str(e.instance)))
-        log.error('Exception schema context: {}'.format(str(e.context)))
-        log.error('Exception schema cause: {}'.format(str(e.cause)))
-
         stop_with_error('Error validating: {}'.format(str(e)), key, errors)
     except Exception as e:
         #DEBUG
