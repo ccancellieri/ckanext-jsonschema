@@ -76,8 +76,18 @@ def schema_check(key, data, errors, context):
         #     raise Exception('schema not valid') #TODO do it once on startup (constants)
         #validator = Draft4Validator(constants.LAZY_GROUP_SCHEMA, resolver=resolver, format_checker=None)
         validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
+        
         # VALIDATE JSON SCHEMA
+        errors = validator.iter_errors(data)  # get all validation errors
+
+        for error in errors:
+            log.error(error)
+            log.error('------')
+
+
         _ret = validator.validate(body)
+
+
 
     except jsonschema.exceptions.ValidationError as e:
         #DEBUG
