@@ -1,17 +1,17 @@
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
-_ = toolkit._
-from requests.models import InvalidURL
-import json
-from six import binary_type
-_get_or_bust= toolkit.get_or_bust
 
-import ckanext.jsonschema.logic.get as _g
+_ = toolkit._
+import json
+import logging
+
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
+from ckanext.jsonschema.utils import encode_str
+
 # import ckanext.jsonschema.logic.get as get
 
-import logging
 log = logging.getLogger(__name__)
 
 def reload():
@@ -152,6 +152,8 @@ def as_boolean(dict, path):
             set_nested(dict, path, False)
 
 import datetime as dt
+
+
 def as_datetime(dict, path, strptime_format='%Y-%m-%d'):
     #'%Y-%m-%d %H:%M:%S'
     d = get_nested(dict,path)
@@ -278,6 +280,7 @@ def _get_dataset_type(data = None):
         return _type
 
     from ckan.common import c
+
     # TODO: https://github.com/ckan/ckan/issues/6518
     path = c.environ['CKAN_CURRENT_URL']
     _type = path.split('/')[1]
@@ -331,26 +334,22 @@ def update_extras(data, body, type, opt, version):
         elif key == _c.SCHEMA_OPT_KEY:
             e['value'] = json.dumps(opt)
 
-# TODO check utils
 def as_dict(field):
-    value = field
-    if isinstance(field, unicode):
-        value = value.encode('utf-8')
-    if isinstance(value, dict) or isinstance(value, binary_type):
-        try: 
-            return json.loads(value)
-        except:
-            pass
-    elif isinstance(value, str):
-        try: 
-            return json.loads(value)
-        except:
-            pass
+
+    value = encode_str(field)
+
+    try:
+        value = json.loads(value)
+    except:
+        pass
+
     return value
+
 
 # TODO check utils
 def as_json(field):
     value = field
+
     if isinstance(field, unicode):
         value = value.encode('utf-8')
     if isinstance(value, dict):
