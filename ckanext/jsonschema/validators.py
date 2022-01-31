@@ -25,6 +25,15 @@ StopOnError = df.StopOnError
 Invalid = df.Invalid
 
 def stop_with_error(message, key, errors):
+
+    print(message)
+    print(key)
+    print(errors)
+
+    log.error(message)
+    log.error(key)
+    log.error(errors)
+
     errors[key].append(_(message))
     raise StopOnError(_(message))
 
@@ -76,13 +85,6 @@ def schema_check(key, data, errors, context):
         #     raise Exception('schema not valid') #TODO do it once on startup (constants)
         #validator = Draft4Validator(constants.LAZY_GROUP_SCHEMA, resolver=resolver, format_checker=None)
         validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
-        
-        # VALIDATE JSON SCHEMA
-        errors = validator.iter_errors(data)  # get all validation errors
-
-        for error in errors:
-            log.error(error)
-            log.error('------')
 
         _ret = validator.validate(body)
 
@@ -90,10 +92,14 @@ def schema_check(key, data, errors, context):
 
     except jsonschema.exceptions.ValidationError as e:
         #DEBUG
-        #import traceback
-        #traceback.print_exc()
+        import traceback
+        traceback.print_exc()
         #TODO better message based on KEY mapping from IBinder plugin
         
+        print('Exception message: {}'.format(e.message))
+        print('Exception validator: {}'.format(str(e.validator)))
+
+
         log.error('Exception message: {}'.format(e.message))
         log.error('Exception validator: {}'.format(str(e.validator)))
         log.error('Exception validator value: {}'.format(str(e.validator_value)))
