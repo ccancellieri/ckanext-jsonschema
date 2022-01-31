@@ -84,7 +84,6 @@ def schema_check(key, data, errors, context):
             log.error(error)
             log.error('------')
 
-
         _ret = validator.validate(body)
 
 
@@ -94,6 +93,16 @@ def schema_check(key, data, errors, context):
         #import traceback
         #traceback.print_exc()
         #TODO better message based on KEY mapping from IBinder plugin
+        
+        log.error('Exception message: {}'.format(e.message))
+        log.error('Exception validator: {}'.format(str(e.validator)))
+        log.error('Exception validator value: {}'.format(str(e.validator_value)))
+        log.error('Exception schema: {}'.format(str(e.schema)))
+        log.error('Exception schema path: {}'.format(str(e.schema_path)))
+        log.error('Exception schema instance: {}'.format(str(e.instance)))
+        log.error('Exception schema context: {}'.format(str(e.context)))
+        log.error('Exception schema cause: {}'.format(str(e.cause)))
+
         stop_with_error('Error validating: {}'.format(str(e)), key, errors)
     except Exception as e:
         #DEBUG
