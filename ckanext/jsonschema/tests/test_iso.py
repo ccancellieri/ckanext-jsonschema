@@ -27,6 +27,17 @@ def iso_wayback_sample(datadir):
     return open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
 
 
+def _get_wayback_from_request(schema_body, package):
+
+    from ckan.plugins import get_plugin
+    from ckan.tests.helpers import _get_test_app
+
+    h = get_plugin("jsonschema").get_helpers()
+
+    with _get_test_app().flask_app.test_request_context():
+        return base.render('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package, 'h': h})
+
+
 class TestIso(object):
     
     @classmethod
@@ -51,11 +62,9 @@ class TestIso(object):
 
         body = _u.xml_to_json(iso19139_sample)
     
-        SCHEMA_TYPE_KEY = 'iso19139'
         package_dict = {}
 
-        _type = SCHEMA_TYPE_KEY
-        package_dict['type'] = _type
+        package_dict['type'] = 'iso19139'
         package_dict['owner_org'] = organization['id']
         
         opt = dict(_c.SCHEMA_OPT)
@@ -69,7 +78,7 @@ class TestIso(object):
         extras = []
         package_dict['extras'] = extras
         extras.append({ 'key': _c.SCHEMA_BODY_KEY, 'value' : body })
-        extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : _type })
+        extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : package_dict['type'] })
         extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' :  opt })
         extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })
 
@@ -153,14 +162,15 @@ class TestIso(object):
         ########################
 
         #### Get the runtime wayback
-        # TODO: is there a better way to provide helpers?
-        from ckan.plugins import get_plugin
-        h = get_plugin("jsonschema").get_helpers()
+        #from ckan.tests.helpers import _get_test_app
+        #from ckan.plugins import get_plugin
+        #h = get_plugin("jsonschema").get_helpers()
+        
+        #with _get_test_app().flask_app.test_request_context():
+        #    return base.render('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package, 'h':h})
 
-        wayback = base.render_jinja2('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package, 'h': h})
+        wayback = _get_wayback_from_request(schema_body, package)
         ########################
-        
-        
         
         #### Adjust the wayback and the sample before comparison
         
@@ -168,8 +178,10 @@ class TestIso(object):
         wayback = "".join(wayback.split())
         iso_wayback_sample = "".join(iso_wayback_sample.split())
 
+        regexes = []
+
         # remove date blocks before the comparison as the timestamp would never match
-        regex = """
+        _regex = """
                 <gmd:processStep>
                     <gmd:LI_ProcessStep>
                         <gmd:description>
@@ -181,23 +193,21 @@ class TestIso(object):
                     <\/gmd:LI_ProcessStep>
                 <\/gmd:processStep>
                 """
-        regex = "".join(regex.split())
-
-        wayback = re.sub(regex, '', wayback)
-        iso_wayback_sample = re.sub(regex, '', iso_wayback_sample)
-
-        
-        regex = """
+        regexes.append(_regex)
+                    
+        _regex = """
             <gmd:dateStamp>
                 <gco:DateTime>.*</gco:DateTime>
             </gmd:dateStamp>
         """
-        regex = "".join(regex.split())
+        regexes.append(_regex)
 
-        wayback = re.sub(regex, '', wayback)
-        iso_wayback_sample = re.sub(regex, '', iso_wayback_sample)
+        for regex in regexes:
+            regex = "".join(regex.split())
+            wayback = re.sub(regex, '', wayback)
+            iso_wayback_sample = re.sub(regex, '', iso_wayback_sample)
 
-        
+
         if not PY3:
             iso_wayback_sample = unicode(iso_wayback_sample, 'utf-8')
 
