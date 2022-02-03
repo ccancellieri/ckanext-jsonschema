@@ -1,23 +1,18 @@
-from sqlalchemy.sql.expression import true
-import ckan.lib.helpers as h
-import ckan.plugins.toolkit as toolkit
-_get_or_bust= toolkit.get_or_bust
-_ = toolkit._
-import ckan.plugins as p
+import logging
 
-import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.interfaces as _i
 
 # iso19139 extract/convert by default into the iso profile
-from ckanext.jsonschema.iso19139.iso import TYPE_ISO, TYPE_ISO_RESOURCE_DISTRIBUTOR,\
- TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY,\
-     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_RESOURCE_CONTACT,\
-         TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_MAINTAINER
+from ckanext.jsonschema.iso19139.constants import (
+    TYPE_ISO, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY,
+    TYPE_ISO_RESOURCE_DISTRIBUTOR, TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW,
+    TYPE_ISO_RESOURCE_MAINTAINER, TYPE_ISO_RESOURCE_METADATA_CONTACT,
+    TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_RESOURCE_CONTACT
+)
+
             #  TYPE_ISO_RESOURCE_RESPONSIBLE_PARTY, TYPE_ISO_RESOURCE_DATASET
 
-import logging
 log = logging.getLogger(__name__)
 
 import json
@@ -25,10 +20,125 @@ import json
 #############################################
 
 # TYPE_ONLINE_RESOURCE='online-resource'
-TYPE_ISO19139='iso19139'
 
-SUPPORTED_DATASET_FORMATS = [TYPE_ISO19139]
 SUPPORTED_RESOURCE_FORMATS = []
+
+def _extract_id(body):
+    identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'))
+    return identification_info
+
+
+def _extract_iso(body, opt, version, data, errors, context):
+    """
+    This function is called in the before_extractor validator
+    It extracts all the relevant fields from the input iso19139 and creates the iso profile
+    The package type is then switched to iso, so there is no need to refer to iso19139 anymore 
+    """
+
+
+    # DATA translation
+    # root_fields = FrozenOrderedBidict({
+
+    _data = dict(data)
+    _body = dict(body)
+    _iso_profile = {}
+    _iso_profile_fields = {
+        # fileIdentifier
+        ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString',):('fileIdentifier',),
+        # TODO
+        #  
+        # "gmd:fileIdentifier":{
+        #     "gco:CharacterString":{
+        #         "@xmlns:gmx":"http://www.isotc211.org/2005/gmx",
+        #         "#text":"dcc718a7-xyz-4c86-xyz-6abfxyz---70db",
+        #         "@xmlns:srv":"http://www.isotc211.org/2005/srv"
+        #     }
+        # },
+
+        # language
+        ('gmd:MD_Metadata','gmd:language','gmd:LanguageCode','@codeListValue',):('language',),
+        
+        # characterSet
+        ('gmd:MD_Metadata','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
+
+        # metadataStandardName
+        # TODO could this be an array?
+        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString',):('metadataStandardName',),
+        
+        # metadataStandardVersion
+        ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString',):('metadataStandardVersion',),
+        
+        # parentIdentifier
+        ('gmd:MD_Metadata','gmd:parentIdentifier','gco:CharacterString',):('parentIdentifier',),
+        
+        # dataIdentification (see below)
+        
+        # referenceSystemIdentifier
+        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:referenceSystemIdentifier', 'gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
+
+        # spatialRepresentationInfo (see below)
+
+        # DISTRIBUTION INFO
+        # transferOptions (see below) _extract_transfer_options
+
+        # distributionFormat (see below) _distribution_format
+        
+        # distributor (see below) _extract_distributor
+
+        # from xml to resource -> gmd:contact (see below)
+
+        # dataQualityInfo
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString',):('dataQualityInfo','lineage','statement',),
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:source','@uuidref',):('dataQualityInfo','lineage','source',),
+        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:scope','gmd:DQ_Scope','gmd:level','gmd:MD_ScopeCode','@codeListValue',):('dataQualityInfo','scope',),
+    }
+    # map body to ckan fields (_data)
+    errors = _t.map_to(_body, _iso_profile_fields, _iso_profile)
+    
+    if errors:
+        # TODO map errors {key,error} to ckan errors 
+        # _v.stop_with_error('Unable to map to iso', errors)
+        log.error('unable to map')
+
+    spatial_representation_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
+    if spatial_representation_info:
+        _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
+        _t.set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
+
+    contact = _t.get_nested(body, ('gmd:MD_Metadata','gmd:contact',))
+    if contact:
+        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, _data, errors, context)
+        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
+    identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
+    if identification_info:
+        _identification_info = __identification_info(identification_info, opt, version, _data, errors, context)
+        _t.set_nested(_iso_profile, ('dataIdentification',), _identification_info)
+
+    # Extract resources from body (to _data)
+    _extract_transfer_options(_body, opt, version, _data, errors, context)
+    
+    distributionFormat = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat',))
+    if distributionFormat:
+        distributionFormat_fields = {
+            ('gmd:MD_Format','gmd:name','gco:CharacterString',) : ('name',),
+            ('gmd:MD_Format','gmd:version','gco:CharacterString',) : ('version',),
+        }
+        _distributionFormat = _t.as_list_of_dict(distributionFormat, distributionFormat_fields)
+        _t.set_nested(_iso_profile, ('distributionFormat',), _distributionFormat)
+
+    # distributor
+    distributor = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
+    if distributor:
+        _distributor = _extract_distributor(distributor, TYPE_ISO_RESOURCE_DISTRIBUTOR, opt, version, _data, errors, context)
+        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
+
+    # Update _data type
+    _data.update({
+        'type': TYPE_ISO
+    })
+
+    return _iso_profile, TYPE_ISO, opt, version, _data
 
 
 def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):
@@ -377,7 +487,6 @@ def __responsible_parties(cited_responsible_party, _type, opt, version, data, er
     data.update({'resources': resources})
     return _responsible_parties
 
-
 def __graphic_overview(graphic_overview, _type, opt, version, data, errors, context):
 
     resources = data.get('resources', [])
@@ -519,111 +628,6 @@ def __spatial_representation_info(spatial_representation_info):
         _ret.update({ 'gridSpatialRepresentation' : _Grids })
     return _ret
 
-def _extract_iso(body, opt, version, data, errors, context):
-    # DATA translation
-    # root_fields = FrozenOrderedBidict({
-
-    _data = dict(data)
-    _body = dict(body)
-    _iso_profile = {}
-    _iso_profile_fields = {
-        # fileIdentifier
-        ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString',):('fileIdentifier',),
-        # TODO
-        #  
-        # "gmd:fileIdentifier":{
-        #     "gco:CharacterString":{
-        #         "@xmlns:gmx":"http://www.isotc211.org/2005/gmx",
-        #         "#text":"dcc718a7-xyz-4c86-xyz-6abfxyz---70db",
-        #         "@xmlns:srv":"http://www.isotc211.org/2005/srv"
-        #     }
-        # },
-
-        # language
-        ('gmd:MD_Metadata','gmd:language','gmd:LanguageCode','@codeListValue',):('language',),
-        
-        # characterSet
-        ('gmd:MD_Metadata','gmd:characterSet','gmd:MD_CharacterSetCode','@codeListValue',):('characterSet',),
-
-        # metadataStandardName
-        # TODO could this be an array?
-        ('gmd:MD_Metadata','gmd:metadataStandardName','gco:CharacterString',):('metadataStandardName',),
-        
-        # metadataStandardVersion
-        ('gmd:MD_Metadata','gmd:metadataStandardVersion','gco:CharacterString',):('metadataStandardVersion',),
-        
-        # parentIdentifier
-        ('gmd:MD_Metadata','gmd:parentIdentifier','gco:CharacterString',):('parentIdentifier',),
-        
-        # dataIdentification (see below)
-        
-        # referenceSystemIdentifier
-        ('gmd:MD_Metadata','gmd:referenceSystemInfo','gmd:MD_ReferenceSystem','gmd:referenceSystemIdentifier', 'gmd:RS_Identifier','gmd:code','gco:CharacterString',):('referenceSystemIdentifier',),
-
-        # spatialRepresentationInfo (see below)
-
-        # DISTRIBUTION INFO
-        # transferOptions (see below) _extract_transfer_options
-
-        # distributionFormat (see below) _distribution_format
-        
-        # distributor (see below) _extract_distributor
-
-        # from xml to resource -> gmd:contact (see below)
-
-        # dataQualityInfo
-        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:statement','gco:CharacterString',):('dataQualityInfo','lineage','statement',),
-        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:lineage','gmd:LI_Lineage','gmd:source','@uuidref',):('dataQualityInfo','lineage','source',),
-        ('gmd:MD_Metadata','gmd:dataQualityInfo','gmd:DQ_DataQuality','gmd:scope','gmd:DQ_Scope','gmd:level','gmd:MD_ScopeCode','@codeListValue',):('dataQualityInfo','scope',),
-    }
-    # map body to ckan fields (_data)
-    errors = _t.map_to(_body, _iso_profile_fields, _iso_profile)
-    
-    if errors:
-        # TODO map errors {key,error} to ckan errors 
-        # _v.stop_with_error('Unable to map to iso', errors)
-        log.error('unable to map')
-
-    spatial_representation_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
-    if spatial_representation_info:
-        _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
-        _t.set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
-
-    contact = _t.get_nested(body, ('gmd:MD_Metadata','gmd:contact',))
-    if contact:
-        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, _data, errors, context)
-        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
-
-    identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
-    if identification_info:
-        _identification_info = __identification_info(identification_info, opt, version, _data, errors, context)
-        _t.set_nested(_iso_profile, ('dataIdentification',), _identification_info)
-
-    # Extract resources from body (to _data)
-    _extract_transfer_options(_body, opt, version, _data, errors, context)
-    
-    distributionFormat = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat',))
-    if distributionFormat:
-        distributionFormat_fields = {
-            ('gmd:MD_Format','gmd:name','gco:CharacterString',) : ('name',),
-            ('gmd:MD_Format','gmd:version','gco:CharacterString',) : ('version',),
-        }
-        _distributionFormat = _t.as_list_of_dict(distributionFormat, distributionFormat_fields)
-        _t.set_nested(_iso_profile, ('distributionFormat',), _distributionFormat)
-
-    # distributor
-    distributor = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
-    if distributor:
-        _distributor = _extract_distributor(distributor, TYPE_ISO_RESOURCE_DISTRIBUTOR, opt, version, _data, errors, context)
-        # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
-
-    # Update _data type
-    _data.update({
-        'type': TYPE_ISO
-    })
-
-    return _iso_profile, TYPE_ISO, opt, version, _data
-
 def _extract_distributor(distributor, _type, opt, version, data, errors, context):
 
     if not isinstance(distributor, list):
@@ -707,7 +711,7 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
     data.update({'resources': resources})
 
 
-class JsonschemaIso19139(p.SingletonPlugin):
+""" class JsonschemaIso19139(p.SingletonPlugin):
     p.implements(_i.IBinder, inherit=True)
 
     def extract_id(self, body, type, opt, version, errors, context):
@@ -732,12 +736,5 @@ class JsonschemaIso19139(p.SingletonPlugin):
             return []
 
         return SUPPORTED_DATASET_FORMATS
-
-    def before_extractor(self, body, type, opt, version, data, errors, context):
-            
-        if type == TYPE_ISO19139:
-            return _extract_iso(body, opt, version, data, errors, context)
-
-        return body, type, opt, version, data
-
+ """
 #############################################

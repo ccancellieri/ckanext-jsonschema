@@ -1,16 +1,12 @@
 import ckan.plugins as plugins
-import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
-_ = toolkit._
-
-from ckan.common import c
 import json
 
+import ckanext.jsonschema.blueprints as _b
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
-import ckanext.jsonschema.blueprints as _b
-import ckanext.jsonschema.interfaces as _i
+from ckan.common import c
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -29,25 +25,20 @@ convert_to_extras = toolkit.get_converter('convert_to_extras')
 convert_from_extras = toolkit.get_converter('convert_from_extras')
 
 
+import logging
+from ckan.logic.schema import (default_create_package_schema,
+                               default_update_package_schema)
 
     # let's grab the default schema in our plugin
-from ckan.logic.schema import \
-    default_create_package_schema,\
-    default_update_package_schema,\
-    default_show_package_schema,\
-    default_group_schema,\
-    default_tags_schema
 
-import logging
 log = logging.getLogger(__name__)
-
-
 
 
 # check IConfigurer
 HANDLED_DATASET_TYPES = []
 HANDLED_RESOURCES_TYPES = {}
 HANDLED_OUPTUT_TYPES = {}
+HANDLED_INPUT_TYPES = []
 
 def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
 
@@ -68,6 +59,21 @@ def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VE
     HANDLED_RESOURCES_TYPES.update({dataset_type:supported_resource_types})
 
     return supported_resource_types
+
+
+def handled_input_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
+    
+    if HANDLED_INPUT_TYPES and not renew:
+        return HANDLED_INPUT_TYPES
+
+    updated_handled_input_types = []
+    for plugin in _v.JSONSCHEMA_PLUGINS:
+        try:
+            updated_handled_input_types.extend(plugin.supported_input_types(opt, version))
+        except Exception as e:
+            log.error('Error resolving input types:\n{}'.format(str(e)))
+
+    return updated_handled_input_types
 
 def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
     '''
@@ -129,8 +135,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     #IActions
     def get_actions(self):
-        from ckanext.jsonschema.logic.actions import importer
         from ckanext.jsonschema.logic.action.get import reload
+        from ckanext.jsonschema.logic.actions import importer
 
         actions = {
             'jsonschema_importer': importer,
@@ -176,6 +182,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             'jsonschema_handled_resource_types': handled_resource_types,
             'jsonschema_handled_dataset_types': handled_dataset_types,
+            'jsonschema_handled_input_types': handled_input_types,
             'jsonschema_handled_output_types': handled_output_types,
             # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
         }
@@ -253,7 +260,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     ##############
 
     def package_types(self):
-        return handled_dataset_types()
+        return handled_input_types()
 
     # def setup_template_variables(self, context, data_dict):
         # # TODO: https://github.com/ckan/ckan/issues/6518
