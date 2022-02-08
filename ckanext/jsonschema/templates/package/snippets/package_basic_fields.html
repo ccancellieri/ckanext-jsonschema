@@ -47,8 +47,12 @@
 
 {% block package_basic_fields_license %}
   
+  {% if jsonschema %}
+      
+  {% else %}
   {{super()}}
-  
+  {% endif %}
+
 {% endblock %}
 
 {% block package_basic_fields_org %}

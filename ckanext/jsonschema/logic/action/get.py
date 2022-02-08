@@ -11,7 +11,8 @@ def reload(context, data_dict):
     if not authz.is_sysadmin(context[u"user"]):
         return {'success': False, 'msg': _('Only sysadmin can perform this action')}
 
-
-    _t.reload()
-
-    return { "success": True }
+    try:
+        _t.reload()
+        return { "success": True }    
+    except Exception as e:
+        return { "success": False, "msg": str(e)}

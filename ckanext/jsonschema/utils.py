@@ -115,3 +115,37 @@ def encode_str(value):
         value = value.encode("utf-8")
     
     return value
+    
+def _initialize_core_schema():
+    """This will break if there is non custom license group, which is if the licenses_group_url key is unset"""
+    
+    import ckan.model as model
+    import ckanext.jsonschema.constants as _c 
+
+
+    licenses = model.Package.get_license_options()
+
+    enum_ids = []
+    enum_titles = []
+
+    for license in licenses:    
+        enum_titles.append(license[0])
+        enum_ids.append(license[1])
+
+    data = {
+        "enum": enum_ids,
+        "options": {
+            "enum_titles": enum_titles
+        }
+    }
+
+    
+    path = os.path.join(_c.PATH_SCHEMA, "core")
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    file_path = os.path.join(path, "licenses.json")
+
+    with open(file_path, "w") as f:
+        f.write(json.dumps(data))

@@ -15,12 +15,23 @@ from ckanext.jsonschema.utils import encode_str
 log = logging.getLogger(__name__)
 
 def reload():
+
+    # Initialize core generated schema
+    try:
+        initialize_core_schema()
+        log.info("Initialized core schema")
+    except Exception as e:
+        log.error("Error initializing core schema: " + str(e))
+        raise e
+
+
     # Append all the rest of the available schemas
     _c.JSON_CATALOG.update({
         _c.JSON_SCHEMA_KEY: read_all_schema(),
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module()
     })
+    
 
 def read_all_module():
     return utils._find_all_js(_c.PATH_MODULE)
@@ -30,6 +41,9 @@ def read_all_template():
 
 def read_all_schema():
     return utils._read_all_json(_c.PATH_SCHEMA)
+
+def initialize_core_schema():
+    utils._initialize_core_schema()
 
 def dataset_type(dataset):
     '''

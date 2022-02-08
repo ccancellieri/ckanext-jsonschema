@@ -271,6 +271,11 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
 
                 # {'name': geo_tag, 'vocabulary_id': vocab_id}
 
+        resourceConstraints = data_identification.get('resourceConstraints')
+        if resourceConstraints:
+            license = resourceConstraints.get('license')
+            _data['license_id'] = license
+        
 
 def _extract_iso_name(body, type, opt, version, data, errors, context):
     

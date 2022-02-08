@@ -262,13 +262,22 @@
       "propertyOrder": 60,
       "title": "Resource Constraints",
       "type":"object",
+      "required": [
+        "license"
+      ],
       "properties":{
+        "license": {
+          "propertyOrder": 1,
+          "title": "License",
+          "type": "string",
+          "$ref": "core/licenses.json"
+        },
         "legalConstraints":{
           "title": "Legal constraints",
           "type": "object",
           "properties": {
             "otherConstraints": {
-              "propertyOrder": 30,
+              "propertyOrder": 40,
               "title": "Other constraints",
               "type": "array",
               "items": {
@@ -277,7 +286,7 @@
               }
             },
             "useConstraints": {
-              "propertyOrder": 20,
+              "propertyOrder": 30,
               "title": "Use constraints",
               "type": "array",
               "items": {
@@ -295,7 +304,7 @@
               }
             },
             "accessConstraints": {
-              "propertyOrder": 10,
+              "propertyOrder": 20,
               "title": "Access constraints",
               "type": "array",
               "items": {
@@ -313,7 +322,7 @@
               }
             },
             "useLimitation": {
-              "propertyOrder": 1,
+              "propertyOrder": 10,
               "title": "Use limitation",
               "type": "array",
               "items": {
