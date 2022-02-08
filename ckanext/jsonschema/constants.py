@@ -55,7 +55,7 @@ JSON_CATALOG = {
    JSON_TEMPLATE_KEY: {},
    JS_MODULE_KEY: {}
 }
-
+JSON_CATALOG_INITIALIZED = False
 #############################
 
 # (Optional)

@@ -50,6 +50,7 @@ def read_schema(schema_type):
     Dumps the content of a local schema file.
     The file resolution is based on the configured schema folder and the (argument) json file name
     '''
+    _t.initialize()
     return json.dumps(_t.get_schema_of(schema_type))
 
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_SCHEMA_PATH), view_func=read_schema, endpoint='schema', methods=[u'GET'])
@@ -95,6 +96,8 @@ def read_template(schema_type):
     The file resolution is based on the configured schema folder and the (argument) json file name
     '''
     import os
+
+    _t.initialize()
     return json.dumps(_t.get_template_of(schema_type))
 
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_TEMPLATE_PATH), view_func=read_template, endpoint='template', methods=[u'GET'])
@@ -104,6 +107,8 @@ def resolve_module(schema_type):
     Dumps the url of a js module file name matching the schema type
     '''
     import os
+
+    _t.initialize()
     module = _t.get_module_for(schema_type)
     if module:
         # return Response(stream_with_context(module), mimetype='text/plain')
@@ -155,3 +160,7 @@ def get_format(dataset_id, format = 'json'):
     return Response(stream_with_context(body), mimetype=_mimetype)
 
 jsonschema.add_url_rule('/{}/<dataset_id>.<format>'.format(_c.TYPE), view_func=get_format, methods=[u'GET'])
+
+
+#from ckanext.jsonschema.logic.get import get_licenses_enum
+#jsonschema.add_url_rule('/{}/core/schema/licenses.json'.format(_c.TYPE), view_func=get_licenses_enum, methods=[u'GET'])

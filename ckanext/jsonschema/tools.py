@@ -1,5 +1,5 @@
-import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
+import threading
 
 _ = toolkit._
 import json
@@ -14,15 +14,37 @@ from ckanext.jsonschema.utils import encode_str
 
 log = logging.getLogger(__name__)
 
-def reload():
+# Replace with python's lock
+# LOCK_INITIALIZE = False
 
-    # Initialize core generated schema
+def initialize():
+
+    lock = threading.Lock()
+    lock.acquire()
+
+    if _c.JSON_CATALOG_INITIALIZED:
+        return
+
     try:
+        #reload()
         initialize_core_schema()
-        log.info("Initialized core schema")
-    except Exception as e:
-        log.error("Error initializing core schema: " + str(e))
-        raise e
+        _c.JSON_CATALOG_INITIALIZED = True
+    except:
+        _c.JSON_CATALOG_INITIALIZED = False
+        raise
+    finally:
+        lock.release()
+    
+
+def reload():
+    
+    # Initialize core generated schema
+    # try:
+    #     initialize_core_schema()
+    #     log.info("Initialized core schema")
+    # except Exception as e:
+    #     log.error("Error initializing core schema: " + str(e))
+    #     raise e
 
 
     # Append all the rest of the available schemas
