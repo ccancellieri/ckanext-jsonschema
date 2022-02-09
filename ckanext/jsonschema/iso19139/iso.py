@@ -273,8 +273,15 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
 
         resourceConstraints = data_identification.get('resourceConstraints')
         if resourceConstraints:
-            license = resourceConstraints.get('license')
-            _data['license_id'] = license
+            # In the case of an import, the license will be in _data['license_id'] and we don't want to overwrite that
+            # with that coming from the source, which will be None because iso doesn't have license
+            # In the case of an edit, there will be a license, and we store that in CKAN         
+            license = resourceConstraints.get('license_id')
+            if license:
+                _data['license_id'] = license
+
+            # We also have to set the license in the body extra
+            body['dataIdentification']['resourceConstraints']['license_id'] = _data['license_id']
         
 
 def _extract_iso_name(body, type, opt, version, data, errors, context):

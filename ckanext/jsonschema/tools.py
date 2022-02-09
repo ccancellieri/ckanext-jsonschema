@@ -12,7 +12,6 @@ from ckanext.jsonschema.utils import encode_str
 
 log = logging.getLogger(__name__)
 
-
 initialize_lock = threading.Lock()
 
 def initialize():
@@ -26,28 +25,19 @@ def initialize():
     log.info("Writing core schema files")
 
     try:
-        initialize_core_schema()
+        initialize_core_schemas()
         reload()
         _c.JSON_CATALOG_INITIALIZED = True
-    except:
+    except Exception as e:
         _c.JSON_CATALOG_INITIALIZED = False
-        raise
+        
+        log.error("Error initializing core schemas: " + str(e))
+        raise e
     finally:
         initialize_lock.release()
     
 
 def reload():
-    
-    # Initialize core generated schema
-    # try:
-    #     initialize_core_schema()
-    #     log.info("Initialized core schema")
-    # except Exception as e:
-    #     log.error("Error initializing core schema: " + str(e))
-    #     raise e
-
-
-    # Append all the rest of the available schemas
     _c.JSON_CATALOG.update({
         _c.JSON_SCHEMA_KEY: read_all_schema(),
         _c.JSON_TEMPLATE_KEY: read_all_template(),
@@ -64,8 +54,8 @@ def read_all_template():
 def read_all_schema():
     return utils._read_all_json(_c.PATH_SCHEMA)
 
-def initialize_core_schema():
-    utils._initialize_core_schema()
+def initialize_core_schemas():
+    utils._initialize_license_schema()
 
 def dataset_type(dataset):
     '''

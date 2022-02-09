@@ -29,8 +29,6 @@ convert_to_extras = toolkit.get_converter('convert_to_extras')
 convert_from_extras = toolkit.get_converter('convert_from_extras')
 
 
-import uuid
-import ckan.lib.navl.dictization_functions as df
 
     # let's grab the default schema in our plugin
 from ckan.logic.schema import \
@@ -43,7 +41,7 @@ from ckan.logic.schema import \
 import logging
 log = logging.getLogger(__name__)
 
-from ckan.plugins import PluginImplementations
+
 
 
 # check IConfigurer
@@ -239,7 +237,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     
         
     # IValidators
-
     def get_validators(self):
 
         return {

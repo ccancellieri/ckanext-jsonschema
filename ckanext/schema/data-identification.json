@@ -263,10 +263,10 @@
       "title": "Resource Constraints",
       "type":"object",
       "required": [
-        "license"
+        "license_id"
       ],
       "properties":{
-        "license": {
+        "license_id": {
           "propertyOrder": 1,
           "title": "License",
           "type": "string",

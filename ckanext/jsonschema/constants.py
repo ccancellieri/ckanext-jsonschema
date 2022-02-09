@@ -65,6 +65,7 @@ JSON_CATALOG_INITIALIZED = False
 # (Optional)
 # SERVER LOCAL PATH FOLDER WHERE JSON-SCHEMA are located.
 PATH_SCHEMA=path.realpath(config.get('ckanext.jsonschema.path.schema', path.join(PATH_ROOT,'schema')))
+PATH_CORE_SCHEMA='core'
 REST_SCHEMA_PATH='/{}/schema'.format(TYPE)
 REST_SCHEMA_FILE_PATH='/{}/schema_file'.format(TYPE)
 

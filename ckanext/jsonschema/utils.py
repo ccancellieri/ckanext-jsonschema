@@ -116,7 +116,7 @@ def encode_str(value):
     
     return value
     
-def _initialize_core_schema():
+def _initialize_license_schema():
     """This will break if there is non custom license group, which is if the licenses_group_url key is unset"""
     
     import ckan.model as model
@@ -140,7 +140,7 @@ def _initialize_core_schema():
     }
 
     
-    path = os.path.join(_c.PATH_SCHEMA, "core")
+    path = os.path.join(_c.PATH_SCHEMA, _c.PATH_CORE_SCHEMA)
 
     if not os.path.exists(path):
         os.makedirs(path)

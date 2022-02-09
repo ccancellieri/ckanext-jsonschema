@@ -30,6 +30,12 @@ def importer(context, data_dict):
         h.flash_error(_('No url provided'), allow_html=True)
         return
 
+    license_id = data_dict.get('license_id')
+    if not license_id:
+        h.flash_error(_('License is mandatory'), allow_html=True)
+        return
+
+
     _check_access('package_create', context, data_dict)
     
     try:
@@ -61,6 +67,7 @@ def importer(context, data_dict):
     _type = data_dict.get(_c.SCHEMA_TYPE_KEY)
     package_dict['type'] = _type
     package_dict['owner_org'] = data_dict.get('owner_org')
+    package_dict['license_id'] = data_dict.get('license_id')
     
     opt = dict(_c.SCHEMA_OPT)
     
