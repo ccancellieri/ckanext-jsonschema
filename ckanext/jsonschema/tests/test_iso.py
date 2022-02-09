@@ -10,7 +10,7 @@ import ckan.plugins.toolkit as toolkit
 import ckan.tests.helpers as helpers
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.utils as _u
-import ckanext.jsonschema.validators as _v
+import ckanext.jsonschema.tools as _t
 import pytest
 
 
@@ -53,6 +53,7 @@ class TestIso(object):
             if not ckan.plugins.plugin_loaded(plugin):
                 ckan.plugins.load(plugin)
 
+        _t.initialize()
 
     def _get_default_context(self):
         return {"user": helpers.call_action("get_site_user")["name"]}
@@ -66,7 +67,8 @@ class TestIso(object):
 
         package_dict['type'] = 'iso19139'
         package_dict['owner_org'] = organization['id']
-        
+        package_dict['license_id'] = 'notspecified'
+
         opt = dict(_c.SCHEMA_OPT)
 
         opt.update({
