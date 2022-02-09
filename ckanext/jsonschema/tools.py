@@ -10,30 +10,30 @@ import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
 from ckanext.jsonschema.utils import encode_str
 
-# import ckanext.jsonschema.logic.get as get
-
 log = logging.getLogger(__name__)
 
-# Replace with python's lock
-# LOCK_INITIALIZE = False
+
+initialize_lock = threading.Lock()
 
 def initialize():
 
-    lock = threading.Lock()
-    lock.acquire()
+    initialize_lock.acquire()
 
     if _c.JSON_CATALOG_INITIALIZED:
+        initialize_lock.release()
         return
 
+    log.info("Writing core schema files")
+
     try:
-        #reload()
         initialize_core_schema()
+        reload()
         _c.JSON_CATALOG_INITIALIZED = True
     except:
         _c.JSON_CATALOG_INITIALIZED = False
         raise
     finally:
-        lock.release()
+        initialize_lock.release()
     
 
 def reload():
