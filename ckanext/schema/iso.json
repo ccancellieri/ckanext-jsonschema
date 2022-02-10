@@ -76,6 +76,7 @@
             },
             "links": [
                 {
+                    "rel": "Spatial Reference",
                     "href": "https://spatialreference.org/ref/epsg/?search={{self}}&srtext=Search"
                 }
             ]
