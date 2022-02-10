@@ -1,5 +1,10 @@
 {
     "fileIdentifier":"",
     "metadataStandardName": "ISO 19115:2003/19139",
-    "characterSet": "utf-8"
+    "characterSet": "utf-8",
+    "dataIdentification": {
+        "resourceConstraints": {
+          "license_id": "CC-BY-NC-SA-3.0-IGO"
+        }
+    }
 }

@@ -104,3 +104,10 @@ When the validation is successfully, it is possible to use the confirmation butt
 
 At this point, the request is sent to the backend, and validation also occurs on this side. If there are no errors, the process is completed; otherwise the page is reloaded and the errors are displayed on the top.
 
+
+### Important Notes
+
+To be able to use insert the "license" field in the json body, this plugin creates the a schema file for license the first time it is needed.
+This file is written at PATH_SCHEMA/PATH_CORE_SCHEMA, so the process MUST have permission to write at PATH_SCHEMA, otherwise the startup will file (the creation of subpaths is managed by the code).
+
+From CKAN 2.8.9 it should be possible to create the file at the startup, so the lazy machinery could be avoided.
