@@ -64,7 +64,21 @@
         "referenceSystemIdentifier": {
             "propertyOrder": 80,
             "title": "Reference System",
-            "type": "string"
+            "type": "string",
+            "format": "autocomplete",
+            "options": {
+                "autocomplete": {
+                    "search": "reference_system_identifier_autocomplete",
+                    "getResultValue": "reference_system_identifier_getResultValue",
+                    "renderResult": "reference_system_identifier_render",
+                    "autoSelect": true
+                }
+            },
+            "links": [
+                {
+                    "href": "https://spatialreference.org/ref/epsg/?search={{self}}&srtext=Search"
+                }
+            ]
         },
         "spatialRepresentationInfo": {
             "propertyOrder": 90,
