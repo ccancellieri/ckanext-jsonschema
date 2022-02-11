@@ -218,19 +218,14 @@ class JsonschemaIso(p.SingletonPlugin):
         return body, type, opt, version, data
 
 def render_notes(body, type, opt, version, data):
-    import ckan.lib.base as base
-# def render(template_name, extra_vars=None, *pargs, **kwargs):
+
+    # def render(template_name, extra_vars=None, *pargs, **kwargs):
 
     pkg = _g.get_pkg(body.get('fileIdentifier'))
+    
     # ############actually it's a markdown...
     if pkg:
-        try:
-            return base.render('iso/description.html', extra_vars={'dataset': pkg })
-        except Exception as e:
-            # if e:
-            #     message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
-            #     log.error(message)
-            raise e
+        return _t.render_template('iso/description.html', extra_vars={'dataset': pkg, 'c': toolkit.c })
 
 def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
     # _data = df.unflatten(data)

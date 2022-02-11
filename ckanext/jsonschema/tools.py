@@ -482,3 +482,25 @@ def resolve_extras(data, _as_dict = False):
 #             except:
 #                 fd[key] =  value
 
+def render_template(template_name, extra_vars):
+
+    import jinja2
+    import os
+    
+    # setup for render
+    templates_path = os.path.join(_c.PATH_ROOT, "jsonschema/templates")
+    templateLoader = jinja2.FileSystemLoader(searchpath=templates_path)
+    templateEnv = jinja2.Environment(loader=templateLoader)
+    template = templateEnv.get_template(template_name)
+    
+    # add helpers
+    from ckan.plugins import get_plugin
+    h = get_plugin(_c.TYPE).get_helpers()
+    extra_vars['h'] = h
+
+    try:
+        return template.render(extra_vars)
+    except jinja2.TemplateSyntaxError as e:
+        log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
+    except Exception as e:
+        log.error('Exception: {}'.format(str(e)))
