@@ -56,6 +56,12 @@ class JsonSchemaStac(plugins.SingletonPlugin):
             return []
         return _c.SUPPORTED_DATASET_FORMATS
 
+    def supported_input_types(self, opt, version):
+        if version != _c.SCHEMA_VERSION:
+            return []
+        return _c.SUPPORTED_INPUT_FORMATS 
+
+
     def extract_from_json(self, body, type, opt, version, data, errors, context):
 
         _type = body.get('type')
