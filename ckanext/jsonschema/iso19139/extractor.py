@@ -2,10 +2,12 @@ import uuid
 
 import ckan.lib.helpers as h
 import ckan.lib.munge as munge
+import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import six
+
 
 def _extract_id(body):
     return body.get('fileIdentifier')
@@ -176,13 +178,12 @@ def _extract_iso_graphic_overview(body, type, opt, version, data, errors, contex
 
 def render_notes(body, type, opt, version, data):
     
-    import ckan.lib.base as base
-
+    
     pkg = _g.get_pkg(body.get('fileIdentifier'))
     # ############actually it's a markdown...
     if pkg:
         try:
-            return base.render('iso/description.html', extra_vars={'dataset': pkg })
+            return _t.render_template('iso/description.html', extra_vars={'dataset': pkg, 'c': toolkit.c })
         except Exception as e:
             # if e:
             #     message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
