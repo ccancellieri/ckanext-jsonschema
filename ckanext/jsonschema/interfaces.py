@@ -28,6 +28,9 @@ class IBinder(Interface):
         '''
         return [] #'dataset'
 
+    def supported_input_tyeps(self):
+        return []
+
     def dump_to_json(self, body, type, version, key, data, context):
         '''
         return a serialized version in the desired profile of the data model

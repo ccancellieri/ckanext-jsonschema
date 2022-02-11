@@ -1,6 +1,6 @@
 {% import 'macros/form.html' as form %}
 
-{% set dataset_types = h.jsonschema_handled_dataset_types() %}
+{% set dataset_types = h.jsonschema_handled_input_types() %}
 {% set TYPE_KEY = h.jsonschema_get_type_key() %}
 {% set BODY_KEY = h.jsonschema_get_body_key() %}
 {% set OPT_KEY = h.jsonschema_get_opt_key() %}

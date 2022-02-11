@@ -47,7 +47,7 @@ class TestIso(object):
         # Test code should use CKAN's plugins.load() function to load plugins
         # to be tested.
 
-        _plugins = ['jsonschema', 'jsonschema_iso', 'jsonschema_iso19139']
+        _plugins = ['jsonschema', 'jsonschema_iso']
 
         for plugin in _plugins:
             if not ckan.plugins.plugin_loaded(plugin):
@@ -161,20 +161,12 @@ class TestIso(object):
         package = self._create_iso_package(organization, iso19139_sample)
         schema_body = [json.loads(extra['value']) for extra in package['extras'] if extra['key'] == _c.SCHEMA_BODY_KEY][0]
 
-        ########################
 
         #### Get the runtime wayback
-        #from ckan.tests.helpers import _get_test_app
-        #from ckan.plugins import get_plugin
-        #h = get_plugin("jsonschema").get_helpers()
-        
-        #with _get_test_app().flask_app.test_request_context():
-        #    return base.render('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package, 'h':h})
-
         wayback = _get_wayback_from_request(schema_body, package)
-        ########################
         
-        #### Adjust the wayback and the sample before comparison
+
+       #### Adjust the wayback and the sample before comparison
         
         # remove all whitespaces, \r, \n ...
         wayback = "".join(wayback.split())

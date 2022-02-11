@@ -104,7 +104,7 @@ def importer(context, data_dict):
             #                 # _dict['type'] = pkg.type
             #                 _dict['extras'] = extras
             #                 return toolkit.get_action('package_update')(context, _dict)
-            raise Exception('no rupport provided for this operation/format')
+            raise Exception('no support provided for this operation/format')
         else:
             return toolkit.get_action('package_create')(context, package_dict)
     except Exception as e:

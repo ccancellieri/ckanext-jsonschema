@@ -82,13 +82,13 @@ setup(
         [ckan.plugins]
         jsonschema=ckanext.jsonschema.plugin:JsonschemaPlugin
         harvester_iso19139=ckanext.jsonschema.iso19139:HarvesterIso19139
-        jsonschema_iso19139=ckanext.jsonschema.iso19139:JsonschemaIso19139
         jsonschema_iso=ckanext.jsonschema.iso19139:JsonschemaIso
         jsonschema_stac=ckanext.jsonschema.stac.stac:JsonSchemaStac
         
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
     ''',
+    #jsonschema_iso19139=ckanext.jsonschema.iso19139:JsonschemaIso19139
 
     # If you are changing from the default layout of your extension, you may
     # have to change the message extractors, you can read more about babel

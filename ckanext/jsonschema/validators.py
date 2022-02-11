@@ -77,11 +77,7 @@ def schema_check(key, data, errors, context):
         stop_with_error('Unable to load a valid json-schema for type {}'.format(type), key, errors)
 
     try:
-        # if not Draft4Validator.check_schema(constants.LAZY_GROUP_SCHEMA):
-        #     raise Exception('schema not valid') #TODO do it once on startup (constants)
-        #validator = Draft4Validator(constants.LAZY_GROUP_SCHEMA, resolver=resolver, format_checker=None)
         validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
-
         _ret = validator.validate(body)
 
 
@@ -128,15 +124,10 @@ def resource_extractor(key, data, errors, context):
                 except Exception as e:
                     stop_with_error(str(e),key,errors)
 
-                    # log.error('Error extracting resource type {}\
-                    #     from body:\n{}\nError:\n{}'.format(type,body,str(e)))
-                    # message = str(e)
-                    # log.error(message)
-                    # # e.error_summary = json.dumps(message)
-                    # raise ValidationError(message)
                 else:
                     # port back changes from body (and other extras) to the data model
                     _t.update_resource_extras(_r, body, type, opt, version)
+
                     # persist changes to the data model
                     resource.update(_r)
 
@@ -158,7 +149,7 @@ def before_extractor(key, data, errors, context):
     
     for plugin in JSONSCHEMA_PLUGINS:
         try:
-            if type in plugin.supported_dataset_types(opt, version):
+            if type in plugin.supported_input_types(opt, version):
                 body, type, opt, version, __data = plugin.before_extractor(body, type, opt, version, _data, errors, context)
                  # port back changes from body (and other extras) to the data model
                 _t.update_extras(__data, body, type, opt, version)
