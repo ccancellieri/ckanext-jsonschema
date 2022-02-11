@@ -133,3 +133,6 @@
   {% endif %}
 {% endblock %}
 
+{% block previous_button %}
+  {% link_for _('Previous'), controller='package', action='edit', named_route=dataset_type + '_edit', id=pkg_name, class_='btn btn-default' %}
+{% endblock %}
