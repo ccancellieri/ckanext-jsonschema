@@ -1,5 +1,5 @@
 
-  {% ckan_extends %}
+{% ckan_extends %}
   
 {% if dataset_type %}
     {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
@@ -7,6 +7,16 @@
         {% set jsonschema = true %}
     {% endif %}
 {% endif %}
+
+{% block stages %}
+  {% if jsonschema is defined %}
+  <!-- Hide breadcrumb -->
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+
 
 {% block basic_fields %}
   {% if jsonschema is undefined %}

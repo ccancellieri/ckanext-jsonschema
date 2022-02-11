@@ -1,5 +1,15 @@
 {% ckan_extends %}
 
+
+
+  {% block stages %}
+    {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
+    <!-- Hide breadcrumb -->
+    {% else %}     
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
   {% block basic_fields %}
   
     {{super()}}
