@@ -46,9 +46,8 @@ log = logging.getLogger(__name__)
 #############################################
 
 import jsonschema
-from jsonschema import validate,RefResolver,Draft4Validator,Draft7Validator
+from jsonschema import Draft7Validator
 import json
-import ckan.model as model
 
 # TODO move me to tools
 _SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
@@ -78,23 +77,27 @@ def schema_check(key, data, errors, context):
 
     try:
         validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
-        _ret = validator.validate(body)
 
+        # For each errror, build the error message for the frontend with the path and the message
+        for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
+            
+            error_path = "metadata"
 
+            for path in error.absolute_path:
+                if isinstance(path, int):
+                    error_path = error_path + ", at element n." + str(path + 1)
+                else:
+                    error_path = error_path + " -> " + path
+                
+            error_message = "Error at: " + error_path
+            error_message = error_message + ': ' + error.message
 
-    except jsonschema.exceptions.ValidationError as e:
-        #DEBUG
-        #import traceback
-        #traceback.print_exc()
-        #TODO better message based on KEY mapping from IBinder plugin
-        
-        stop_with_error('Error validating: {}'.format(str(e)), key, errors)
-    except Exception as e:
-        #DEBUG
-        #import traceback
-        #traceback.print_exc()
-        #TODO better message
-        stop_with_error('Error validating: {}'.format(str(e)), key, errors)
+            errors[("validation_error_" + str(idx)),] = [error_message]
+
+        raise StopOnError()
+
+    except df.StopOnError:
+        raise  
 
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)
