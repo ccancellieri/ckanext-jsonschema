@@ -164,6 +164,9 @@
       "format": "table",
       "items": {
         "type": "object",
+        "required": [
+          "type"
+        ],
         "properties": {
           "type": {
             "propertyOrder": 10,
