@@ -66,14 +66,6 @@
             "title": "Reference System",
             "type": "string",
             "format": "autocomplete",
-            "options": {
-                "autocomplete": {
-                    "search": "reference_system_identifier_autocomplete",
-                    "getResultValue": "reference_system_identifier_getResultValue",
-                    "renderResult": "reference_system_identifier_render",
-                    "autoSelect": true
-                }
-            },
             "links": [
                 {
                     "rel": "Spatial Reference for: {{self}}",
