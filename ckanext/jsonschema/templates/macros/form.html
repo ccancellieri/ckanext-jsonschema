@@ -303,7 +303,17 @@
       <ul>
         {% for key, error in errors.items() %}
         <br/>
-        <li data-field-label="{{ key }}">{{ error }}</li>
+        <li data-field-label="{{ key }}">
+            {% if error.path %}
+                <b>{{_('Error at:')}}</b><br/>
+                {{error.path[0]}}
+                <br/>
+                <b>{{_('Error message:')}}</b><br/>
+                {{error.message[0]}}
+            {% else %}
+                {% if key %}{{ key }}: {% endif %}{{ error }}
+            {% endif %}
+        </li>
         {% endfor %}
       </ul>
       </div>

@@ -75,29 +75,34 @@ def schema_check(key, data, errors, context):
     if not schema:
         stop_with_error('Unable to load a valid json-schema for type {}'.format(type), key, errors)
 
-    try:
-        validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
 
-        # For each errror, build the error message for the frontend with the path and the message
-        for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
+    validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
+
+    # For each error, build the error message for the frontend with the path and the message
+    is_error = False
+
+    for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
+        is_error = True
+
+        error_path = "metadata"
+
+        for path in error.absolute_path:
+            if isinstance(path, int):
+                error_path = error_path + ", at element n." + str(path + 1)
+            else:
+                error_path = error_path + " -> " + path
             
-            error_path = "metadata"
+        error_message = "Error at: " + error_path
+        error_message = error_message + ': ' + error.message
 
-            for path in error.absolute_path:
-                if isinstance(path, int):
-                    error_path = error_path + ", at element n." + str(path + 1)
-                else:
-                    error_path = error_path + " -> " + path
-                
-            error_message = "Error at: " + error_path
-            error_message = error_message + ': ' + error.message
+        errors[("validation_error" + str(idx), idx, 'path',)] = [error_path]
+        errors[("validation_error" + str(idx), idx, 'message',)] = [error.message]
 
-            errors[("validation_error_" + str(idx)),] = [error_message]
+        log.error('Stopped with error: {}'.format(error_message))
 
+    if is_error:
         raise StopOnError()
 
-    except df.StopOnError:
-        raise  
 
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)
