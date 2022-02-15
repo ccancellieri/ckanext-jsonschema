@@ -1,0 +1,32 @@
+
+{#
+  Builds a list of errors for the current form.
+
+  errors  - A dict of field/message pairs.
+  type    - The alert-* class that should be applied (default: "error")
+  classes - A list of classes to apply to the wrapper (default: [])
+
+  Example:
+
+  {% import 'macros/custom_form.html' as custom_form %}
+  {{ custom_form.custom_errors(error_summary, type="warning") }}
+
+#}
+  {% macro custom_errors(errors={}, type="error", classes=[]) %}
+  {% if errors %}
+  <div class="error-explanation alert alert-{{ type }}{{ " " ~ classes | join(' ') }}">
+  <ol>
+    {% for key, error in errors.items() %}
+    <br/>
+    <li data-field-label="{{ key }}">
+        {% if error.path %}
+            <b>{{_('Error at:')}}</b> {{error.path[0]}}
+            <br/>
+            <b>{{_('Error message:')}}</b> {{error.message[0]}}
+        {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  </div>
+  {% endif %}
+  {% endmacro %}

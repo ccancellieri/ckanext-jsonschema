@@ -1,4 +1,4 @@
-
+{% import 'macros/custom_form.html' as custom_form %}
 {% ckan_extends %}
   
 {% if dataset_type %}
@@ -9,13 +9,20 @@
 {% endif %}
 
 {% block stages %}
-  {% if jsonschema is defined %}
-  <!-- Hide breadcrumb -->
+  {% if jsonschema %}
+    <!-- Hide breadcrumb -->
   {% else %}
     {{super()}}
   {% endif %}
 {% endblock %}
 
+{% block errors %}
+  {% if jsonschema %}
+    {{ custom_form.custom_errors(error_summary) }}
+  {% else %}
+    {{ form.errors(error_summary) }}
+  {% endif %}
+{% endblock %}
 
 
 {% block basic_fields %}

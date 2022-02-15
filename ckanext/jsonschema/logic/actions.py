@@ -1,9 +1,11 @@
 import datetime
 
+import ckan.lib.plugins as lib_plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as _u
-from ckan.logic import ValidationError
+from ckan.logic import NotFound, ValidationError
 
 _ = toolkit._
 h = toolkit.h
@@ -117,4 +119,21 @@ def importer(context, data_dict):
     # next_action(context,data_dict)
 
     
+
+def validate_metadata(context, data_dict):
+
+    id = data_dict.get('uuid')
+
+    package = _g.get_pkg(id)
+
+    if package is None:
+        raise NotFound("No package found with the specified uuid")
+
+    package_plugin = lib_plugins.lookup_package_plugin(package['type'])
+
+    schema = package_plugin.update_package_schema()
+    converted_data, errors = toolkit.navl_validate(package, schema, context)
+
+    if errors:
+        raise ValidationError(errors)
 

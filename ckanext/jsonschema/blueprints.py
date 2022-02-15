@@ -42,6 +42,21 @@ jsonschema.add_url_rule(
     view_func=importer_view
 )
 
+
+def validate_view():
+    try:
+        return toolkit.render('source/validate.html')
+    except toolkit.ObjectNotFound:
+        return toolkit.abort(404, _('Harvest source not found'))
+    except toolkit.NotAuthorized:
+        return toolkit.abort(401, _('Unauthorized'))
+
+jsonschema.add_url_rule(
+    "/{}/validate".format(_c.TYPE),
+    view_func=validate_view
+)
+
+
 ########################################
 ## Schema proxy
 

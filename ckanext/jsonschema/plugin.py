@@ -136,11 +136,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #IActions
     def get_actions(self):
         from ckanext.jsonschema.logic.action.get import reload
-        from ckanext.jsonschema.logic.actions import importer
+        from ckanext.jsonschema.logic.actions import importer, validate_metadata
 
         actions = {
             'jsonschema_importer': importer,
-            'jsonschema_reload': reload
+            'jsonschema_reload': reload,
+            'jsonschema_validate': validate_metadata
         }
         return actions
 

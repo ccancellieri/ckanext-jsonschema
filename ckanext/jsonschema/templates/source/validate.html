@@ -1,0 +1,16 @@
+{% import 'macros/form.html' as form %}
+
+<form id="validate" enctype="multipart/form-data" action={{ h.url_for('/api/action/jsonschema_validate', _external=True) }} class="form-horizontal dataset-form" method="post">
+  
+    {% if h.check_access('package_create', {'owner_org': owner_org}) %}
+    <p>
+        {% call form.input('id', id='field-id', label=_('Metadata ID'), value="", classes=['control-full','control-large']) %}
+        {% endcall %}
+    </p>
+    <button value="Validate" name="validate" class="btn btn-primary pull-right">
+        {{_('Validate')}}
+    </button>
+    {% else %}
+        <h1>{{_('Unauthorized: Please login')}}</h1>
+    {% endif %}
+</form>

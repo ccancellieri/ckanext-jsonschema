@@ -82,23 +82,25 @@ def schema_check(key, data, errors, context):
     is_error = False
 
     for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
+        
         is_error = True
 
-        error_path = "metadata"
+        error_path = 'metadata'
 
         for path in error.absolute_path:
             if isinstance(path, int):
-                error_path = error_path + ", at element n." + str(path + 1)
+                translated = _(', at element n.')
+                error_path = ('{} {} {}').format(error_path, translated, path + 1)
             else:
-                error_path = error_path + " -> " + path
+                error_path = ('{} -> {}').format(error_path, path)
             
-        error_message = "Error at: " + error_path
-        error_message = error_message + ': ' + error.message
 
-        errors[("validation_error" + str(idx), idx, 'path',)] = [error_path]
-        errors[("validation_error" + str(idx), idx, 'message',)] = [error.message]
+        errors[('validation_error_' + str(idx), idx, 'path',)] = [error_path]
+        errors[('validation_error_' + str(idx), idx, 'message',)] = [error.message]
 
-        log.error('Stopped with error: {}'.format(error_message))
+        log.error('Stopped with error')
+        log.error('Path: {}'.format(error_path))
+        log.error('Message: {}'.format(error.message))
 
     if is_error:
         raise StopOnError()
