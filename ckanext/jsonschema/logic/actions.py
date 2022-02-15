@@ -122,7 +122,7 @@ def importer(context, data_dict):
 
 def validate_metadata(context, data_dict):
 
-    id = data_dict.get('uuid')
+    id = data_dict.get('id')
 
     package = _g.get_pkg(id)
 
