@@ -73,6 +73,7 @@ class JsonschemaIso(p.SingletonPlugin):
 
     def supported_dataset_types(self, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
         if version != _c.SCHEMA_VERSION:
+            log.warn('Version: \'{}\' is not supported by this plugin ({})'.format(version, __name__))
             # when version is not the default one we don't touch
             return []
         return SUPPORTED_DATASET_FORMATS

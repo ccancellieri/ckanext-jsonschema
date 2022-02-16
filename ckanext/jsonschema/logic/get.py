@@ -54,14 +54,8 @@ def get_pkg(dataset_id):
 
     if not dataset_id:
         raise Exception('we expect a dataset_id')
-    try:
-        #TODO jsonschema_version is casted to integer from SOLR 
 
-        pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
-    except logic.NotFound as e:
-        #not found (could be a creation)
-        return None
-
+    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
     _pkg = _u.dictize_pkg(pkg)
 
     return _pkg

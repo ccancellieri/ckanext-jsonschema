@@ -231,8 +231,11 @@ def get_type(dataset_id, resource_id = None):
 
 # TODO check also validators.get_dataset_type
 def get_dataset_type(dataset = None):
-    return _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)\
-        or _get_dataset_type(dataset)
+
+    if dataset:
+        return _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)
+    else:
+        return _get_dataset_type(dataset)
 
 def get_resource_type(resource):
     return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
@@ -255,7 +258,7 @@ def get_dataset_opt(dataset):
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
 
-def get(dataset_id, resource_id = None, domain = None):
+def get(dataset_id, resource_id, domain):
     pkg = _g.get_pkg(dataset_id)
     if not pkg:
         raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
@@ -266,6 +269,14 @@ def get(dataset_id, resource_id = None, domain = None):
                 return _extract_from_resource(resource, domain)
         raise Exception('Unable to find the requested resource {}'.format(resource_id))
     return _extract_from_dataset(pkg, domain)
+
+
+def get(dataset_id, domain = None):
+    """Overload to get something from the dataset without having to pass the resource """
+    if not domain:
+        return _g.get_pkg(dataset_id)
+
+    return get(dataset_id, None, domain)
 
 # def get_from_package(pkg, resource_id):
 #     if not pkg:
@@ -278,13 +289,20 @@ def get(dataset_id, resource_id = None, domain = None):
 #         raise Exception('Unable to find the requested resource {}'.format(resource_id))
 #     return _extract_from_dataset(pkg)
 
-def _extract_from_resource(resource, domain = None):
-    if resource and domain:
-        return resource.get(domain)
-    else:
-        return resource
+def _extract_from_resource(resource, domain):
 
-def _extract_from_dataset(dataset, domain = None):
+    # Checking extra data content for extration
+    extras = resource.get('__extras')
+    if not extras:
+        # edit existing resource
+        extras = resource
+
+    if extras and domain:
+        return extras.get(domain)
+    else:
+        raise Exception("Missing parameter resource or domain")
+
+def _extract_from_dataset(dataset, domain):
 
     if dataset and domain:
         extras = dataset.get('extras')
@@ -293,7 +311,7 @@ def _extract_from_dataset(dataset, domain = None):
                 if e['key'] == domain:
                     return e['value']
     else:
-        return dataset
+        raise Exception("Missing parameter dataset or domain")
 
     
 
@@ -371,7 +389,7 @@ def as_dict(field):
 
     return value
 
-
+# REMOVE -> USE UTILS.
 # TODO check utils
 def as_json(field):
     value = field
@@ -419,6 +437,7 @@ def resolve_resource_extras(dataset_type, resource, _as_dict = False):
         body = as_dict(body)
         opt = as_dict(opt)
     else:
+        # REMOVE AS_JSON
         body = as_json(body)
         opt = as_json(opt)
     
