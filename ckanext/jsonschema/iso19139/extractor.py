@@ -178,8 +178,11 @@ def _extract_iso_graphic_overview(body, type, opt, version, data, errors, contex
 
 def render_notes(body, type, opt, version, data):
     
+    try:
+        pkg = _t.get(body.get('fileIdentifier'))
+    except:
+        return
     
-    pkg = _g.get_pkg(body.get('fileIdentifier'))
     # ############actually it's a markdown...
     if pkg:
         try:

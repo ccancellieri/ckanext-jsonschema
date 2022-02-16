@@ -260,8 +260,9 @@ def get_resource_opt(resource):
 
 def get(dataset_id, resource_id = None, domain = None):
     
-    pkg = _g.get_pkg(dataset_id)
-    if not pkg:
+    try:
+        pkg = _g.get_pkg(dataset_id)
+    except toolkit.ObjectNotFound:
         raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
 
     # we wanted the package
