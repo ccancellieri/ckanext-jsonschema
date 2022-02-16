@@ -28,7 +28,7 @@ def _test_getter(dataset_with_extras, func, is_json=True):
         assert payload is not None
 
     except Exception as e: 
-        assert False(str(e))
+        assert False, str(e)
 
     # Test get functions on the resource
     try:

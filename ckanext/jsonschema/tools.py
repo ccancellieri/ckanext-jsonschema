@@ -258,25 +258,32 @@ def get_dataset_opt(dataset):
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
 
-def get(dataset_id, resource_id, domain):
+def get(dataset_id, resource_id = None, domain = None):
+    
     pkg = _g.get_pkg(dataset_id)
     if not pkg:
         raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
+
+    # we wanted the package
+    if not resource_id and not domain:
+        return pkg 
+
     if resource_id:
         for resource in pkg.get('resources'):
             _resource_id = resource.get('id')
             if _resource_id == resource_id:
+
+                # we wanted the resource
+                if not domain:
+                    return resource
+                
+                # we wanted to extract something from the resource
                 return _extract_from_resource(resource, domain)
+
         raise Exception('Unable to find the requested resource {}'.format(resource_id))
+
+    # we wanted to extract something from the package
     return _extract_from_dataset(pkg, domain)
-
-
-def get(dataset_id, domain = None):
-    """Overload to get something from the dataset without having to pass the resource """
-    if not domain:
-        return _g.get_pkg(dataset_id)
-
-    return get(dataset_id, None, domain)
 
 # def get_from_package(pkg, resource_id):
 #     if not pkg:
