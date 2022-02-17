@@ -30,7 +30,12 @@ def stop_with_error(message, key, errors):
     log.error('on key: {}'.format(key))
     log.error('Errors: {}'.format(str(errors)))
 
-    errors[key].append(_(message))
+    tuple_key = (key,)
+    if not tuple_key in errors:
+        errors[tuple_key] = []
+    
+    errors[tuple_key].append(_(message))
+    
     raise StopOnError(_(message))
 
 import ckanext.jsonschema.constants as _c
@@ -140,7 +145,9 @@ def resource_extractor(key, data, errors, context):
 
                     # resource.get('__extras')
                     body, type, opt, version, _r = plugin.extract_from_json(body, type, opt, version, resource, errors, context)
-
+                
+                except df.StopOnError:
+                    raise
                 except Exception as e:
                     stop_with_error(str(e),key,errors)
 
@@ -179,6 +186,8 @@ def before_extractor(key, data, errors, context):
                 _t.update_extras(__data, body, type, opt, version)
                 # update datamodel
                 data.update(df.flatten_dict(__data))
+        except df.StopOnError:
+            raise
         except Exception as e:
             stop_with_error(str(e),key,errors)
 
@@ -210,6 +219,8 @@ def extractor(key, data, errors, context):
                 _t.update_extras(__data, body, type, opt, version)
                 # update datamodel
                 data.update(df.flatten_dict(__data))
+        except df.StopOnError:
+            raise
         except Exception as e:
             stop_with_error(str(e),key,errors)
 

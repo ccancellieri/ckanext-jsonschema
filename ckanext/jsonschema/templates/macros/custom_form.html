@@ -23,6 +23,9 @@
             <b>{{_('Error at:')}}</b> {{error.path[0]}}
             <br/>
             <b>{{_('Error message:')}}</b> {{error.message[0]}}
+        {% else %}
+          <!-- This will print errors unexpected errors in jsonschema, like exceptions -->
+          {{error}} 
         {% endif %}
     </li>
     {% endfor %}
