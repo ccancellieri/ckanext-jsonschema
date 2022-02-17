@@ -412,80 +412,80 @@ def as_json(field):
             pass
     return value
 
-def resolve_resource_extras(dataset_type, resource, _as_dict = False):
-    from ckanext.jsonschema.plugin import handled_resource_types
-    # Pre-setting defaults
-    resource_types = handled_resource_types(dataset_type)
-    if resource_types:
-        _type = resource_types[0]
-        body = get_template_of(_type)
-    else:
-        _type = None
-        body = {}
+# def resolve_resource_extras(dataset_type, resource, _as_dict = False):
+#     from ckanext.jsonschema.plugin import handled_resource_types
+#     # Pre-setting defaults
+#     resource_types = handled_resource_types(dataset_type)
+#     if resource_types:
+#         _type = resource_types[0]
+#         body = get_template_of(_type)
+#     else:
+#         _type = None
+#         body = {}
     
-    opt = dict(_c.SCHEMA_OPT)
-    version = _c.SCHEMA_VERSION
+#     opt = dict(_c.SCHEMA_OPT)
+#     version = _c.SCHEMA_VERSION
 
-    # Checking extra data content for extration
-    e = resource.get('__extras',{})
-    if not e:
-        # edit existing resource
-        e = resource
+#     # Checking extra data content for extration
+#     e = resource.get('__extras',{})
+#     if not e:
+#         # edit existing resource
+#         e = resource
 
-    body = e.get(_c.SCHEMA_BODY_KEY, body)
-    _type = e.get(_c.SCHEMA_TYPE_KEY, _type)
-    version = e.get(_c.SCHEMA_VERSION_KEY, version)
-    opt = e.get(_c.SCHEMA_OPT_KEY, opt)
+#     body = e.get(_c.SCHEMA_BODY_KEY, body)
+#     _type = e.get(_c.SCHEMA_TYPE_KEY, _type)
+#     version = e.get(_c.SCHEMA_VERSION_KEY, version)
+#     opt = e.get(_c.SCHEMA_OPT_KEY, opt)
     
-    if _as_dict:
-        body = as_dict(body)
-        opt = as_dict(opt)
-    else:
-        # REMOVE AS_JSON
-        body = as_json(body)
-        opt = as_json(opt)
+#     if _as_dict:
+#         body = as_dict(body)
+#         opt = as_dict(opt)
+#     else:
+#         # REMOVE AS_JSON
+#         body = as_json(body)
+#         opt = as_json(opt)
     
-    return {
-        _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY: _type,
-        _c.SCHEMA_VERSION_KEY: version
-    }
+#     return {
+#         _c.SCHEMA_OPT_KEY : opt,
+#         _c.SCHEMA_BODY_KEY: body,
+#         _c.SCHEMA_TYPE_KEY: _type,
+#         _c.SCHEMA_VERSION_KEY: version
+#     }
 
-def resolve_extras(data, _as_dict = False):
-    # Pre-setting defaults
-    _type = get_dataset_type(data)
-    body = get_template_of(_type)
-    opt = dict(_c.SCHEMA_OPT)
-    version = _c.SCHEMA_VERSION
+# def resolve_extras(data, _as_dict = False):
+#     # Pre-setting defaults
+#     _type = get_dataset_type(data)
+#     body = get_template_of(_type)
+#     opt = dict(_c.SCHEMA_OPT)
+#     version = _c.SCHEMA_VERSION
 
-    # Checking extra data content for extration
-    for e in data.get('extras',[]):
-        key = e.get('key')
-        if not key:
-            raise Exception('Unable to resolve extras with an empty key')
-        if key == _c.SCHEMA_BODY_KEY:
-            body = e['value']
-        elif key == _c.SCHEMA_TYPE_KEY:
-            _type = e['value']
-        elif key == _c.SCHEMA_VERSION_KEY:
-            version = e['value']
-        elif key == _c.SCHEMA_OPT_KEY:
-            opt = e['value']
+#     # Checking extra data content for extration
+#     for e in data.get('extras',[]):
+#         key = e.get('key')
+#         if not key:
+#             raise Exception('Unable to resolve extras with an empty key')
+#         if key == _c.SCHEMA_BODY_KEY:
+#             body = e['value']
+#         elif key == _c.SCHEMA_TYPE_KEY:
+#             _type = e['value']
+#         elif key == _c.SCHEMA_VERSION_KEY:
+#             version = e['value']
+#         elif key == _c.SCHEMA_OPT_KEY:
+#             opt = e['value']
     
-    if _as_dict:
-        body = as_dict(body)
-        opt = as_dict(opt)
-    else:
-        body = as_json(body)
-        opt = as_json(opt)
+#     if _as_dict:
+#         body = as_dict(body)
+#         opt = as_dict(opt)
+#     else:
+#         body = as_json(body)
+#         opt = as_json(opt)
     
-    return {
-        _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY: _type,
-        _c.SCHEMA_VERSION_KEY: version
-    }
+#     return {
+#         _c.SCHEMA_OPT_KEY : opt,
+#         _c.SCHEMA_BODY_KEY: body,
+#         _c.SCHEMA_TYPE_KEY: _type,
+#         _c.SCHEMA_VERSION_KEY: version
+#     }
 
 
 
