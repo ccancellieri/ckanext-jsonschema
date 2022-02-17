@@ -231,11 +231,7 @@ def get_type(dataset_id, resource_id = None):
 
 # TODO check also validators.get_dataset_type
 def get_dataset_type(dataset = None):
-
-    if dataset:
-        return _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)
-    else:
-        return _get_dataset_type(dataset)
+    return _get_dataset_type(dataset) or _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)
 
 def get_resource_type(resource):
     return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
@@ -263,7 +259,7 @@ def get(dataset_id, resource_id = None, domain = None):
     try:
         pkg = _g.get_pkg(dataset_id)
     except toolkit.ObjectNotFound:
-        raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
+        raise toolkit.ObjectNotFound('Unable to find the requested dataset {}'.format(dataset_id))
 
     # we wanted the package
     if not resource_id and not domain:

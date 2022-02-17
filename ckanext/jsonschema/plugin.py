@@ -166,13 +166,13 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             # 'jsonschema_get_opt': lambda d_id, r_id = None : _t.get_opt(d_id, r_id),
             # 'jsonschema_get_version': lambda d_id, r_id = None : _t.get_version(d_id, r_id),
 
-            'jsonschema_get_dataset_body': lambda d = None : _t.as_dict(_t.get_dataset_body(d)),
+            'jsonschema_get_dataset_body': lambda d : _t.as_dict(_t.get_dataset_body(d)),
             'jsonschema_get_dataset_type': lambda d : _t.get_dataset_type(d),
             'jsonschema_get_dataset_opt': lambda d : _t.as_dict(_t.get_dataset_opt(d)),
             'jsonschema_get_dataset_version': lambda d : _t.get_dataset_version(d),
 
             #'jsonschema_get_resource': lambda r = None : _t.get(r),
-            'jsonschema_get_resource_body': lambda r = None : _t.as_dict(_t.get_resource_body(r)),
+            'jsonschema_get_resource_body': lambda r : _t.as_dict(_t.get_resource_body(r)),
             'jsonschema_get_resource_type': lambda r : _t.get_resource_type(r),
             'jsonschema_get_resource_opt': lambda r : _t.as_dict(_t.get_resource_opt(r)),
             'jsonschema_get_resource_version': lambda r : _t.get_resource_version(r),
