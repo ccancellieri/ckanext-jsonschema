@@ -303,8 +303,8 @@ def _extract_from_resource(resource, domain):
 
     if extras and domain:
         return extras.get(domain)
-    else:
-        raise Exception("Missing parameter resource or domain")
+    
+    raise Exception("Missing parameter resource or domain")
 
 def _extract_from_dataset(dataset, domain):
 
@@ -314,8 +314,8 @@ def _extract_from_dataset(dataset, domain):
             for e in extras:
                 if e['key'] == domain:
                     return e['value']
-    else:
-        raise Exception("Missing parameter dataset or domain")
+    
+    raise Exception("Missing parameter dataset or domain")
 
     
 

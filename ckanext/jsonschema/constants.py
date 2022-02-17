@@ -18,7 +18,7 @@ SCHEMA_BODY_KEY='jsonschema_body'
 # to mark a metadata as 
 # ckanext-jsonschema managed package
 SCHEMA_VERSION_KEY='jsonschema_version'
-SCHEMA_VERSION="1" # TODO MAKE DEFAULT VERSION CONFIGURABLE....
+SCHEMA_VERSION=1 # TODO MAKE DEFAULT VERSION CONFIGURABLE....
 # TODO schema Mapping
 SCHEMA_TYPE_KEY='jsonschema_type'
 

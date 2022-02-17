@@ -128,7 +128,7 @@ def resource_extractor(key, data, errors, context):
         opt = _t.as_dict(_t.get_resource_opt(resource))
         
         #version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
-        version = _t.get_resource_version(resource)
+        version = _t.as_dict(_t.get_resource_version(resource))
 
         for plugin in JSONSCHEMA_PLUGINS:
             
@@ -169,7 +169,7 @@ def before_extractor(key, data, errors, context):
     opt = _t.as_dict(_t.get_dataset_opt(_data))
     
     #version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
-    version = _t.get_dataset_version(_data)
+    version = _t.as_dict(_t.get_dataset_version(_data))
     
     for plugin in JSONSCHEMA_PLUGINS:
         try:
@@ -200,7 +200,7 @@ def extractor(key, data, errors, context):
     opt = _t.as_dict(_t.get_dataset_opt(_data))
     
     #version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
-    version = _t.get_dataset_version(_data)
+    version = _t.as_dict(_t.get_dataset_version(_data))
     
     for plugin in JSONSCHEMA_PLUGINS:
         try:
@@ -232,7 +232,7 @@ def dataset_dump(dataset_id, format = None):
     opt = _t.as_dict(_t.get_dataset_opt(_data))
 
     #version = extra.get(_c.SCHEMA_VERSION_KEY, _c.SCHEMA_VERSION)
-    version = _t.get_dataset_version(_data)
+    version = _t.as_dict(_t.get_dataset_version(_data))
 
     for plugin in JSONSCHEMA_PLUGINS:
         if type in plugin.supported_output_types(type, opt, version):
