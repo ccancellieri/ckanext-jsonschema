@@ -2,13 +2,15 @@
   "title": "Online resource",
   "type":"object",
   "required":[
-    "name"
+    "name",
+    "protocol"
   ],
   "properties":{   
     "name":{
       "propertyOrder": 10,
       "type":"string",
-      "title": "Name"
+      "title": "Name",
+      "pattern": "[a-zA-Z0-9]{2}"
      },
     "description":{
       "propertyOrder": 30,
@@ -49,7 +51,7 @@
           "wfs (ogc-wfs web feature service)",
           "wcs (ogc-wcs web coverage service)",
           "wmts (ogc-wmts web map tiled service)",
-          "TMS (tiled map service)",
+          "tms (tiled map service)",
           "kml (ogc-kml keyhole markup language)",
           "kml (google earth kml service (ver 2.0)",
           "gml (ogc-gml geography markup language)",

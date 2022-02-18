@@ -79,6 +79,14 @@ def schema_check(key, data, errors, context):
         stop_with_error('Unable to load a valid json-schema for type {}'.format(type), key, errors)
 
 
+    is_error = draft_validation(schema, body, errors)
+
+    if is_error:
+        raise StopOnError()
+
+def draft_validation(schema, body, errors):
+    """Validates ..."""
+
     validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
 
     # For each error, build the error message for the frontend with the path and the message
@@ -105,9 +113,7 @@ def schema_check(key, data, errors, context):
         log.error('Path: {}'.format(error_path))
         log.error('Message: {}'.format(error.message))
 
-    if is_error:
-        raise StopOnError()
-
+    return is_error
 
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)

@@ -5,6 +5,9 @@ import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as _u
+import ckanext.jsonschema.validators as _v
+import ckanext.jsonschema.tools as _t
+import ckan.lib.navl.dictization_functions as df
 from ckan.logic import NotFound, ValidationError
 
 _ = toolkit._
@@ -129,11 +132,13 @@ def validate_metadata(context, data_dict):
     if package is None:
         raise NotFound("No package found with the specified uuid")
 
-    package_plugin = lib_plugins.lookup_package_plugin(package['type'])
+    body = _t.get_dataset_body(package)
+    type = _t.get_dataset_type(package)
 
-    schema = package_plugin.update_package_schema()
-    converted_data, errors = toolkit.navl_validate(package, schema, context)
-
-    if errors:
-        raise ValidationError(errors)
-
+    schema = _t.get_schema_of(type)
+    
+    errors = {}
+    is_error = _v.draft_validation(schema, body, errors)
+    
+    if is_error:
+        raise ValidationError(df.unflatten(errors))
