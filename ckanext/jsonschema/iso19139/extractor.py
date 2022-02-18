@@ -13,26 +13,28 @@ def _extract_id(body):
     return body.get('fileIdentifier')
 
 
-def _extract_from_iso(body, type, opt, version, data, errors, context):
-    # if key==('name',):
+def _extract_from_iso(data, errors, context):
+
 
     try:
-        _extract_iso_name(body, type, opt, version, data, errors, context)
+        _extract_iso_name(data, context)
     except Exception as e:
         _v.stop_with_error('Error decoding metadata identification: {}'.format(str(e)), 'metadata identifier', errors)
     
     try:
-        _extract_iso_data_identification(body, type, opt, version, data, errors, context)
+        _extract_iso_data_identification(data, context)
     except Exception as e:
         _v.stop_with_error('Error decoding data identification: {}'.format(str(e)), 'data identification', errors)
     # TODO
 
-    return body, type, opt, version, data
+    return data, errors, context
 
 
 
-def _extract_iso_data_identification(body, type, opt, version, _data, errors, context):
+def _extract_iso_data_identification(data, context):
     # _data = df.unflatten(data)
+
+    body = _t.get_context_body(context)
 
     data_identification = body.get('dataIdentification')
     if data_identification:
@@ -41,13 +43,13 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
             # TODO creation time, period, etc
             title = citation.get('title')
             if title:
-                _data['title'] = title
+                data['title'] = title
 
         abstract = data_identification.get('abstract')
         if abstract:
-            _data['notes'] = render_notes(body, type, opt, version, _data) or abstract
+            data['notes'] = render_notes(data, context) or abstract
 
-        _data['tags'] = []
+        data['tags'] = []
         descriptive_keywords = data_identification.get('descriptiveKeywords')
         if descriptive_keywords:
             for dk in descriptive_keywords:
@@ -56,7 +58,7 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
                 
                 if keywords:
                     for k in keywords:
-                        _data['tags'].append({'name': munge.munge_tag(k)})
+                        data['tags'].append({'name': munge.munge_tag(k)})
 
         resourceConstraints = data_identification.get('resourceConstraints')
         if resourceConstraints:
@@ -65,19 +67,21 @@ def _extract_iso_data_identification(body, type, opt, version, _data, errors, co
             # In the case of an edit, there will be a license, and we store that in CKAN         
             license = resourceConstraints.get('license_id')
             if license:
-                _data['license_id'] = license
+                data['license_id'] = license
 
             # We also have to set the license in the body extra
-            body['dataIdentification']['resourceConstraints']['license_id'] = _data['license_id']
+            body['dataIdentification']['resourceConstraints']['license_id'] = data['license_id']
 
 
-def _extract_iso_name(body, type, opt, version, data, errors, context):
+def _extract_iso_name(data, context):
     
     # TODO generate if still none...
     # munge title to package name
     # For taking a title of a package and munging it to a readable and valid dataset id. Symbols and whitespeace are converted into dashes, with multiple dashes collapsed. Ensures that long titles with a year at the end preserves the year should it need to be shortened. Example:
 
     # /api/util/dataset/munge_title_to_name?title=police:%20spending%20figures%202009
+
+    body = _t.get_context_body(context)
     
     name = body.get('fileIdentifier')
 
@@ -101,6 +105,7 @@ def _extract_iso_name(body, type, opt, version, data, errors, context):
         'name': name,
         'url': h.url_for(controller = controller, action = 'read', id = name, _external = True),
     }
+    
     data.update(_dict)
 
 
@@ -110,10 +115,10 @@ def _extract_iso_name(body, type, opt, version, data, errors, context):
 ## RESOURCES
 ######################################################
 
-def _extract_iso_online_resource(body, type, opt, version, data, errors, context):
-    
-    _dict = dict(data)
+def _extract_iso_online_resource(data, errors, context):
 
+    body = _t.get_context_body(context)
+    
     # name = munge.munge_filename(body.get('name'),'')
     name = body.get('name','Online resource')
     # if not name:
@@ -122,20 +127,21 @@ def _extract_iso_online_resource(body, type, opt, version, data, errors, context
     #     _v.stop_with_error('Unable to obtain {}'.format(key), errors)
     
     description = body.get('description')
-    _dict.update({
+    data.update({
         'name': name,
         'description': description,
     })
     format = get_format(body.get('protocol',''), data.get('url',''))
     if format:
-        _dict.update({
+        data.update({
             'format': get_format(body.get('protocol',''), data.get('url',''))
         })
 
-    return body, type, opt, version, _dict
 
 
-def _extract_iso_resource_responsible(body, type, opt, version, data, errors, context):
+def _extract_iso_resource_responsible(data, errors, context):
+
+    body = _t.get_context_body(context)
 
     name = body.get('individualName', 'Contact')
     # as discussed on 06/12/2022
@@ -152,11 +158,12 @@ def _extract_iso_resource_responsible(body, type, opt, version, data, errors, co
     }
     data.update(_dict)
 
-    return body, type, opt, version, data
 
 
 
-def _extract_iso_graphic_overview(body, type, opt, version, data, errors, context):
+def _extract_iso_graphic_overview(data, errors, context):
+
+    body = _t.get_context_body(context)
 
     name = body.get('name', 'Graphic overview')
     
@@ -173,11 +180,12 @@ def _extract_iso_graphic_overview(body, type, opt, version, data, errors, contex
     
     data.update(_dict)
 
-    return body, type, opt, version, data
 
 
-def render_notes(body, type, opt, version, data):
+def render_notes(data, context):
     
+    body = _t.get_context_body(context)
+
     try:
         pkg = _t.get(body.get('fileIdentifier'))
     except:

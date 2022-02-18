@@ -293,6 +293,34 @@ def get(dataset_id, resource_id = None, domain = None):
 #         raise Exception('Unable to find the requested resource {}'.format(resource_id))
 #     return _extract_from_dataset(pkg)
 
+####### Manipulate extraction context #######
+
+def _extract_from_context(context, domain):
+
+    if context and domain:
+        return context.get(domain)
+    
+    raise Exception("Missing parameter resource or domain")
+
+def get_context_body(context):
+    return _extract_from_context(context, _c.SCHEMA_BODY_KEY)
+
+def get_context_type(context):
+    return _extract_from_context(context, _c.SCHEMA_TYPE_KEY)
+
+def get_context_version(context):
+    return _extract_from_context(context, _c.SCHEMA_VERSION)
+
+def get_context_opt(context):
+    return _extract_from_context(context, _c.SCHEMA_OPT_KEY)
+
+def set_context_body(context, body):
+    context[_c.SCHEMA_BODY_KEY] = body
+
+def set_context_type(context, _type):
+    context[_c.SCHEMA_TYPE_KEY] = _type
+
+
 def _extract_from_resource(resource, domain):
 
     # Checking extra data content for extration
@@ -317,7 +345,6 @@ def _extract_from_dataset(dataset, domain):
     
     raise Exception("Missing parameter dataset or domain")
 
-    
 
 # TODO CKAN contribution
 # TODO check also tools.get_dataset_type
@@ -340,18 +367,33 @@ def _get_dataset_type(data = None):
 #     resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
 #     resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
-def update_resource_extras(resource, body, type, opt, version):
-    extras = resource.get('__extras')
-    if not extras:
-        extras = {}
-        resource['__extras'] = extras
+# def update_resource_extras(resource, body, type, opt, version):
+#     extras = resource.get('__extras')
+#     if not extras:
+#         extras = {}
+#         resource['__extras'] = extras
     
-    extras[_c.SCHEMA_BODY_KEY]=json.dumps(body)
-    extras[_c.SCHEMA_TYPE_KEY]=type
-    extras[_c.SCHEMA_VERSION_KEY]=version
-    extras[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
+#     extras[_c.SCHEMA_BODY_KEY]=json.dumps(body)
+#     extras[_c.SCHEMA_TYPE_KEY]=type
+#     extras[_c.SCHEMA_VERSION_KEY]=version
+#     extras[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
 
-def update_extras(data, extras):
+# def update_extras_from_resource_context(data, extras):
+
+#     # Checking extra data content for extration
+#     for extra in data.get('__extras', []):
+#         if key == _c.SCHEMA_BODY_KEY:
+#             data['__extras'][key] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+#         elif key == _c.SCHEMA_TYPE_KEY:
+#             data['__extras'][key] = extras.get(_c.SCHEMA_TYPE_KEY)
+#         elif key == _c.SCHEMA_VERSION_KEY:
+#             data['__extras'][key] = extras.get(_c.SCHEMA_VERSION_KEY)
+#         elif key == _c.SCHEMA_OPT_KEY:
+#             data['__extras'][key] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
+
+
+def update_extras_from_context(data, extras):
+
     # Checking extra data content for extration
     for e in data.get('extras',[]):
         key = e.get('key')

@@ -85,45 +85,47 @@ class JsonschemaIso(p.SingletonPlugin):
         return []
 
 
-    def before_extractor(self, body, type, opt, version, data, errors, context):
+    def before_extractor(self, data, errors, context):
+
+        _type = _t.get_context_type(context)
         
-        if type == TYPE_ISO19139:
-            return extractor_iso19139._extract_iso(body, opt, version, data, errors, context)
-
-        return body, type, opt, version, data
+        if _type == TYPE_ISO19139:
+            extractor_iso19139._extract_iso(data, errors, context)
 
 
-    def extract_from_json(self, body, type, opt, version, data, errors, context):
+    def extract_from_json(self, data, errors, context):
+
         
-        if type == TYPE_ISO:
-            return extractor._extract_from_iso(body, type, opt, version, data, errors, context)
+        # type and version are strings
+        _type = _t.get_context_type(context)
+
+        if _type == TYPE_ISO:
+            extractor._extract_from_iso(data, errors, context)
 
         # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
         # TYPE_ISO_RESOURCE_DATASET,
 
-        elif type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
-            return extractor._extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+        elif _type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
+            extractor._extract_iso_resource_responsible(data, errors, context)
             
-        elif type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
-            return extractor._extract_iso_online_resource(body, type, opt, version, data, errors, context)
+        elif _type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
+            extractor._extract_iso_online_resource(data, errors, context)
             
-        elif type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
-            return extractor._extract_iso_graphic_overview(body, type, opt, version, data, errors, context)
+        elif _type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
+            extractor._extract_iso_graphic_overview(data, errors, context)
             
-        elif type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
-            return extractor._extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+        elif _type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
+            extractor._extract_iso_resource_responsible(data, errors, context)
         
-        elif type == TYPE_ISO_RESOURCE_RESOURCE_CONTACT:
-            return extractor._extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+        elif _type == TYPE_ISO_RESOURCE_RESOURCE_CONTACT:
+            extractor._extract_iso_resource_responsible(data, errors, context)
             
-        elif type == TYPE_ISO_RESOURCE_MAINTAINER:
-            return extractor._extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
+        elif _type == TYPE_ISO_RESOURCE_MAINTAINER:
+            extractor._extract_iso_resource_responsible(data, errors, context)
                         
-        elif type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
-            return extractor._extract_iso_resource_responsible(body, type, opt, version, data, errors, context)
-            
-        return body, type, opt, version, data
-
+        elif _type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
+            extractor._extract_iso_resource_responsible(data, errors, context)
+    
 
     def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
         import ckan.lib.base as base

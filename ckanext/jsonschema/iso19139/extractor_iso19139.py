@@ -28,7 +28,7 @@ def _extract_id(body):
     return identification_info
 
 
-def _extract_iso(body, opt, version, data, errors, context):
+def _extract_iso(data, errors, context):
     """
     This function is called in the before_extractor validator
     It extracts all the relevant fields from the input iso19139 and creates the iso profile
@@ -38,9 +38,12 @@ def _extract_iso(body, opt, version, data, errors, context):
 
     # DATA translation
     # root_fields = FrozenOrderedBidict({
+    _body = _t.get_context_body(context)
+    opt = _t.get_context_opt(context)
+    version = _t.get_context_version(context)
 
-    _data = dict(data)
-    _body = dict(body)
+    _data = data
+
     _iso_profile = {}
     _iso_profile_fields = {
         # fileIdentifier
@@ -100,17 +103,17 @@ def _extract_iso(body, opt, version, data, errors, context):
         # _v.stop_with_error('Unable to map to iso', errors)
         log.error('unable to map')
 
-    spatial_representation_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
+    spatial_representation_info = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:spatialRepresentationInfo',))
     if spatial_representation_info:
         _spatial_representation_info = __spatial_representation_info(spatial_representation_info)
         _t.set_nested(_iso_profile, ('spatialRepresentationInfo',), _spatial_representation_info)
 
-    contact = _t.get_nested(body, ('gmd:MD_Metadata','gmd:contact',))
+    contact = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:contact',))
     if contact:
         _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, _data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
-    identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:identificationInfo',))
+    identification_info = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:identificationInfo',))
     if identification_info:
         _identification_info = __identification_info(identification_info, opt, version, _data, errors, context)
         _t.set_nested(_iso_profile, ('dataIdentification',), _identification_info)
@@ -118,7 +121,7 @@ def _extract_iso(body, opt, version, data, errors, context):
     # Extract resources from body (to _data)
     _extract_transfer_options(_body, opt, version, _data, errors, context)
     
-    distributionFormat = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat',))
+    distributionFormat = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat',))
     if distributionFormat:
         distributionFormat_fields = {
             ('gmd:MD_Format','gmd:name','gco:CharacterString',) : ('name',),
@@ -128,7 +131,7 @@ def _extract_iso(body, opt, version, data, errors, context):
         _t.set_nested(_iso_profile, ('distributionFormat',), _distributionFormat)
 
     # distributor
-    distributor = _t.get_nested(body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
+    distributor = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
     if distributor:
         _distributor = _extract_distributor(distributor, TYPE_ISO_RESOURCE_DISTRIBUTOR, opt, version, _data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
@@ -138,7 +141,8 @@ def _extract_iso(body, opt, version, data, errors, context):
         'type': TYPE_ISO
     })
 
-    return _iso_profile, TYPE_ISO, opt, version, _data
+    _t.set_context_body(context, _iso_profile)
+    _t.set_context_type(context, TYPE_ISO)
 
 
 def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):

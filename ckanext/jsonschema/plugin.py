@@ -1,12 +1,11 @@
-import ckan.plugins as plugins
-import ckan.plugins.toolkit as toolkit
 import json
 
+import ckan.plugins as plugins
+import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.blueprints as _b
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
-from ckan.common import c
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -26,6 +25,7 @@ convert_from_extras = toolkit.get_converter('convert_from_extras')
 
 
 import logging
+
 from ckan.logic.schema import (default_create_package_schema,
                                default_update_package_schema)
 
@@ -136,7 +136,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #IActions
     def get_actions(self):
         from ckanext.jsonschema.logic.action.get import reload
-        from ckanext.jsonschema.logic.actions import importer, validate_metadata
+        from ckanext.jsonschema.logic.actions import (importer,
+                                                      validate_metadata)
 
         actions = {
             'jsonschema_importer': importer,
