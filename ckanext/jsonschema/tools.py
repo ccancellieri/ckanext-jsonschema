@@ -361,12 +361,6 @@ def _get_dataset_type(data = None):
     _type = path.split('/')[1]
     return _type
 
-# def update_resource_extras(resource, extras):
-#     resource[_c.SCHEMA_BODY_KEY]=json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-#     resource[_c.SCHEMA_TYPE_KEY]=extras.get(_c.SCHEMA_TYPE_KEY)
-#     resource[_c.SCHEMA_VERSION_KEY]=extras.get(_c.SCHEMA_VERSION_KEY)
-#     resource[_c.SCHEMA_OPT_KEY]=json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
-
 # def update_resource_extras(resource, body, type, opt, version):
 #     extras = resource.get('__extras')
 #     if not extras:

@@ -9,9 +9,10 @@ import ckan.plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.helpers as helpers
 import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.utils as _u
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.utils as _u
 import pytest
+from ckanext.jsonschema.logic.actions import validate_metadata
 
 
 @pytest.fixture
@@ -26,23 +27,18 @@ def iso_sample(datadir):
 def iso_wayback_sample(datadir):
     return open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
 
+# Runs before each test
+@pytest.fixture(autouse=True)
+def reset_db():
+    helpers.reset_db()
 
-def _get_wayback_from_request(schema_body, package):
-
-    from ckan.plugins import get_plugin
-    from ckan.tests.helpers import _get_test_app
-
-    h = get_plugin("jsonschema").get_helpers()
-
-    with _get_test_app().flask_app.test_request_context():
-        return base.render('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package, 'h': h})
-
+def _render_wayback(schema_body, package):
+    return _t.render_template('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package})
 
 class TestIso(object):
     
     @classmethod
     def setup_class(cls):
-        helpers.reset_db()
         
         # Test code should use CKAN's plugins.load() function to load plugins
         # to be tested.
@@ -125,9 +121,6 @@ class TestIso(object):
         title = data_identification['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']
         assert title == package.get('title')
 
-        # purge the package so we can use it again in next tests
-        toolkit.get_action('dataset_purge')(context, {'id': package['id']})
-
 
     def test_dump_to_output_xml(self, organization, iso19139_sample, iso_wayback_sample):
 
@@ -163,7 +156,7 @@ class TestIso(object):
 
 
         #### Get the runtime wayback
-        wayback = _get_wayback_from_request(schema_body, package)
+        wayback = _render_wayback(schema_body, package)
         
 
        #### Adjust the wayback and the sample before comparison
@@ -207,3 +200,18 @@ class TestIso(object):
 
         #### Perform test
         assert wayback == iso_wayback_sample
+ 
+
+    def test_validate_api_for_iso(self, organization, iso19139_sample):
+        
+        context = self._get_default_context()
+        package = self._create_iso_package(organization, iso19139_sample)
+        
+        data_dict = {
+            'id': package['id']
+        }
+
+        # if valid result is None, else ValidationError is raised
+        result = validate_metadata(context, data_dict)
+
+        assert result is None

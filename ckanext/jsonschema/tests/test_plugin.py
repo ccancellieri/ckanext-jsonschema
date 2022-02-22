@@ -71,6 +71,3 @@ class TestPlugin(object):
             
             found = len(funcs) > 0
             assert found
- 
-    def test_validate(self, dataset):
-        pass

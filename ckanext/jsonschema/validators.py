@@ -134,6 +134,7 @@ def resource_extractor(key, data, errors, context):
             _c.SCHEMA_VERSION_KEY : version
         })
 
+        # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
         #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
 
         for plugin in JSONSCHEMA_PLUGINS:
@@ -295,8 +296,8 @@ def remove_jsonschema_extras_from_resource_data(data):
     Returns the removed extras as a tuple (index, extra) so that they can be put back into data
     '''
 
-    jsonschema_extras = []
-    filtered_extras = []
+    jsonschema_extras = {}
+    filtered_extras = {}
 
     keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
 
@@ -305,9 +306,9 @@ def remove_jsonschema_extras_from_resource_data(data):
         value = data.get('__extras').get(key)
 
         if key in keys:
-            jsonschema_extras.append({key: value})
+            jsonschema_extras[key] = value
         else:
-            filtered_extras.append({key: value})
+            filtered_extras[key] = value
 
     data['__extras'] = filtered_extras     
     
@@ -321,8 +322,10 @@ def enrich_package_data_with_jsonschema_extras(data, extras):
 
 def enrich_resource_data_with_jsonschema_extras(data, extras):
 
-    for jsonschema_extra in extras:
-        data['__extras'].append(jsonschema_extra)
+    for key in extras:
+
+        value = extras[key]
+        data['__extras'][key] = value
 
 ########### UNUSED
 
