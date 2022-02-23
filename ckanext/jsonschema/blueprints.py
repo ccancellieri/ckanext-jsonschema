@@ -57,6 +57,20 @@ jsonschema.add_url_rule(
 )
 
 
+def clone_view():
+    try:
+        _t.initialize()
+        return toolkit.render('source/clone.html')
+    except toolkit.ObjectNotFound:
+        return toolkit.abort(404, _('Harvest source not found'))
+    except toolkit.NotAuthorized:
+        return toolkit.abort(401, _('Unauthorized'))
+
+jsonschema.add_url_rule(
+    "/{}/clone".format(_c.TYPE),
+    view_func=clone_view
+)
+
 ########################################
 ## Schema proxy
 

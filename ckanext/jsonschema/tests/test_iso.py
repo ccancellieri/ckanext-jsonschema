@@ -12,7 +12,7 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
 import pytest
-from ckanext.jsonschema.logic.actions import validate_metadata
+from ckanext.jsonschema.logic.actions import validate_metadata, clone_metadata
 
 
 @pytest.fixture
@@ -215,3 +215,17 @@ class TestIso(object):
         result = validate_metadata(context, data_dict)
 
         assert result is None
+
+    
+    def test_clone_api_for_iso(self, organization, iso19139_sample):
+        
+        context = self._get_default_context()
+        package = self._create_iso_package(organization, iso19139_sample)
+        
+        data_dict = {
+            'id': package['id'],
+            'owner_org': package['owner_org']
+        }
+
+        clone_metadata(context, data_dict)
+

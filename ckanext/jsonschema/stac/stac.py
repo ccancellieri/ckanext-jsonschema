@@ -3,6 +3,7 @@ import logging
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.interfaces as _i
+import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.logic.get as _g
 from ckanext.jsonschema.stac import constants as _c
 from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalaogExtractor, CollectionExtractor, extract_id
@@ -32,7 +33,7 @@ class JsonSchemaStac(plugins.SingletonPlugin):
             return [_c.TYPE_STAC]
 
     def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
-        pkg = _g.get_pkg(self.extract_id(body, dataset_type))
+        pkg = _t.get(self.extract_id(body, dataset_type))
         if pkg:
             try:
                 if dataset_type == _c.TYPE_STAC:

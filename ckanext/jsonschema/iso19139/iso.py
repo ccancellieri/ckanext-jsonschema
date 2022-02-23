@@ -130,7 +130,7 @@ class JsonschemaIso(p.SingletonPlugin):
     def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
         import ckan.lib.base as base
 
-        pkg = _g.get_pkg(body.get('fileIdentifier'))
+        pkg = _t.get(body.get('fileIdentifier'))
         # TODO why not use data as model is get_pkg a good model??
 
         if pkg:
@@ -161,3 +161,29 @@ class JsonschemaIso(p.SingletonPlugin):
                     log.error(str(e))
                 # raise e
                 # raise e
+
+    def clone(self, package_dict, errors, context):
+        body = _t.get_context_body(context)
+
+        # reset the ID so that it is assigned by extract_from_json
+        body['fileIdentifier'] = ''
+
+        # filter resources
+
+    def clone_resource(self, resource_dict, errors, context):
+        pass
+
+
+
+    def clonable_resource_types(self, dataset_type, opt, version):
+
+        clonables = [
+            TYPE_ISO_RESOURCE_DISTRIBUTOR,
+            TYPE_ISO_RESOURCE_METADATA_CONTACT,
+            TYPE_ISO_RESOURCE_MAINTAINER,
+            TYPE_ISO_RESOURCE_RESOURCE_CONTACT,
+            TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
+        ]
+
+        return clonables
+

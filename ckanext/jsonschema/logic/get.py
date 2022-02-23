@@ -57,7 +57,5 @@ def get_pkg(dataset_id):
 
     # may throw not found
     pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
-    _pkg = _u.dictize_pkg(pkg)
 
-    return _pkg
-
+    return pkg

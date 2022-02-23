@@ -150,11 +150,11 @@ def resource_extractor(key, data, errors, context):
                     stop_with_error(str(e),key,errors)
 
                 else:
-                    pass
+                    _t.update_extras_from_resource_context(resource, context)
+                    
                     #enrich_resource_data_with_jsonschema_extras(resource, jsonschema_extras)
 
                     # port back changes from body (and other extras) to the data model
-                    #_t.update_resource_extras(_r, body, type, opt, version)
                     #_t.update_extras_from_resource_context(resource, context)
                     # persist changes to the data model
                     # resource.update(_r)
@@ -208,7 +208,7 @@ def extractor(key, data, errors, context):
         _c.SCHEMA_VERSION_KEY : version
     })
     
-    jsonschema_extras = remove_jsonschema_extras_from_package_data(_data)
+    jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
 
     for plugin in JSONSCHEMA_PLUGINS:
         try:
@@ -216,7 +216,7 @@ def extractor(key, data, errors, context):
                 
                 plugin.extract_from_json(_data, errors, context)
 
-                enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
+                _t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
 
                 # port back changes from body (and other extras) to the data model
                 _t.update_extras_from_context(_data, context)
@@ -267,65 +267,6 @@ def get_extras_from_data(data):
     version = _t.as_dict(_t.get_dataset_version(data))
 
     return body, type, opt, version
-
-def remove_jsonschema_extras_from_package_data(data):
-    '''
-    Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
-    Returns the removed extras as a tuple (index, extra) so that they can be put back into data
-
-    '''
-
-    jsonschema_extras = []
-    filtered_extras = []
-
-    keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
-
-    for idx, extra in enumerate(data.get('extras')):
-        if extra.get('key') in keys:
-            jsonschema_extras.append((idx, extra))
-        else:
-            filtered_extras.append(extra)
-
-    data['extras'] = filtered_extras     
-    
-    return jsonschema_extras
-
-def remove_jsonschema_extras_from_resource_data(data):
-    '''
-    Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
-    Returns the removed extras as a tuple (index, extra) so that they can be put back into data
-    '''
-
-    jsonschema_extras = {}
-    filtered_extras = {}
-
-    keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
-
-    for key in data.get('__extras'):
-
-        value = data.get('__extras').get(key)
-
-        if key in keys:
-            jsonschema_extras[key] = value
-        else:
-            filtered_extras[key] = value
-
-    data['__extras'] = filtered_extras     
-    
-    return jsonschema_extras
-
-def enrich_package_data_with_jsonschema_extras(data, extras):
-
-    for jsonschema_extra in extras:
-        position, element = jsonschema_extra
-        data['extras'].insert(position, element)
-
-def enrich_resource_data_with_jsonschema_extras(data, extras):
-
-    for key in extras:
-
-        value = extras[key]
-        data['__extras'][key] = value
 
 ########### UNUSED
 

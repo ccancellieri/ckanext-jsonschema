@@ -2,22 +2,6 @@
 import os
 import json
 
-def dictize_pkg(pkg):
-    from six import binary_type
-    import ckan.lib.navl.dictization_functions as df
-    fd = df.flatten_dict(pkg)
-    for key in fd.keys():
-        
-        value = encode_str(fd[key])
-
-        try: 
-            fd[key] = json.loads(value)
-        except:
-            fd[key] =  value
-
-    pkg = df.unflatten(fd)
-    return pkg
-
 def _json_load(folder, name):
     '''
     use with caution: the 'folder'
@@ -103,18 +87,6 @@ def xml_to_json(xml_doc, namespaces = None):
 def json_to_xml(json):
     return xmltodict.unparse(json, pretty=True)
 
-
-
-def encode_str(value):
-
-    from six import PY3, text_type
-
-    if PY3 and isinstance(value, text_type):
-        value = str(value)
-    elif (not PY3) and isinstance(value, unicode):
-        value = value.encode("utf-8")
-    
-    return value
     
 def _initialize_license_schema():
     """This will break if there is non custom license group, which is if the licenses_group_url key is unset"""

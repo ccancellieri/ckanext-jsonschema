@@ -8,7 +8,6 @@ import logging
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
-from ckanext.jsonschema.utils import encode_str
 
 log = logging.getLogger(__name__)
 
@@ -257,7 +256,7 @@ def get_resource_opt(resource):
 def get(dataset_id, resource_id = None, domain = None):
     
     try:
-        pkg = _g.get_pkg(dataset_id)
+        pkg = dictize_pkg(_g.get_pkg(dataset_id))
     except toolkit.ObjectNotFound:
         raise toolkit.ObjectNotFound('Unable to find the requested dataset {}'.format(dataset_id))
 
@@ -320,6 +319,8 @@ def set_context_body(context, body):
 def set_context_type(context, _type):
     context[_c.SCHEMA_TYPE_KEY] = _type
 
+def set_context_opt(context, opt):
+    context[_c.SCHEMA_OPT_KEY] = opt
 
 def _extract_from_resource(resource, domain):
 
@@ -361,16 +362,16 @@ def _get_dataset_type(data = None):
     _type = path.split('/')[1]
     return _type
 
-# def update_resource_extras(resource, body, type, opt, version):
-#     extras = resource.get('__extras')
-#     if not extras:
-#         extras = {}
-#         resource['__extras'] = extras
+def update_extras_from_resource_context(resource, context):
+    extras = resource.get('__extras')
+    if not extras: 
+        extras = {} #TODO this assumes the object comes from database
+        resource['__extras'] = extras
     
-#     extras[_c.SCHEMA_BODY_KEY]=json.dumps(body)
-#     extras[_c.SCHEMA_TYPE_KEY]=type
-#     extras[_c.SCHEMA_VERSION_KEY]=version
-#     extras[_c.SCHEMA_OPT_KEY]=json.dumps(opt)
+    extras[_c.SCHEMA_BODY_KEY]=as_json(get_context_body(context))
+    extras[_c.SCHEMA_TYPE_KEY]=get_context_type(context)
+    extras[_c.SCHEMA_VERSION_KEY]=get_context_version(context)
+    extras[_c.SCHEMA_OPT_KEY]=as_json(get_context_opt(context))
 
 # def update_extras_from_resource_context(data, extras):
 
@@ -563,3 +564,95 @@ def render_template(template_name, extra_vars):
         log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
     except Exception as e:
         log.error('Exception: {}'.format(str(e)))
+
+
+
+### FRAMEWORK MANIPULATIONS ###
+
+def remove_jsonschema_extras_from_package_data(data):
+    '''
+    Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
+    Returns the removed extras as a tuple (index, extra) so that they can be put back into data
+
+    '''
+
+    jsonschema_extras = []
+    filtered_extras = []
+
+    keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
+
+    for idx, extra in enumerate(data.get('extras')):
+        if extra.get('key') in keys:
+            jsonschema_extras.append((idx, extra))
+        else:
+            filtered_extras.append(extra)
+
+    data['extras'] = filtered_extras     
+    
+    return jsonschema_extras
+
+def remove_jsonschema_extras_from_resource_data(data):
+    '''
+    Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
+    Returns the removed extras as a tuple (index, extra) so that they can be put back into data
+    '''
+
+    jsonschema_extras = {}
+    filtered_extras = {}
+
+    keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
+
+    for key in data.get('__extras'):
+
+        value = data.get('__extras').get(key)
+
+        if key in keys:
+            jsonschema_extras[key] = value
+        else:
+            filtered_extras[key] = value
+
+    data['__extras'] = filtered_extras     
+    
+    return jsonschema_extras
+
+def enrich_package_data_with_jsonschema_extras(data, extras):
+
+    for jsonschema_extra in extras:
+        position, element = jsonschema_extra
+        data['extras'].insert(position, element)
+                
+
+def enrich_resource_data_with_jsonschema_extras(data, extras):
+
+    for key in extras:
+        value = extras[key]
+        data['__extras'][key] = value
+
+###################################
+
+def dictize_pkg(pkg):
+    import ckan.lib.navl.dictization_functions as df
+    fd = df.flatten_dict(pkg)
+    for key in fd.keys():
+        
+        value = encode_str(fd[key])
+
+        try: 
+            fd[key] = json.loads(value)
+        except:
+            fd[key] =  value
+
+    pkg = df.unflatten(fd)
+    return pkg
+
+
+def encode_str(value):
+
+    from six import PY3, text_type
+
+    if PY3 and isinstance(value, text_type):
+        value = str(value)
+    elif (not PY3) and isinstance(value, unicode):
+        value = value.encode("utf-8")
+    
+    return value

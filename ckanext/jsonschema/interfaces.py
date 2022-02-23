@@ -28,8 +28,24 @@ class IBinder(Interface):
         '''
         return [] #'dataset'
 
-    def supported_input_tyeps(self):
+    def supported_input_types(self):
         return []
+
+    
+    def clonable_dataset_types(self, opt, version):
+        '''
+        returns the list of dataset types which can be cloned
+        '''
+
+        return self.supported_dataset_types(opt, version)
+
+
+    def clonable_resource_types(self, dataset_type, opt, version):
+        '''
+        returns the list of resource types which can be cloned in a clone operation
+        '''
+
+        return self.supported_resource_types(dataset_type, opt, version)
 
     def dump_to_json(self, body, type, version, key, data, context):
         '''
@@ -68,7 +84,7 @@ class IBinder(Interface):
         '''
         pass
 
-    def clone(self, body, errors, context):
+    def clone(self, package_dict, errors, context):
         '''
         Clones a package        
         '''

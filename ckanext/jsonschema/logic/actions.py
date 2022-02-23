@@ -127,7 +127,7 @@ def validate_metadata(context, data_dict):
 
     id = data_dict.get('id')
 
-    package = _g.get_pkg(id)
+    package = _t.get(id)
 
     if package is None:
         raise NotFound("No package found with the specified uuid")
@@ -142,3 +142,75 @@ def validate_metadata(context, data_dict):
     
     if is_error:
         raise ValidationError(df.unflatten(errors))
+
+
+def clone_metadata(context, data_dict):
+
+
+    pkg = _t.get(data_dict.get('id'))
+
+    _type = _t.get_dataset_type(pkg)
+    body = _t.get_dataset_body(pkg)
+    version = _t.get_dataset_version(pkg)
+
+    jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)
+
+    package_dict = {
+        'extras': [],
+        'resources': [],
+        'type': _type,
+        'owner_org': data_dict.get('owner_org')
+    }
+        
+    opt = {
+        'cloned' : True,
+        'source_url': pkg.get('url'),
+        'cloned_on': str(datetime.datetime.now())
+    }
+
+    clone_context = {
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY : _type,
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_VERSION_KEY : version
+    }
+
+    errors = []
+
+
+    for plugin in _v.JSONSCHEMA_PLUGINS:
+        try:
+            if _type in plugin.clonable_dataset_types(opt, version):
+                
+                plugin.clone(package_dict, errors, clone_context)
+
+                # port back changes from body (and other extras) to the data model
+                _t.enrich_package_data_with_jsonschema_extras(package_dict, jsonschema_extras)
+
+                # TODO  
+                for idx, extra in enumerate(package_dict['extras']): 
+                    if extra.get('key') == _c.SCHEMA_OPT_KEY:
+                        package_dict['extras'][idx]['value'] = opt
+
+                for resource in pkg.get('resources'):
+
+                    if _t.get_resource_type(resource) in plugin.clonable_resource_types(_type, opt, version):
+
+                        del resource['id']
+                        del resource['package_id']
+                        del resource['revision_id']
+                        
+                        plugin.clone_resource(resource, errors, context)
+
+                        _t.update_extras_from_resource_context(resource, context)
+
+                        # attach to package_dict
+                        package_dict['resources'].append(resource)
+
+
+                return toolkit.get_action('package_create')(context, package_dict)
+
+        except Exception as e:
+            message = str(e)
+            log.error(message)
+            raise ValidationError(message)
