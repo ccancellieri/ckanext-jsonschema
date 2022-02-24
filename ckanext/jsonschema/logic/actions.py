@@ -197,7 +197,9 @@ def clone_metadata(context, data_dict):
 
                         del resource['id']
                         del resource['package_id']
-                        del resource['revision_id']
+
+                        if 'revision_id' in resource:
+                            del resource['revision_id']
                         
                         resource_clone_context = {
                             _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
