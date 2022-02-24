@@ -181,9 +181,11 @@ def before_extractor(key, data, errors, context):
                 plugin.before_extractor(_data, errors, context)
                  # port back changes from body (and other extras) to the data model
                 
-                _body = _t.get_context_body(context)
-                _type = _t.get_context_type(context)
-                _t.update_extras(_data, _body, _type, opt, version)
+                #_body = _t.get_context_body(context)
+                #_type = _t.get_context_type(context)
+                #_t.update_extras(_data, _body, _type, opt, version)
+                _t.update_extras_from_context(_data, context)
+                
                 # update datamodel
                 data.update(df.flatten_dict(_data))
         except df.StopOnError:
@@ -208,7 +210,7 @@ def extractor(key, data, errors, context):
         _c.SCHEMA_VERSION_KEY : version
     })
     
-    jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
+    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
 
     for plugin in JSONSCHEMA_PLUGINS:
         try:
@@ -216,7 +218,7 @@ def extractor(key, data, errors, context):
                 
                 plugin.extract_from_json(_data, errors, context)
 
-                _t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
+                #_t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
 
                 # port back changes from body (and other extras) to the data model
                 _t.update_extras_from_context(_data, context)

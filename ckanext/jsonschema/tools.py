@@ -568,65 +568,67 @@ def render_template(template_name, extra_vars):
 
 
 ### FRAMEWORK MANIPULATIONS ###
+# We would like to hide the extras from the package/resource when passing down to the plugins
+# The following methods are used to remove the extras and then to put those back in
 
-def remove_jsonschema_extras_from_package_data(data):
-    '''
-    Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
-    Returns the removed extras as a tuple (index, extra) so that they can be put back into data
+# def remove_jsonschema_extras_from_package_data(data):
+#     '''
+#     Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
+#     Returns the removed extras as a tuple (index, extra) so that they can be put back into data
 
-    '''
+#     '''
 
-    jsonschema_extras = []
-    filtered_extras = []
+#     jsonschema_extras = []
+#     filtered_extras = []
 
-    keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
+#     keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
 
-    for idx, extra in enumerate(data.get('extras')):
-        if extra.get('key') in keys:
-            jsonschema_extras.append((idx, extra))
-        else:
-            filtered_extras.append(extra)
+#     for idx, extra in enumerate(data.get('extras')):
+#         if extra.get('key') in keys:
+#             jsonschema_extras.append((idx, extra))
+#         else:
+#             filtered_extras.append(extra)
 
-    data['extras'] = filtered_extras     
+#     data['extras'] = filtered_extras     
     
-    return jsonschema_extras
+#     return jsonschema_extras
 
-def remove_jsonschema_extras_from_resource_data(data):
-    '''
-    Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
-    Returns the removed extras as a tuple (index, extra) so that they can be put back into data
-    '''
+# def remove_jsonschema_extras_from_resource_data(data):
+#     '''
+#     Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
+#     Returns the removed extras as a tuple (index, extra) so that they can be put back into data
+#     '''
 
-    jsonschema_extras = {}
-    filtered_extras = {}
+#     jsonschema_extras = {}
+#     filtered_extras = {}
 
-    keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
+#     keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
 
-    for key in data.get('__extras'):
+#     for key in data.get('__extras'):
 
-        value = data.get('__extras').get(key)
+#         value = data.get('__extras').get(key)
 
-        if key in keys:
-            jsonschema_extras[key] = value
-        else:
-            filtered_extras[key] = value
+#         if key in keys:
+#             jsonschema_extras[key] = value
+#         else:
+#             filtered_extras[key] = value
 
-    data['__extras'] = filtered_extras     
+#     data['__extras'] = filtered_extras     
     
-    return jsonschema_extras
+#     return jsonschema_extras
 
-def enrich_package_data_with_jsonschema_extras(data, extras):
+# def enrich_package_data_with_jsonschema_extras(data, extras):
 
-    for jsonschema_extra in extras:
-        position, element = jsonschema_extra
-        data['extras'].insert(position, element)
+#     for jsonschema_extra in extras:
+#         position, element = jsonschema_extra
+#         data['extras'].insert(position, element)
                 
 
-def enrich_resource_data_with_jsonschema_extras(data, extras):
+# def enrich_resource_data_with_jsonschema_extras(data, extras):
 
-    for key in extras:
-        value = extras[key]
-        data['__extras'][key] = value
+#     for key in extras:
+#         value = extras[key]
+#         data['__extras'][key] = value
 
 ###################################
 

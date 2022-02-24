@@ -1,6 +1,5 @@
 import datetime
 
-import ckan.lib.plugins as lib_plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
@@ -146,21 +145,24 @@ def validate_metadata(context, data_dict):
 
 def clone_metadata(context, data_dict):
 
+
     pkg = _t.get(data_dict.get('id'))
 
     _type = _t.get_dataset_type(pkg)
     body = _t.get_dataset_body(pkg)
     version = _t.get_dataset_version(pkg)
 
-    jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)
+    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)
 
     package_dict = {
-        'extras': [],
+        'extras': pkg.get('extras'),
         'resources': [],
         'type': _type,
         'owner_org': data_dict.get('owner_org')
     }
-        
+    
+    _check_access('package_create', context, package_dict)
+
     opt = {
         'cloned' : True,
         'source_url': pkg.get('url'),
@@ -183,13 +185,8 @@ def clone_metadata(context, data_dict):
                 
                 plugin.clone(package_dict, errors, clone_context)
 
-                # port back changes from body (and other extras) to the data model
-                _t.enrich_package_data_with_jsonschema_extras(package_dict, jsonschema_extras)
-
-                # TODO  
-                for idx, extra in enumerate(package_dict['extras']): 
-                    if extra.get('key') == _c.SCHEMA_OPT_KEY:
-                        package_dict['extras'][idx]['value'] = opt
+                # Port back from context extras to data
+                _t.update_extras_from_context(package_dict, clone_context)
 
                 for resource in pkg.get('resources'):
 
