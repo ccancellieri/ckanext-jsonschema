@@ -146,7 +146,6 @@ def validate_metadata(context, data_dict):
 
 def clone_metadata(context, data_dict):
 
-
     pkg = _t.get(data_dict.get('id'))
 
     _type = _t.get_dataset_type(pkg)
@@ -200,9 +199,17 @@ def clone_metadata(context, data_dict):
                         del resource['package_id']
                         del resource['revision_id']
                         
-                        plugin.clone_resource(resource, errors, context)
+                        resource_clone_context = {
+                            _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
+                            _c.SCHEMA_TYPE_KEY : _t.get_resource_type(resource),
+                            _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
+                            _c.SCHEMA_VERSION_KEY : _t.get_resource_version(resource)
+                        }
 
-                        _t.update_extras_from_resource_context(resource, context)
+                        # clone context should be of resource
+                        plugin.clone_resource(resource, errors, resource_clone_context)
+
+                        _t.update_extras_from_resource_context(resource, resource_clone_context)
 
                         # attach to package_dict
                         package_dict['resources'].append(resource)
@@ -211,6 +218,9 @@ def clone_metadata(context, data_dict):
                 return toolkit.get_action('package_create')(context, package_dict)
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+
             message = str(e)
             log.error(message)
             raise ValidationError(message)

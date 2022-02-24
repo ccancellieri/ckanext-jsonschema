@@ -308,7 +308,7 @@ def get_context_type(context):
     return _extract_from_context(context, _c.SCHEMA_TYPE_KEY)
 
 def get_context_version(context):
-    return _extract_from_context(context, _c.SCHEMA_VERSION)
+    return _extract_from_context(context, _c.SCHEMA_VERSION_KEY)
 
 def get_context_opt(context):
     return _extract_from_context(context, _c.SCHEMA_OPT_KEY)
@@ -368,10 +368,10 @@ def update_extras_from_resource_context(resource, context):
         extras = {} #TODO this assumes the object comes from database
         resource['__extras'] = extras
     
-    extras[_c.SCHEMA_BODY_KEY]=as_json(get_context_body(context))
-    extras[_c.SCHEMA_TYPE_KEY]=get_context_type(context)
-    extras[_c.SCHEMA_VERSION_KEY]=get_context_version(context)
-    extras[_c.SCHEMA_OPT_KEY]=as_json(get_context_opt(context))
+    extras[_c.SCHEMA_BODY_KEY]=json.dumps(get_context_body(context))
+    extras[_c.SCHEMA_TYPE_KEY]=get_context_type(context) # it is already a string
+    extras[_c.SCHEMA_VERSION_KEY]=json.dumps(get_context_version(context))
+    extras[_c.SCHEMA_OPT_KEY]=json.dumps(get_context_opt(context))
 
 # def update_extras_from_resource_context(data, extras):
 
