@@ -21,8 +21,12 @@
             </div>
         </p>
     
+        {% if h.check_access('package_create', {'owner_org': owner_org}) %}
         <button value="Clone" name="clone" class="btn btn-primary pull-right">
             {{_('Clone')}}
         </button>
+        {% else %}
+            <h1>{{_('Unauthorized: Please login')}}</h1>
+        {% endif %}
         
 </form>
