@@ -92,6 +92,11 @@ class JsonschemaIso(p.SingletonPlugin):
         if _type == TYPE_ISO19139:
             extractor_iso19139._extract_iso(data, errors, context)
 
+    
+    resolver = {
+        "iso": extractor._extract_from_iso,
+        
+    }
 
     def extract_from_json(self, data, errors, context):
 
@@ -186,4 +191,5 @@ class JsonschemaIso(p.SingletonPlugin):
         ]
 
         return clonables
+
 

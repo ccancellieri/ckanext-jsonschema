@@ -49,11 +49,14 @@ if not isinstance(SUPPORTED_RESOURCE_FORMATS,list):
 #  Will contain the schema and template defined with the type-mapping
 JSON_SCHEMA_KEY = 'schema'
 JSON_TEMPLATE_KEY = 'template'
+JSON_CONFIG_KEY = 'config'
+JSONSCHEMA_CONFIG = {}
 JS_MODULE_KEY = 'module'
 JSON_CATALOG = {
    JSON_SCHEMA_KEY: {},
    JSON_TEMPLATE_KEY: {},
-   JS_MODULE_KEY: {}
+   JS_MODULE_KEY: {},
+   JSON_CONFIG_KEY: {}
 }
 JSON_CATALOG_INITIALIZED = False
 #############################
@@ -68,6 +71,7 @@ PATH_SCHEMA=path.realpath(config.get('ckanext.jsonschema.path.schema', path.join
 PATH_CORE_SCHEMA='core'
 REST_SCHEMA_PATH='/{}/schema'.format(TYPE)
 REST_SCHEMA_FILE_PATH='/{}/schema_file'.format(TYPE)
+
 
 # (Optional)
 # Used as jinja template to initialize the items values, it's name is by convention the type
@@ -89,6 +93,4 @@ REST_OPT_PATH='/{}/opt'.format(TYPE)
 PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join(PATH_ROOT,'module')))
 REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
-
-
-
+PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join(PATH_ROOT,'config')))
