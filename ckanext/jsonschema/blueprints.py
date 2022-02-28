@@ -190,6 +190,8 @@ def get_format(dataset_id, format = 'json'):
 
     except toolkit.ObjectNotFound as e:
         return toolkit.abort(404, _("Dataset not found"))
+    except Exception as e:
+        return toolkit.abort(500, _(e.message))
 
 
 jsonschema.add_url_rule('/{}/<dataset_id>.<format>'.format(_c.TYPE), view_func=get_format, methods=[u'GET'])

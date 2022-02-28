@@ -130,10 +130,6 @@ def resource_extractor(key, data, errors, context):
         # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
         #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
 
-        # plugin = configuration['supported'][dataset_type]['resources'][_type] # RETURNS A PLUGIN
-        # plugin.extract_from_json(resource, errors, context)
-        # ERROR IF THERE ISN'T PLUGIN
-
 
         try:
             plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, dataset_type, resource_type)
@@ -144,30 +140,6 @@ def resource_extractor(key, data, errors, context):
             stop_with_error(str(e),key,errors)
         else:
             _t.update_extras_from_resource_context(resource, context)
-
-        # for plugin in configuration.JSONSCHEMA_PLUGINS:
-            
-        #     if _type in configuration.get_resource_types(plugin.name, dataset_type):
-        #     #if type in plugin.supported_resource_types(dataset_type, opt, version):
-        #         try:
-                    
-        #             plugin.extract_from_json(resource, errors, context)
-        #             # 
-                
-        #         except df.StopOnError:
-        #             raise
-        #         except Exception as e:
-        #             stop_with_error(str(e),key,errors)
-
-        #         else:
-        #             _t.update_extras_from_resource_context(resource, context)
-                    
-        #             #enrich_resource_data_with_jsonschema_extras(resource, jsonschema_extras)
-
-        #             # port back changes from body (and other extras) to the data model
-        #             #_t.update_extras_from_resource_context(resource, context)
-        #             # persist changes to the data model
-        #             # resource.update(_r)
 
     data.update(df.flatten_dict(_data))
 
@@ -183,10 +155,6 @@ def before_extractor(key, data, errors, context):
         _c.SCHEMA_OPT_KEY : opt,
         _c.SCHEMA_VERSION_KEY : version
     })
-
-    # plugin = configuration['supported'][dataset_type]['resources'][_type] # RETURNS A PLUGIN
-    # plugin.extract_from_json(resource, errors, context)
-    # ERROR IF THERE ISN'T PLUGIN
     
     plugin = configuration.get_plugin(configuration.INPUT_KEY, type)
     
@@ -203,29 +171,6 @@ def before_extractor(key, data, errors, context):
         traceback.print_exc()
         stop_with_error(str(e),key,errors)
 
-    # for plugin in JSONSCHEMA_PLUGINS:
-    #     try:
-    #         if type in configuration.get_input_types(plugin.name):
-    #         #if type in plugin.supported_input_types(opt, version):
-                
-    #             plugin.before_extractor(_data, errors, context)
-    #              # port back changes from body (and other extras) to the data model
-                
-    #             #_body = _t.get_context_body(context)
-    #             #_type = _t.get_context_type(context)
-    #             #_t.update_extras(_data, _body, _type, opt, version)
-    #             _t.update_extras_from_context(_data, context)
-                
-    #             # update datamodel
-    #             data.update(df.flatten_dict(_data))
-    #     except df.StopOnError:
-    #         raise
-    #     except Exception as e:
-    #         import traceback
-    #         traceback.print_exc()
-    #         stop_with_error(str(e),key,errors)
-
-   
 
 def extractor(key, data, errors, context):
 
@@ -259,26 +204,6 @@ def extractor(key, data, errors, context):
     except Exception as e:
         stop_with_error(str(e),key,errors)
 
-    # for plugin in JSONSCHEMA_PLUGINS:
-    #     try:
-    #         if type in configuration.get_supported_types(plugin.name):
-    #         #if type in plugin.supported_dataset_types(opt, version):
-                
-    #             plugin.extract_from_json(_data, errors, context)
-
-    #             #_t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
-
-    #             # port back changes from body (and other extras) to the data model
-    #             _t.update_extras_from_context(_data, context)
-
-    #             # update datamodel
-    #             data.update(df.flatten_dict(_data))
-                
-    #     except df.StopOnError:
-    #         raise
-    #     except Exception as e:
-    #         stop_with_error(str(e),key,errors)
-
 
 # TODO PACKAGE_SHOW ??
 def dataset_dump(dataset_id, format = None):
@@ -289,24 +214,20 @@ def dataset_dump(dataset_id, format = None):
         return _data
 
     body, type, opt, version = get_extras_from_data(_data)
+
+    
+    context = {
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY : type,
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_VERSION_KEY : version
+    }
+    errors = []
     
     plugin = configuration.get_plugin(configuration.OUTPUT_KEY, type)
-    context = {}
-    # resource.get('__extras')
-    body = plugin.dump_to_output(body, type, opt, version, _data, format, context)
-    # port back changes from body (and other extras) to the data model
+    body = plugin.dump_to_output(_data, errors, context, format)
+    
     return body
-
-
-    # for plugin in configuration.JSONSCHEMA_PLUGINS:
-    #     if type in configuration.get_output_types():
-    #     #if type in plugin.supported_output_types(type, opt, version):
-                   
-    #         context = {}
-    #         # resource.get('__extras')
-    #         body = plugin.dump_to_output(body, type, opt, version, _data, format, context)
-    #         # port back changes from body (and other extras) to the data model
-    #         return body
 
 
 def get_extras_from_resource(resource):

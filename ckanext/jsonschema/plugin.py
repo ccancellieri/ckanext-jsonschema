@@ -35,97 +35,6 @@ from ckan.logic.schema import (default_create_package_schema,
 log = logging.getLogger(__name__)
 
 
-# check IConfigurer
-#HANDLED_DATASET_TYPES = []
-#HANDLED_RESOURCES_TYPES = {}
-#HANDLED_OUPTUT_TYPES = {}
-#HANDLED_INPUT_TYPES = []
-
-# def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
-
-#     if HANDLED_RESOURCES_TYPES and not renew:
-#         return HANDLED_RESOURCES_TYPES.get(dataset_type)
-
-#     supported_resource_types = []
-
-#     for plugin in _v.JSONSCHEMA_PLUGINS:
-#         try:
-#             supported_resource_types.extend(plugin.supported_resource_types(dataset_type, opt, version))
-#         except Exception as e:
-#             log.error('Error resolving resource json types for dataset type: {}\n{}'.format(dataset_type,str(e)))
-    
-#     for type in supported_resource_types:
-#         if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
-#             raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
-    
-#     HANDLED_RESOURCES_TYPES.update({dataset_type:supported_resource_types})
-
-#     return supported_resource_types
-
-
-# def handled_input_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
-    
-#     if HANDLED_INPUT_TYPES and not renew:
-#         return HANDLED_INPUT_TYPES
-
-#     updated_handled_input_types = []
-#     for plugin in _v.JSONSCHEMA_PLUGINS:
-#         try:
-#             updated_handled_input_types.extend(plugin.supported_input_types(opt, version))
-#         except Exception as e:
-#             log.error('Error resolving input types:\n{}'.format(str(e)))
-
-#     return updated_handled_input_types
-
-# def handled_dataset_types(opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
-#     '''
-#     #TODO
-#     defines a list of dataset types that
-#     this plugin handles. Each dataset has a field containing its type.
-#     Plugins can register to handle specific types of dataset and ignore
-#     others. Since our plugin is not for any specific type of dataset and
-#     we want our plugin to be the default handler, we update the plugin
-#     code to contain the following:
-#     '''
-#     if HANDLED_DATASET_TYPES and not renew:
-#         return HANDLED_DATASET_TYPES
-    
-#     # This plugin doesn't handle any special package types, it just
-#     # registers itself as the default (above).
-#     supported_dataset_types = []
-#     for plugin in _v.JSONSCHEMA_PLUGINS:
-#         try:
-#             supported_dataset_types.extend(plugin.supported_dataset_types(opt, version))
-#         except Exception as e:
-#             log.error('Error resolving dataset types:\n{}'.format(str(e)))
-    
-#     for type in supported_dataset_types:
-#         if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
-#             raise Exception('Error resolving dataset json schema for type:\n{}'.format(type))
-
-#     return supported_dataset_types
-
-# def handled_output_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
-
-#     if HANDLED_OUPTUT_TYPES and not renew:
-#         return HANDLED_OUPTUT_TYPES.get(dataset_type)
-
-#     supported_output_types = []
-#     for plugin in _v.JSONSCHEMA_PLUGINS:
-#         try:
-#             supported_output_types.extend(plugin.supported_output_types(dataset_type, opt, version))
-#         except Exception as e:
-#             log.error('Error resolving resource json types for dataset type: {}\n{}'.format(dataset_type,str(e)))
-    
-#     for type in supported_output_types:
-#         if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
-#             raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
-    
-#     HANDLED_OUPTUT_TYPES.update({dataset_type:supported_output_types})
-
-#     return supported_output_types
-
-
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IDatasetForm)
@@ -189,19 +98,13 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_opt': lambda : _c.SCHEMA_OPT,
             'jsonschema_get_version': lambda : _c.SCHEMA_VERSION,
 
-            ## DEPRECATED
-            #'jsonschema_resolve_extras': _t.resolve_extras,
-            #'jsonschema_resolve_resource_extras': _t.resolve_resource_extras,
             'jsonschema_handled_resource_types': configuration.get_resource_types,
             'jsonschema_handled_dataset_types': configuration.get_supported_types,
             'jsonschema_handled_input_types': configuration.get_input_types,
             'jsonschema_handled_output_types': configuration.get_output_types,
             
-            # 'jsonschema_handled_resource_types': handled_resource_types,
-            # 'jsonschema_handled_dataset_types': handled_dataset_types,
-            # 'jsonschema_handled_input_types': handled_input_types,
-            # 'jsonschema_handled_output_types': handled_output_types,
-            # 'jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
+            #'jsonschema_get_resource_label': configuration.get_resource_label
+            #jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
         }
 
 
@@ -249,18 +152,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
         _t.reload()
-        
-        #HANDLED_DATASET_TYPES = configuration.get_supported_types()
-        #HANDLED_DATASET_TYPES = handled_dataset_types(renew = True)
-
-        # HANDLED_RESOURCES_TYPES = {}
-        # for dataset_type in HANDLED_DATASET_TYPES:
-        #     HANDLED_RESOURCES_TYPES.update({ dataset_type : handled_resource_types(dataset_type, renew = True) })
-
-        # HANDLED_RESOURCES_TYPES = configuration.get_resource_types()
-
-        # assert len(_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY])==\
-        #     len(_c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY])
     
         
     # IValidators
