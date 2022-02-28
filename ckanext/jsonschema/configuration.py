@@ -1,11 +1,34 @@
 import ckanext.jsonschema.constants as _c
+from ckan.plugins.core import PluginNotFoundException
 
-PACKAGE_OPERATIONS = ['input', 'supported', 'output', 'clone']
+INPUT_KEY = 'input'
+SUPPORTED_KEY = 'supported'
+OUTPUT_KEY = 'output'
+CLONE_KEY = 'clone'
+PLUGIN_KEY = 'plugin'
+PACKAGE_OPERATIONS = [INPUT_KEY, SUPPORTED_KEY, OUTPUT_KEY, CLONE_KEY]
 
+# TODO move me and relatives to plugin.pu
+import ckanext.jsonschema.interfaces as _i
+from ckan.plugins import PluginImplementations
+JSONSCHEMA_PLUGINS = PluginImplementations(_i.IBinder)
+
+INPUT_TYPES = []
+SUPPORTED_TYPES = []
+RESOURCE_TYPES = []
+OUTPUT_TYPES = []
+
+############# SETUP #############
 def get_input_configuration():
+    '''
+    Returns the configuration file provided in ckanext/config
+    '''
     return _c.JSON_CATALOG[_c.JSON_CONFIG_KEY]
 
 def get_configuration_template():
+    '''
+    Returns a template configuration to be filled with the setup
+    '''
 
     configuration_template = {}
     for op in PACKAGE_OPERATIONS:
@@ -14,10 +37,32 @@ def get_configuration_template():
     return configuration_template
 
 def get_configuration():
+    '''
+    Returns the internal representation of the configuration
+    '''
     return _c.JSONSCHEMA_CONFIG
 
 def set_configuration(configuration):
     _c.JSONSCHEMA_CONFIG = configuration
+
+
+def get_plugin(operation, dataset_type, resource_type=None):
+    '''
+    Gets the plugin instance from the configuration that handles the specified dataset_type or resource_type under the dataset_type
+    '''
+
+    configuration = get_configuration()
+
+    try:
+        if resource_type:
+            plugin = configuration.get(operation).get(dataset_type).get('resources').get(resource_type).get(PLUGIN_KEY)
+        else:
+            plugin = configuration.get(operation).get(dataset_type).get(PLUGIN_KEY)
+    
+        return plugin
+
+    except:
+        raise PluginNotFoundException('No plugin configured for operation: {}, dataset_type: {}, resource_type: {}'.format(operation, dataset_type, resource_type))
 
 
 def setup():
@@ -68,6 +113,7 @@ def validate_configuration():
     1) There should be a schema for every configured dataset type
     '''
     _validate_schemas()
+    # validate plugins with IBinder
 
 
 def _validate_schemas():
@@ -96,7 +142,7 @@ def _configure_jsonschema_types(jsonschema_types, configuration, plugin_name):
 
                 _check_double_declaration(jsonschema_type_name, jsonschema_type_config, plugin_name, operation)
 
-                jsonschema_type_config['plugin_name'] = plugin_name
+                jsonschema_type_config[PLUGIN_KEY] = _get_jsonschema_plugin_from_name(plugin_name)
 
         # insert the resource into every operation of the type
         if 'resources' in jsonschema_type:     
@@ -109,9 +155,9 @@ def _check_double_declaration(jsonschema_type_name, jsonschema_type_config, plug
     Checks if the current jsonschema_type was already declared with the current operations
     Because only one plugin may support an operation for a jsonschema_type, this method raise an exception if the check fails
     '''
-    if 'plugin_name' in jsonschema_type_config:
+    if PLUGIN_KEY in jsonschema_type_config:
         message = 'Both plugins {} and {} declare the type "{}" for "{}" operation; this is not supported'
-        message = message.format(jsonschema_type_config['plugin_name'], plugin_name, jsonschema_type_name, operation)
+        message = message.format(jsonschema_type_config[PLUGIN_KEY], plugin_name, jsonschema_type_name, operation)
         raise Exception(message)
 
 
@@ -125,48 +171,46 @@ def _configure_resources(resources, jsonschema_type_name, configuration, plugin_
                 if 'resources' not in configuration[operation][jsonschema_type_name]:
                     configuration[operation][jsonschema_type_name]['resources'] = {}
 
-                configuration[operation][jsonschema_type_name]['resources'][resource_type] = {'plugin_name': plugin_name}
+                configuration[operation][jsonschema_type_name]['resources'][resource_type] = {PLUGIN_KEY: _get_jsonschema_plugin_from_name(plugin_name)}
+
+############# END SETUP #############
 
 
-# GETTERS
-
+############# GETTERS ############# 
 def get_input_types():
+    return get_configuration().get(INPUT_KEY).keys()
 
-    configuration = get_configuration()
-    input_types = configuration['input'].keys()
-
-    return input_types
 
 def get_supported_types():
+    return get_configuration().get(SUPPORTED_KEY).keys()
 
-    configuration = get_configuration()
-    supported_types = configuration['supported'].keys()
+def get_output_types():
+    return get_configuration().configuration[OUTPUT_KEY].keys()
 
-    return supported_types
-
-def get_resource_types(pacakge_type=None):
+def get_resource_types(dataset_type):
     '''
     If dataset_type is None: returns a map {pacakge_type1: [resource_type1, resource_type2...], package_type2: ...}
     If dataset_type is set, returns the list of resources supported for that dataset_type
     '''
-
+    global RESOURCE_TYPES, RESOURCE_TYPES_ARRAY
 
     configuration = get_configuration()
     resource_types = {}
-    
-    for package_type_name in configuration['supported']:
-        package_type_configuration = configuration['supported'][package_type_name]
+
+    for jsonschema_type_name in configuration[SUPPORTED_KEY]:
+        package_type_configuration = configuration[SUPPORTED_KEY][jsonschema_type_name]
+
         if 'resources' in package_type_configuration:
-            resource_types[package_type_name] = package_type_configuration['resources'].keys()
+            resource_types[jsonschema_type_name] = package_type_configuration['resources'].keys()
             
-    if pacakge_type:
-        return resource_types[pacakge_type]
+    
+    return resource_types[dataset_type]
+    
+
+def _get_jsonschema_plugin_from_name(plugin_name):    
+    plugin = [plugin for plugin in JSONSCHEMA_PLUGINS if plugin.name == plugin_name]
+
+    if len(plugin) == 1:
+        return plugin[0]
     else:
-        return resource_types
-
-def get_output_types():
-
-    configuration = get_configuration()
-    output_types = configuration['output'].keys()
-
-    return output_types
+        raise PluginNotFoundException('Found a configuration file for plugin {} which is not installed'.format(plugin_name))

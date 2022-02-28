@@ -36,10 +36,10 @@ log = logging.getLogger(__name__)
 
 
 # check IConfigurer
-HANDLED_DATASET_TYPES = []
-HANDLED_RESOURCES_TYPES = {}
-HANDLED_OUPTUT_TYPES = {}
-HANDLED_INPUT_TYPES = []
+#HANDLED_DATASET_TYPES = []
+#HANDLED_RESOURCES_TYPES = {}
+#HANDLED_OUPTUT_TYPES = {}
+#HANDLED_INPUT_TYPES = []
 
 # def handled_resource_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
 
@@ -105,25 +105,25 @@ HANDLED_INPUT_TYPES = []
 
 #     return supported_dataset_types
 
-def handled_output_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
+# def handled_output_types(dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION, renew = False):
 
-    if HANDLED_OUPTUT_TYPES and not renew:
-        return HANDLED_OUPTUT_TYPES.get(dataset_type)
+#     if HANDLED_OUPTUT_TYPES and not renew:
+#         return HANDLED_OUPTUT_TYPES.get(dataset_type)
 
-    supported_output_types = []
-    for plugin in _v.JSONSCHEMA_PLUGINS:
-        try:
-            supported_output_types.extend(plugin.supported_output_types(dataset_type, opt, version))
-        except Exception as e:
-            log.error('Error resolving resource json types for dataset type: {}\n{}'.format(dataset_type,str(e)))
+#     supported_output_types = []
+#     for plugin in _v.JSONSCHEMA_PLUGINS:
+#         try:
+#             supported_output_types.extend(plugin.supported_output_types(dataset_type, opt, version))
+#         except Exception as e:
+#             log.error('Error resolving resource json types for dataset type: {}\n{}'.format(dataset_type,str(e)))
     
-    for type in supported_output_types:
-        if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
-            raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
+#     for type in supported_output_types:
+#         if type not in _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].keys():
+#             raise Exception('Error resolving resource json schema for type:\n{}'.format(type))
     
-    HANDLED_OUPTUT_TYPES.update({dataset_type:supported_output_types})
+#     HANDLED_OUPTUT_TYPES.update({dataset_type:supported_output_types})
 
-    return supported_output_types
+#     return supported_output_types
 
 
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
@@ -250,14 +250,14 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         _t.reload()
         
-        HANDLED_DATASET_TYPES = configuration.get_supported_types()
+        #HANDLED_DATASET_TYPES = configuration.get_supported_types()
         #HANDLED_DATASET_TYPES = handled_dataset_types(renew = True)
 
         # HANDLED_RESOURCES_TYPES = {}
         # for dataset_type in HANDLED_DATASET_TYPES:
         #     HANDLED_RESOURCES_TYPES.update({ dataset_type : handled_resource_types(dataset_type, renew = True) })
 
-        HANDLED_RESOURCES_TYPES = configuration.get_resource_types()
+        # HANDLED_RESOURCES_TYPES = configuration.get_resource_types()
 
         # assert len(_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY])==\
         #     len(_c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY])
