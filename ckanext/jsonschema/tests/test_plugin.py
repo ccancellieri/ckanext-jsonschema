@@ -44,7 +44,15 @@ class TestPlugin(object):
 
 
     def test_configuration(self):
-        
+
+        from six import PY3
+
+        # When getting .keys() from a dict in Python3, the returned object is of type dict_keys instead of list
+        if PY3:
+            list_type = type({}.keys())
+        else:
+            list_type = list
+
         input_configuration = configuration.get_input_configuration()
         assert isinstance(input_configuration, dict)
 
@@ -57,15 +65,15 @@ class TestPlugin(object):
             assert True
 
         input_types = configuration.get_input_types()
-        assert isinstance(input_types, list)
+        assert isinstance(input_types, list_type)
         
         output_types = configuration.get_output_types()
-        assert isinstance(output_types, list)
+        assert isinstance(output_types, list_type)
 
         supported_types = configuration.get_supported_types()
-        assert isinstance(supported_types, list)
+        assert isinstance(supported_types, list_type)
 
         if len(supported_types) > 0:
             resource_types = configuration.get_resource_types(supported_types[0])
-            assert isinstance(resource_types, list)
+            assert isinstance(resource_types, list_type)
 
