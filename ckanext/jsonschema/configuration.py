@@ -207,10 +207,10 @@ def get_resource_types(dataset_type):
     return resource_types[dataset_type]
     
 
-def _get_jsonschema_plugin_from_name(plugin_name):    
-    plugin = [plugin for plugin in JSONSCHEMA_PLUGINS if plugin.name == plugin_name]
+def _get_jsonschema_plugin_from_name(plugin_name):
 
-    if len(plugin) == 1:
-        return plugin[0]
-    else:
-        raise PluginNotFoundException('Found a configuration file for plugin {} which is not installed'.format(plugin_name))
+    for plugin in JSONSCHEMA_PLUGINS:
+        if plugin.name == plugin_name:
+            return plugin
+            
+    raise PluginNotFoundException('Found a configuration file for plugin {} which is not installed'.format(plugin_name))

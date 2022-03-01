@@ -24,11 +24,6 @@
                     "clone": false,
                     "supported": true 
                 },
-                "point-of-contact": {
-                    "label": "Point of Contact",
-                    "clone": true,
-                    "supported": true 
-                },
                 "resource-contact": {
                     "label": "Resource Contact",
                     "clone": true,

@@ -193,7 +193,6 @@ def clone_metadata(context, data_dict):
         for resource in pkg.get('resources'):
 
             try:
-                plugin = configuration.get_plugin(configuration.CLONE_KEY, _type, _t.get_resource_type(resource))
                 del resource['id']
                 del resource['package_id']
 

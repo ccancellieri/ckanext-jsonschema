@@ -171,7 +171,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     ##############
 
     def package_types(self):
-        #return handled_input_types()
         return configuration.get_input_types()
 
     # def setup_template_variables(self, context, data_dict):

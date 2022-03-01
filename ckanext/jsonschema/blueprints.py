@@ -27,7 +27,9 @@ log = logging.getLogger(__name__)
 from jinja2 import Template,Markup
 from flask import Blueprint, abort, jsonify, send_file, Response, stream_with_context
 
+# TODO decorate jsonschema blueprint with tools.initialize
 jsonschema = Blueprint(_c.TYPE, __name__)
+
 
 def importer_view():
     try:

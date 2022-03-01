@@ -16,7 +16,7 @@ class TestPlugin(object):
         # Test code should use CKAN's plugins.load() function to load plugins
         # to be tested.
 
-        _plugins = ['jsonschema', 'jsonschema_iso']
+        _plugins = ['jsonschema']
 
         for plugin in _plugins:
             if not ckan.plugins.plugin_loaded(plugin):
