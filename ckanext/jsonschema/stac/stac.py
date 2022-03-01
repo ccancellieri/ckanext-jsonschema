@@ -28,10 +28,6 @@ class JsonSchemaStac(plugins.SingletonPlugin):
         return extract_id(dataset_type, body)
 
 
-    def supported_output_types(self, dataset_type, opt, version):
-        if dataset_type == _c.TYPE_STAC:
-            return [_c.TYPE_STAC]
-
     def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
         pkg = _t.get(self.extract_id(body, dataset_type))
         if pkg:
@@ -43,24 +39,6 @@ class JsonSchemaStac(plugins.SingletonPlugin):
                 if e:
                     message = ('Error on: {} line: {} Message:{}').format(e.get('name', ''), e.get('lineno', ''), e.get('message', ''))
                     log.error(message)
-
-    def supported_resource_types(self, dataset_type, opt, version):
-        if version != _c.SCHEMA_VERSION:
-            log.warn(("Version: '{}' is not supported by this plugin ({})").format(version, __name__))
-            return []
-        if dataset_type == _c.TYPE_STAC:
-            return _c.SUPPORTED_STAC_RESOURCE_FORMATS
-        return []
-
-    def supported_dataset_types(self, opt, version):
-        if version != _c.SCHEMA_VERSION:
-            return []
-        return _c.SUPPORTED_DATASET_FORMATS
-
-    def supported_input_types(self, opt, version):
-        if version != _c.SCHEMA_VERSION:
-            return []
-        return _c.SUPPORTED_INPUT_FORMATS 
 
 
     def extract_from_json(self, body, type, opt, version, data, errors, context):

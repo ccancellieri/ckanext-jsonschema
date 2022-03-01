@@ -1,0 +1,14 @@
+{
+    "plugin_name": "jsonschema_stac",
+    "description": "",
+    "jsonschema_types": {
+        "stac": {
+            "package_type": "stac",
+            "input": true,
+            "supported": true,
+            "clone": true,
+            "output": true,
+            "resources":{}
+        }
+    }
+}

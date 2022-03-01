@@ -1,0 +1,67 @@
+{
+    "plugin_name": "jsonschema_iso",
+    "description": "",
+    "jsonschema_types": {
+        "iso": {
+            "package_type": "iso",
+            "input": true,
+            "supported": true,
+            "clone": true,
+            "output": true,
+            "resources": {
+                "table-data-package": {
+                    "label": "Table Data Package",
+                    "clone": false,
+                    "supported": true
+                },
+                "online-resource": {
+                    "label": "Online resource",
+                    "clone": false,
+                    "supported": true
+                },
+                "graphic-overview": {
+                    "label": "Graphic Overview",
+                    "clone": false,
+                    "supported": true 
+                },
+                "resource-contact": {
+                    "label": "Resource Contact",
+                    "clone": true,
+                    "supported": true 
+                },
+                "metadata-contact": {
+                    "label": "Metadata Contact",
+                    "clone": true,
+                    "supported": true
+                },
+                "cited-responsible-party": {
+                    "label": "Responsible Party",
+                    "clone": true,
+                    "supported": true
+                },
+                "resource-maintainer": {
+                    "label": "Maintainer",
+                    "clone": true,
+                    "supported": true
+                },
+                "distributor": {
+                    "label": "Distributor",
+                    "clone": true,
+                    "supported": true
+                }
+            }
+        },
+        "iso19139": {
+            "package_type": "iso", 
+            "input": true, 
+            "supported": false,
+            "clone": true, 
+            "output": true,
+            "formats": {},
+            "resources": {} 
+        },
+        "iso2": {
+            "package_type": "iso"
+        }
+    }
+}

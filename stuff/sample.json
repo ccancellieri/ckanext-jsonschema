@@ -1,0 +1,87 @@
+{
+    "plugin_name": "jsonschema_iso",
+    "description": "",
+    "jsonschema_types": {
+        "iso": { //jsonschema_type alias filename of the schema
+            "package_type": "iso", //package type (on the "package" table)
+            "input": true,
+            "supported": true,
+            "clone": true,
+            "output": true,
+            "resources":{
+                "table-data-package": {
+                    "label": "Table Data Package",
+                    "clone": false,
+                    "supported": true
+                },
+                "online-resource": {
+                    "label": "Online resource",
+                    "clone": false,
+                    "supported": true
+                },
+                "graphic-overview": {
+                    "label": "Graphic Overview",
+                    "clone": false,
+                    "supported": true 
+                },
+                "point-of-contact": {
+                    "label": "Point of Contact",
+                    "clone": true,
+                    "supported": true 
+                }
+            }
+        },
+        "iso19139": {
+            "package_type": "iso", //package type (on the "package" table)
+            "input": true, # before extractor
+            "supported": false, # extractor (also in edit)
+            "clone": true, 
+            "output": true,
+            "formats": {},
+            "resources": {} 
+        },
+        "iso2": {
+            "package_type": "iso"
+        }
+    }
+}
+
+
+1) For every package: which resources do we have?
+2) Resolver of a resource for: action, package, version package, resource, version resource
+
+
+supported_resource_types -> get_resource_types (uses always last version)
+supported_input_types -> 
+supported_dataset_types -> get_supported_types (create -> version -> return list keys)
+
+################### TOO verbose?
+
+package_type_resolver -> gets the package type from jsonschema_type
+
+"clone": {
+    "iso": {
+        "plugin_name": "jsonschema_iso", //priority, plugin_name
+        "resources": {
+            "online-resource": {
+                "plugin_name": "jsonschema_iso"
+            }
+        }
+    },
+    "iso19139": {
+        ...
+    }
+},
+"output_packages":{
+    "iso":[
+        "online-resource","graphic-overview","..."
+    ]
+},
+"create_packages":{
+    "iso":[
+        "online-resource","graphic-overview","..."
+    ],
+    "iso19149":[]
+},
+###################à
+}

@@ -2,12 +2,13 @@ import datetime
 
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as _u
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.configuration as configuration
 import ckan.lib.navl.dictization_functions as df
 from ckan.logic import NotFound, ValidationError
+from ckan.plugins.core import PluginNotFoundException
 
 _ = toolkit._
 h = toolkit.h
@@ -87,6 +88,9 @@ def importer(context, data_dict):
     extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : _type })
     extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' :  opt })
     extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })
+
+
+    # IMPORT - PREPROCESSING -
 
     #TODO resources store back to the package_dict
     try:
@@ -178,48 +182,45 @@ def clone_metadata(context, data_dict):
 
     errors = []
 
+    plugin = configuration.get_plugin(configuration.CLONE_KEY, _type)
 
-    for plugin in _v.JSONSCHEMA_PLUGINS:
-        try:
-            if _type in plugin.clonable_dataset_types(opt, version):
+    try:
+        plugin.clone(package_dict, errors, clone_context)
+
+        # Port back from context extras to data
+        _t.update_extras_from_context(package_dict, clone_context)
+
+        for resource in pkg.get('resources'):
+
+            try:
+                del resource['id']
+                del resource['package_id']
+
+                if 'revision_id' in resource:
+                    del resource['revision_id']
                 
-                plugin.clone(package_dict, errors, clone_context)
+                resource_clone_context = {
+                    _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
+                    _c.SCHEMA_TYPE_KEY : _t.get_resource_type(resource),
+                    _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
+                    _c.SCHEMA_VERSION_KEY : _t.get_resource_version(resource)
+                }
 
-                # Port back from context extras to data
-                _t.update_extras_from_context(package_dict, clone_context)
+                plugin = configuration.get_plugin(configuration.CLONE_KEY, _type, _t.get_resource_type(resource))
+                plugin.clone_resource(resource, errors, resource_clone_context)
 
-                for resource in pkg.get('resources'):
+                _t.update_extras_from_resource_context(resource, resource_clone_context)
 
-                    if _t.get_resource_type(resource) in plugin.clonable_resource_types(_type, opt, version):
+                # attach to package_dict
+                package_dict['resources'].append(resource)
+            except PluginNotFoundException:
+                pass 
 
-                        del resource['id']
-                        del resource['package_id']
+        return toolkit.get_action('package_create')(context, package_dict)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
 
-                        if 'revision_id' in resource:
-                            del resource['revision_id']
-                        
-                        resource_clone_context = {
-                            _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
-                            _c.SCHEMA_TYPE_KEY : _t.get_resource_type(resource),
-                            _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
-                            _c.SCHEMA_VERSION_KEY : _t.get_resource_version(resource)
-                        }
-
-                        # clone context should be of resource
-                        plugin.clone_resource(resource, errors, resource_clone_context)
-
-                        _t.update_extras_from_resource_context(resource, resource_clone_context)
-
-                        # attach to package_dict
-                        package_dict['resources'].append(resource)
-
-
-                return toolkit.get_action('package_create')(context, package_dict)
-
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-
-            message = str(e)
-            log.error(message)
-            raise ValidationError(message)
+        message = str(e)
+        log.error(message)
+        raise ValidationError(message)

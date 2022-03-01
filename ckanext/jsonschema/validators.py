@@ -1,9 +1,5 @@
-
-from sqlalchemy.sql.expression import true
-from ckan.migration import versions
-
-import ckan.lib.helpers as h
 import ckan.plugins.toolkit as toolkit
+import ckanext.jsonschema.configuration as configuration
 
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
@@ -38,27 +34,24 @@ def stop_with_error(message, key, errors):
     
     raise StopOnError(_(message))
 
-import ckanext.jsonschema.constants as _c
-
-import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.interfaces as _i
-from ckan.plugins import PluginImplementations
-
 import logging
+
+import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.tools as _t
+
 log = logging.getLogger(__name__)
 
 
 #############################################
 
+import json
+
 import jsonschema
 from jsonschema import Draft7Validator
-import json
 
 # TODO move me to tools
 _SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
 
-# TODO move me and relatives to plugin.pu
-JSONSCHEMA_PLUGINS = PluginImplementations(_i.IBinder)
 
 # TODO create validation in tools then call it from here.
 # TODO better message in case of validation Error (once in tools)
@@ -118,18 +111,18 @@ def draft_validation(schema, body, errors):
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)
 
-    dataset_type = _data['type']
+    dataset_type = _t.get_dataset_type(_data) # TODO should be jsonschema_type
     resources = _data.get('resources')
     if not resources:
         return
     
     for resource in resources:
         
-        body, type, opt, version = get_extras_from_resource(resource)
+        body, resource_type, opt, version = get_extras_from_resource(resource)
 
         context.update({
             _c.SCHEMA_BODY_KEY: body,
-            _c.SCHEMA_TYPE_KEY : type,
+            _c.SCHEMA_TYPE_KEY : resource_type,
             _c.SCHEMA_OPT_KEY : opt,
             _c.SCHEMA_VERSION_KEY : version
         })
@@ -137,27 +130,16 @@ def resource_extractor(key, data, errors, context):
         # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
         #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
 
-        for plugin in JSONSCHEMA_PLUGINS:
-            
-            if type in plugin.supported_resource_types(dataset_type, opt, version):
-                try:
-                    
-                    plugin.extract_from_json(resource, errors, context)
-                
-                except df.StopOnError:
-                    raise
-                except Exception as e:
-                    stop_with_error(str(e),key,errors)
 
-                else:
-                    _t.update_extras_from_resource_context(resource, context)
-                    
-                    #enrich_resource_data_with_jsonschema_extras(resource, jsonschema_extras)
-
-                    # port back changes from body (and other extras) to the data model
-                    #_t.update_extras_from_resource_context(resource, context)
-                    # persist changes to the data model
-                    # resource.update(_r)
+        try:
+            plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, dataset_type, resource_type)
+            plugin.extract_from_json(resource, errors, context)
+        except df.StopOnError:
+            raise
+        except Exception as e:
+            stop_with_error(str(e),key,errors)
+        else:
+            _t.update_extras_from_resource_context(resource, context)
 
     data.update(df.flatten_dict(_data))
 
@@ -173,29 +155,22 @@ def before_extractor(key, data, errors, context):
         _c.SCHEMA_OPT_KEY : opt,
         _c.SCHEMA_VERSION_KEY : version
     })
+    
+    plugin = configuration.get_plugin(configuration.INPUT_KEY, type)
+    
+    try:
+        plugin.before_extractor(_data, errors, context)
+        _t.update_extras_from_context(_data, context)
+                
+        # update datamodel
+        data.update(df.flatten_dict(_data))
+    except df.StopOnError:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        stop_with_error(str(e),key,errors)
 
-    for plugin in JSONSCHEMA_PLUGINS:
-        try:
-            if type in plugin.supported_input_types(opt, version):
-                
-                plugin.before_extractor(_data, errors, context)
-                 # port back changes from body (and other extras) to the data model
-                
-                #_body = _t.get_context_body(context)
-                #_type = _t.get_context_type(context)
-                #_t.update_extras(_data, _body, _type, opt, version)
-                _t.update_extras_from_context(_data, context)
-                
-                # update datamodel
-                data.update(df.flatten_dict(_data))
-        except df.StopOnError:
-            raise
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            stop_with_error(str(e),key,errors)
-
-   
 
 def extractor(key, data, errors, context):
 
@@ -212,24 +187,22 @@ def extractor(key, data, errors, context):
     
     #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
 
-    for plugin in JSONSCHEMA_PLUGINS:
-        try:
-            if type in plugin.supported_dataset_types(opt, version):
-                
-                plugin.extract_from_json(_data, errors, context)
+    plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, type)
 
-                #_t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
+    try:
+        plugin.extract_from_json(_data, errors, context)
 
-                # port back changes from body (and other extras) to the data model
-                _t.update_extras_from_context(_data, context)
+        #_t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
 
-                # update datamodel
-                data.update(df.flatten_dict(_data))
-                
-        except df.StopOnError:
-            raise
-        except Exception as e:
-            stop_with_error(str(e),key,errors)
+        # port back changes from body (and other extras) to the data model
+        _t.update_extras_from_context(_data, context)
+
+        # update datamodel
+        data.update(df.flatten_dict(_data))
+    except df.StopOnError:
+        raise
+    except Exception as e:
+        stop_with_error(str(e),key,errors)
 
 
 # TODO PACKAGE_SHOW ??
@@ -242,14 +215,19 @@ def dataset_dump(dataset_id, format = None):
 
     body, type, opt, version = get_extras_from_data(_data)
 
-    for plugin in JSONSCHEMA_PLUGINS:
-        if type in plugin.supported_output_types(type, opt, version):
-                   
-            context = {}
-            # resource.get('__extras')
-            body = plugin.dump_to_output(body, type, opt, version, _data, format, context)
-            # port back changes from body (and other extras) to the data model
-            return body
+    
+    context = {
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY : type,
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_VERSION_KEY : version
+    }
+    errors = []
+    
+    plugin = configuration.get_plugin(configuration.OUTPUT_KEY, type)
+    body = plugin.dump_to_output(_data, errors, context, format)
+    
+    return body
 
 
 def get_extras_from_resource(resource):

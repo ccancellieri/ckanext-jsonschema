@@ -3,13 +3,12 @@
 
 import ckan.plugins
 import ckan.tests.helpers as helpers
-from ckanext.jsonschema.plugin import (handled_dataset_types,
-                                       handled_resource_types, 
-                                       handled_output_types, 
-                                       _modify_package_schema)
+import ckanext.jsonschema.configuration as configuration
+from ckan.logic.schema import default_create_package_schema
+from ckan.plugins.core import PluginNotFoundException
+from ckanext.jsonschema.plugin import _modify_package_schema
 
-from ckan.logic.schema import (default_create_package_schema)
-    
+
 class TestPlugin(object):
     
     @classmethod
@@ -19,41 +18,12 @@ class TestPlugin(object):
         # Test code should use CKAN's plugins.load() function to load plugins
         # to be tested.
 
-        _plugins = ['jsonschema', 'jsonschema_iso']
+        _plugins = ['jsonschema']
 
         for plugin in _plugins:
             if not ckan.plugins.plugin_loaded(plugin):
                 ckan.plugins.load(plugin)
 
-
-    def test_handled_dataset_types(self):
-
-        dataset_types = handled_dataset_types()
-
-        assert type(dataset_types) is list
-        assert len(dataset_types) != 0
-
-
-    def test_handled_resource_types(self):
-
-        dataset_types = handled_dataset_types()
-
-        for dataset_type in dataset_types:
-            resource_types = handled_resource_types(dataset_type)
-
-            assert type(resource_types) is list
-
-
-    def test_handled_output_types(self):
-
-        dataset_types = handled_dataset_types()
-
-        for dataset_type in dataset_types:
-            output_types = handled_output_types(dataset_type)
-
-            # output_types can be list or None, so for now just test it works
-            # assert type(output_types) is list
-            assert True
 
     def test_modify_package_schema(self):
 
@@ -71,3 +41,40 @@ class TestPlugin(object):
             
             found = len(funcs) > 0
             assert found
+
+
+    def test_configuration(self):
+
+        from six import PY3
+
+        # When getting .keys() from a dict in Python3, the returned object is of type dict_keys instead of list
+        if PY3:
+            list_type = type({}.keys())
+        else:
+            list_type = list
+
+        input_configuration = configuration.get_input_configuration()
+        assert isinstance(input_configuration, dict)
+
+        configuration.setup()
+
+        try:
+            configuration._get_jsonschema_plugin_from_name("random_plugin_name")
+            assert False('No error was raised when requesting to configuration a non existing plugin')
+        except PluginNotFoundException:
+            assert True
+
+        input_types = configuration.get_input_types()
+        assert isinstance(input_types, list_type)
+        
+        output_types = configuration.get_output_types()
+        assert isinstance(output_types, list_type)
+
+        supported_types = configuration.get_supported_types()
+        assert isinstance(supported_types, list_type)
+
+        if len(supported_types) > 0:
+            # we cast supported_types to list because in Python3 would be a dict_keys
+            resource_types = configuration.get_resource_types(list(supported_types)[0])
+            assert isinstance(resource_types, list_type)
+

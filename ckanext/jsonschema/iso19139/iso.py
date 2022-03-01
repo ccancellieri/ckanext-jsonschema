@@ -19,12 +19,11 @@ import ckanext.jsonschema.tools as _t
 from ckanext.jsonschema.iso19139 import extractor
 from ckanext.jsonschema.iso19139 import extractor_iso19139
 from ckanext.jsonschema.iso19139.constants import (
-    TYPE_ISO, TYPE_ISO19139, SUPPORTED_DATASET_FORMATS, SUPPORTED_ISO_RESOURCE_FORMATS,
+    TYPE_ISO, TYPE_ISO19139,
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, TYPE_ISO_RESOURCE_DISTRIBUTOR, 
     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_MAINTAINER, 
     TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
     TYPE_ISO_RESOURCE_RESOURCE_CONTACT,
-    SUPPORTED_ISO_INPUT_TYPES
     )
 
 log = logging.getLogger(__name__)
@@ -42,6 +41,22 @@ class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
 
+    
+    resolver = {
+        # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
+        # TYPE_ISO_RESOURCE_DATASET,
+        TYPE_ISO: extractor._extract_from_iso,
+        TYPE_ISO_RESOURCE_DISTRIBUTOR: extractor._extract_iso_resource_responsible,
+        TYPE_ISO_RESOURCE_ONLINE_RESOURCE: extractor._extract_iso_online_resource,
+        TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW: extractor._extract_iso_graphic_overview,
+        TYPE_ISO_RESOURCE_METADATA_CONTACT: extractor._extract_iso_resource_responsible,
+        TYPE_ISO_RESOURCE_RESOURCE_CONTACT: extractor._extract_iso_resource_responsible,
+        TYPE_ISO_RESOURCE_MAINTAINER: extractor._extract_iso_resource_responsible,
+        TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible,
+
+        TYPE_ISO19139: extractor_iso19139._extract_iso
+    }
+
     # IConfigurer
     def update_config(self, config_):
         pass
@@ -56,81 +71,36 @@ class JsonschemaIso(p.SingletonPlugin):
         elif dataset_type == TYPE_ISO19139:
             return extractor_iso19139._extract_id(body)
         
-    def supported_input_types(self, opt, version):
-        return SUPPORTED_ISO_INPUT_TYPES
-
-
-    def supported_resource_types(self, dataset_type, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
-        if version != _c.SCHEMA_VERSION:
-            log.warn('Version: \'{}\' is not supported by this plugin ({})'.format(version, __name__))
-            # when version is not the default one we don't touch
-            return []
-        # TODO MAPPING
-        if dataset_type == TYPE_ISO:
-            return SUPPORTED_ISO_RESOURCE_FORMATS
-        return []
-        
-
-    def supported_dataset_types(self, opt=_c.SCHEMA_OPT, version=_c.SCHEMA_VERSION):
-        if version != _c.SCHEMA_VERSION:
-            log.warn('Version: \'{}\' is not supported by this plugin ({})'.format(version, __name__))
-            # when version is not the default one we don't touch
-            return []
-        return SUPPORTED_DATASET_FORMATS
-
-
-    def supported_output_types(self, dataset_type, opt, version):
-        if dataset_type == TYPE_ISO:
-            return ['iso']
-        return []
-
 
     def before_extractor(self, data, errors, context):
 
         _type = _t.get_context_type(context)
-        
-        if _type == TYPE_ISO19139:
-            extractor_iso19139._extract_iso(data, errors, context)
+        _extractor = self.resolver.get(_type)
+
+        if _extractor:
+            _extractor(data, errors, context)
+        else:
+            Exception('Extractor not in resolver for type: {}'.format(_type))
 
 
     def extract_from_json(self, data, errors, context):
 
-        
-        # type and version are strings
         _type = _t.get_context_type(context)
+        _extractor = self.resolver.get(_type)
 
-        if _type == TYPE_ISO:
-            extractor._extract_from_iso(data, errors, context)
-
-        # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
-        # TYPE_ISO_RESOURCE_DATASET,
-
-        elif _type == TYPE_ISO_RESOURCE_DISTRIBUTOR:
-            extractor._extract_iso_resource_responsible(data, errors, context)
-            
-        elif _type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE:
-            extractor._extract_iso_online_resource(data, errors, context)
-            
-        elif _type == TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW:
-            extractor._extract_iso_graphic_overview(data, errors, context)
-            
-        elif _type == TYPE_ISO_RESOURCE_METADATA_CONTACT:
-            extractor._extract_iso_resource_responsible(data, errors, context)
-        
-        elif _type == TYPE_ISO_RESOURCE_RESOURCE_CONTACT:
-            extractor._extract_iso_resource_responsible(data, errors, context)
-            
-        elif _type == TYPE_ISO_RESOURCE_MAINTAINER:
-            extractor._extract_iso_resource_responsible(data, errors, context)
-                        
-        elif _type == TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY:
-            extractor._extract_iso_resource_responsible(data, errors, context)
+        if _extractor:
+            _extractor(data, errors, context)
+        else:
+            Exception('Extractor not in resolver for type: {}'.format(_type))
     
 
-    def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
+    def dump_to_output(self, data, errors, context, output_format):
         import ckan.lib.base as base
 
+        body = _t.get_context_body(context)
         pkg = _t.get(body.get('fileIdentifier'))
+        dataset_type = _t.get_context_type(context)
+        
         # TODO why not use data as model is get_pkg a good model??
 
         if pkg:
@@ -151,15 +121,18 @@ class JsonschemaIso(p.SingletonPlugin):
                 # if dataset_type == 'iso19139' and output_format == 'xml':
                 #     return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
                 
-                raise Exception('Unsupported requested format {}'.format(dataset_type))
+                raise Exception('Unsupported requested format {}'.format(output_format))
             except Exception as e:
                 try:
-                    message = 'Error on: {} line: {} Message:{}'.format(e.name, e.lineno, e.message)
-                    log.error(message)
+                    if hasattr(e, 'name'):
+                        message = 'Error on: {} line: {} Message:{}'.format(e.name, e.lineno, e.message)
+                        log.error(message)
+                    else:
+                        raise
                 except:
                     log.error('Exception: {}'.format(type(e)))
                     log.error(str(e))
-                # raise e
+                    raise
                 # raise e
 
     def clone(self, package_dict, errors, context):
@@ -172,18 +145,3 @@ class JsonschemaIso(p.SingletonPlugin):
 
     def clone_resource(self, resource_dict, errors, context):
         pass
-
-
-
-    def clonable_resource_types(self, dataset_type, opt, version):
-
-        clonables = [
-            TYPE_ISO_RESOURCE_DISTRIBUTOR,
-            TYPE_ISO_RESOURCE_METADATA_CONTACT,
-            TYPE_ISO_RESOURCE_MAINTAINER,
-            TYPE_ISO_RESOURCE_RESOURCE_CONTACT,
-            TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY
-        ]
-
-        return clonables
-

@@ -27,7 +27,9 @@ log = logging.getLogger(__name__)
 from jinja2 import Template,Markup
 from flask import Blueprint, abort, jsonify, send_file, Response, stream_with_context
 
+# TODO decorate jsonschema blueprint with tools.initialize
 jsonschema = Blueprint(_c.TYPE, __name__)
+
 
 def importer_view():
     try:
@@ -190,6 +192,8 @@ def get_format(dataset_id, format = 'json'):
 
     except toolkit.ObjectNotFound as e:
         return toolkit.abort(404, _("Dataset not found"))
+    except Exception as e:
+        return toolkit.abort(500, _(e.message))
 
 
 jsonschema.add_url_rule('/{}/<dataset_id>.<format>'.format(_c.TYPE), view_func=get_format, methods=[u'GET'])

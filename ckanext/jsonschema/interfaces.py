@@ -13,40 +13,7 @@ class IBinder(Interface):
 
     #     '''
     #     return opt
-    def supported_output_types(self, dataset_type, opt, version):
-        return []
-
-    def supported_resource_types(self, dataset_type, opt, version):
-        '''
-        returns a list of supported resource type
-        '''
-        return [] #'dataset'
-
-    def supported_dataset_types(self, opt, version):
-        '''
-        returns a list of supported resource type
-        '''
-        return [] #'dataset'
-
-    def supported_input_types(self):
-        return []
-
     
-    def clonable_dataset_types(self, opt, version):
-        '''
-        returns the list of dataset types which can be cloned
-        '''
-
-        return self.supported_dataset_types(opt, version)
-
-
-    def clonable_resource_types(self, dataset_type, opt, version):
-        '''
-        returns the list of resource types which can be cloned in a clone operation
-        '''
-
-        return self.supported_resource_types(dataset_type, opt, version)
-
     def dump_to_json(self, body, type, version, key, data, context):
         '''
         return a serialized version in the desired profile of the data model
