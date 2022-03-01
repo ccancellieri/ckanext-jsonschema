@@ -180,19 +180,13 @@ def _configure_resources(resources, jsonschema_type_name, configuration, plugin_
 def get_input_types():
     return get_configuration().get(INPUT_KEY).keys()
 
-
 def get_supported_types():
     return get_configuration().get(SUPPORTED_KEY).keys()
 
 def get_output_types():
-    return get_configuration().configuration[OUTPUT_KEY].keys()
+    return get_configuration().get(OUTPUT_KEY).keys()
 
 def get_resource_types(dataset_type):
-    '''
-    If dataset_type is None: returns a map {pacakge_type1: [resource_type1, resource_type2...], package_type2: ...}
-    If dataset_type is set, returns the list of resources supported for that dataset_type
-    '''
-    global RESOURCE_TYPES, RESOURCE_TYPES_ARRAY
 
     configuration = get_configuration()
     resource_types = {}

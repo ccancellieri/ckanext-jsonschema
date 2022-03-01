@@ -3,7 +3,9 @@
 
 import ckan.plugins
 import ckan.tests.helpers as helpers
+import ckanext.jsonschema.configuration as configuration
 from ckan.logic.schema import default_create_package_schema
+from ckan.plugins.core import PluginNotFoundException
 from ckanext.jsonschema.plugin import _modify_package_schema
 
 
@@ -39,3 +41,31 @@ class TestPlugin(object):
             
             found = len(funcs) > 0
             assert found
+
+
+    def test_configuration(self):
+        
+        input_configuration = configuration.get_input_configuration()
+        assert isinstance(input_configuration, dict)
+
+        configuration.setup()
+
+        try:
+            configuration._get_jsonschema_plugin_from_name("random_plugin_name")
+            assert False('No error was raised when requesting to configuration a non existing plugin')
+        except PluginNotFoundException:
+            assert True
+
+        input_types = configuration.get_input_types()
+        assert isinstance(input_types, list)
+        
+        output_types = configuration.get_output_types()
+        assert isinstance(output_types, list)
+
+        supported_types = configuration.get_supported_types()
+        assert isinstance(supported_types, list)
+
+        if len(supported_types) > 0:
+            resource_types = configuration.get_resource_types(supported_types[0])
+            assert isinstance(resource_types, list)
+
