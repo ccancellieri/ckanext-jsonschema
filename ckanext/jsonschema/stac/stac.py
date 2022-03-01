@@ -6,7 +6,7 @@ import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.logic.get as _g
 from ckanext.jsonschema.stac import constants as _c
-from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalaogExtractor, CollectionExtractor, extract_id
+from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalogExtractor, CollectionExtractor, extract_id
 
 log = logging.getLogger(__name__)
 
@@ -41,21 +41,51 @@ class JsonSchemaStac(plugins.SingletonPlugin):
                     log.error(message)
 
 
-    def extract_from_json(self, body, type, opt, version, data, errors, context):
+    def get_before_extractor(self, package_type, context):
 
-        _type = body.get('type')
-        extractor = None
+        body = _t.get_context_body(context)
+        stac_type = body.get('type')
 
-        if _type == _c.TYPE_STAC_ITEM:
-            extractor = ItemExtractor()
-            
-        elif _type == _c.TYPE_STAC_CATALOG:
-            extractor = CatalaogExtractor()
+        extractors = {
+            _c.TYPE_STAC_ITEM: ItemExtractor().assets_to_resources,
+        }
 
-        elif _type == _c.TYPE_STAC_COLLECTION:
-            extractor = CollectionExtractor()
+        extractor_for_type = extractors.get(stac_type)
 
-        if extractor:
-            extractor.extract_from_json(body, type, opt, version, data, errors, context)
+        if extractor_for_type:
+            return extractor_for_type
+        else:
+            raise KeyError('Extractor not defined for package with type {}, resolved in {}'.format(package_type, stac_type))
+        
 
-        return (body, type, opt, version, data)
+    def get_package_extractor(self, package_type, context):
+        
+        body = _t.get_context_body(context)
+        stac_type = body.get('type')
+
+        extractors = {
+            _c.TYPE_STAC_ITEM: ItemExtractor().extract_from_json,
+            _c.TYPE_STAC_CATALOG: CatalogExtractor().extract_from_json,
+            _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
+        }
+
+        extractor_for_type = extractors.get(stac_type)
+
+        if extractor_for_type:
+            return extractor_for_type
+        else:
+            raise KeyError('Extractor not defined for package with type {}, resolved in {}'.format(package_type, stac_type))
+
+    def get_resource_extractor(self, package_type, resource_type, context):
+
+        extractors = {
+            _c.TYPE_STAC_RESOURCE: ItemExtractor()._extract_json_resources,
+        }
+
+        extractor_for_type = extractors.get(resource_type)
+
+        if extractor_for_type:
+            return extractor_for_type
+        else:
+            raise KeyError('Extractor not defined for resource with type {}'.format(resource_type))
+        

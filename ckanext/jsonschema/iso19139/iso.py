@@ -41,47 +41,74 @@ class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
 
-    
-    resolver = {
-        # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
-        # TYPE_ISO_RESOURCE_DATASET,
-        TYPE_ISO: extractor._extract_from_iso,
-        TYPE_ISO_RESOURCE_DISTRIBUTOR: extractor._extract_iso_resource_responsible,
-        TYPE_ISO_RESOURCE_ONLINE_RESOURCE: extractor._extract_iso_online_resource,
-        TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW: extractor._extract_iso_graphic_overview,
-        TYPE_ISO_RESOURCE_METADATA_CONTACT: extractor._extract_iso_resource_responsible,
-        TYPE_ISO_RESOURCE_RESOURCE_CONTACT: extractor._extract_iso_resource_responsible,
-        TYPE_ISO_RESOURCE_MAINTAINER: extractor._extract_iso_resource_responsible,
-        TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible,
-
-        TYPE_ISO19139: extractor_iso19139._extract_iso
-    }
 
     # IConfigurer
     def update_config(self, config_):
         pass
         #TODO
 
+
+    def get_before_extractor(self, package_type, context):
+        
+        extractors = {
+            TYPE_ISO19139: extractor_iso19139._extract_iso
+        }
+
+        extractor_for_type = extractors.get(package_type)
+        
+        if extractor_for_type:
+            return extractor_for_type
+        else:
+            raise KeyError('Before extractor not defined for package with type {}'.format(package_type))
+
+    def get_package_extractor(self, package_type, context):
+        
+        extractors = {
+            TYPE_ISO: extractor._extract_from_iso,
+        }
+
+        extractor_for_type = extractors.get(package_type)
+
+        if extractor_for_type:
+            return extractor_for_type
+        else:
+            raise KeyError('Extractor not defined for package with type {}'.format(package_type))
+
+
+    def get_resource_extractor(self, package_type, resource_type, context):
+
+        extractors = {
+            # TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
+            # TYPE_ISO_RESOURCE_DATASET,
+            TYPE_ISO_RESOURCE_DISTRIBUTOR: extractor._extract_iso_resource_responsible,
+            TYPE_ISO_RESOURCE_ONLINE_RESOURCE: extractor._extract_iso_online_resource,
+            TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW: extractor._extract_iso_graphic_overview,
+            TYPE_ISO_RESOURCE_METADATA_CONTACT: extractor._extract_iso_resource_responsible,
+            TYPE_ISO_RESOURCE_RESOURCE_CONTACT: extractor._extract_iso_resource_responsible,
+            TYPE_ISO_RESOURCE_MAINTAINER: extractor._extract_iso_resource_responsible,
+            TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible,
+        }
+
+        extractor_for_type = extractors.get(resource_type)
+
+        if extractor_for_type:
+            return extractor_for_type
+        else:
+            raise KeyError('Extractor not defined for package with type {}'.format(resource_type))
+
         
     # IBinder
-    def extract_id(self, body, dataset_type, opt, version, errors, context):
+    def extract_id(self, data, errors, context):
+        
+        dataset_type = _t.get_context_type(context)
+        body = _t.get_context_body(context)
+
         if dataset_type == TYPE_ISO:
             return extractor._extract_id(body)
 
         elif dataset_type == TYPE_ISO19139:
             return extractor_iso19139._extract_id(body)
         
-
-    def before_extractor(self, data, errors, context):
-
-        _type = _t.get_context_type(context)
-        _extractor = self.resolver.get(_type)
-
-        if _extractor:
-            _extractor(data, errors, context)
-        else:
-            Exception('Extractor not in resolver for type: {}'.format(_type))
-
 
     def extract_from_json(self, data, errors, context):
 

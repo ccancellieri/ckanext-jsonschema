@@ -28,21 +28,35 @@ class IBinder(Interface):
         pass
 
 
-    def extract_from_json(self, data, errors, context):
+    def get_before_extractor(self, package_type, context):
         '''
-        create the data model from the incoming body
-        modify body in a UI suitable form
-        it may match with the corresponding 'type' schema
-        which is used by the jsonschema plugin to validate the
-        incoming content (body) from API/UI
-        '''
-        raise Exception('extract_from_json operation not supported for this format')
-
-    def before_extractor(self, data, errors, context):
-        '''
+        Gets the before extractor for the specified type 
         Can be used as preprocessing step f.e. a transformation to a different jsonschema model
+        If there isn't a before extractor for the type, should return None
         '''
-        raise Exception('before_extractor operation not supported for this format')
+
+        raise KeyError('Before extractor not implemented')
+        
+
+    def get_package_extractor(self, package_type, context):
+        '''
+        Gets the extractor for the specified package type 
+        The extractor will create the data model from the incoming body in context
+
+        The context is passed because some plugins (e.g. STAC) need to inspect the body to decide the extractor
+        Could be removed?
+        '''
+
+        raise KeyError('get_package_extractor not implemented')
+
+
+    def get_resource_extractor(self, package_type, resource_type):
+        '''
+        Gets the extractor for the specified resource type 
+        The extractor will create the data model from the incoming body in context
+        '''
+
+        raise KeyError('get_resource_extractor not implemented')
 
     def extract_id(self, body, type, opt, verion, errors, context):
         '''

@@ -7,14 +7,6 @@
     {
       "required": [
         "name",
-        "data",
-        "schema",
-        "profile"
-      ]
-    },
-    {
-      "required": [
-        "name",
         "path",
         "schema",
         "profile"

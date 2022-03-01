@@ -1,6 +1,9 @@
 import ckanext.jsonschema.constants as _c
 from ckan.plugins.core import PluginNotFoundException
 
+import logging
+log = logging.getLogger(__name__)
+
 INPUT_KEY = 'input'
 SUPPORTED_KEY = 'supported'
 OUTPUT_KEY = 'output'
@@ -93,39 +96,23 @@ def setup():
     
     '''
 
-    input_configuration = get_input_configuration()
-    configuration = get_configuration_template()
+    _validate_configuration_files()
 
+    configuration = get_configuration_template()
+    create_configuration(configuration)
+    set_configuration(configuration)
+
+    _validate_schemas()
+
+    log.info('Created jsonschema configuration')
+
+def create_configuration(configuration):
+    input_configuration = get_input_configuration()
 
     for plugin_name, plugin_configuration in input_configuration.items():
 
         jsonschema_types = plugin_configuration['jsonschema_types']
         _configure_jsonschema_types(jsonschema_types, configuration, plugin_name)
-                        
-
-    set_configuration(configuration)
-    validate_configuration()
-
-
-def validate_configuration():
-    '''
-    Checks that the configuration is correct
-    1) There should be a schema for every configured dataset type
-    '''
-    _validate_schemas()
-    # validate plugins with IBinder
-
-
-def _validate_schemas():
-
-    schemas = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY]
-    supported_types = get_supported_types()
-
-    for type in supported_types:
-        if type not in schemas:
-            raise Exception('The jsonschema type "{}" was configured but its schema was not found'.format(type))
-
-
 
 def _configure_jsonschema_types(jsonschema_types, configuration, plugin_name):
 
@@ -174,6 +161,35 @@ def _configure_resources(resources, jsonschema_type_name, configuration, plugin_
                 configuration[operation][jsonschema_type_name]['resources'][resource_type] = {PLUGIN_KEY: _get_jsonschema_plugin_from_name(plugin_name)}
 
 ############# END SETUP #############
+############# VALIDATIONS #############
+
+def validate_configuration():
+    '''
+    Checks that the configuration is correct
+    1) There should be a schema for every configured dataset type
+    '''
+    # validate plugins with IBinder
+
+
+def _validate_schemas():
+
+    schemas = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY]
+    supported_types = get_supported_types()
+
+    for type in supported_types:
+        if type not in schemas:
+            raise Exception('The jsonschema type "{}" was configured but its schema was not found'.format(type))
+
+def _validate_configuration_files():
+    '''Checks that every jsonschema_plugin has its own configuration file'''
+
+    for plugin in JSONSCHEMA_PLUGINS:
+        configuration_files = get_input_configuration().keys()
+        if plugin.name not in configuration_files:
+            raise PluginNotFoundException('The plugin {} was installed but no configuration file was found'.format(plugin.name)) 
+
+
+############# END VALIDATIONS #############
 
 
 ############# GETTERS ############# 
