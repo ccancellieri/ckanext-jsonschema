@@ -9,8 +9,8 @@
             "clone": true,
             "output": true,
             "resources": {
-                "table-data-package": {
-                    "label": "Table Data Package",
+                "tabular-data-resource": {
+                    "label": "Table Data Resource",
                     "clone": false,
                     "supported": true
                 },
