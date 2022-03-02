@@ -158,12 +158,6 @@ def before_extractor(key, data, errors, context):
 
     body, _type, opt, version = get_extras_from_data(_data)
 
-    
-    if _type not in configuration.get_input_types():
-        return
-    
-    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
-    
     ######################### TODO #########################
     opt.update({'validation': True})
      
@@ -173,6 +167,11 @@ def before_extractor(key, data, errors, context):
         _c.SCHEMA_OPT_KEY : opt,
         _c.SCHEMA_VERSION_KEY : version
     })
+
+    if _type not in configuration.get_input_types():
+        return
+    
+    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
 
     try:
         extractor = plugin.get_before_extractor(_type, context) 

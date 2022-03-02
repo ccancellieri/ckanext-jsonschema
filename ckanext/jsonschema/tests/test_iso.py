@@ -13,7 +13,7 @@ import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
 import pytest
 from ckanext.jsonschema.logic.actions import validate_metadata, clone_metadata
-
+import ckanext.jsonschema.configuration as configuration
 
 @pytest.fixture
 def iso19139_sample(datadir):
@@ -57,29 +57,43 @@ class TestIso(object):
 
     def _create_iso_package(self, organization, iso19139_sample):
 
+        _type = 'iso19139'
         body = _u.xml_to_json(iso19139_sample)
     
-        package_dict = {}
-
-        package_dict['type'] = 'iso19139'
-        package_dict['owner_org'] = organization['id']
-        package_dict['license_id'] = 'notspecified'
-
         opt = dict(_c.SCHEMA_OPT)
-
         opt.update({
             'validation': False,
             'imported' : True,
             'source_format':'xml',
             'source_url': "localhost:test",
             'imported_on': str(datetime.datetime.now())
-            })
-        extras = []
-        package_dict['extras'] = extras
-        extras.append({ 'key': _c.SCHEMA_BODY_KEY, 'value' : body })
-        extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : package_dict['type'] })
-        extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' :  opt })
-        extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })
+        })
+
+
+        # IMPORT - PREPROCESSING -
+        import_context = {
+            _c.SCHEMA_BODY_KEY: _t.as_dict(body),
+            _c.SCHEMA_TYPE_KEY : _type,
+            _c.SCHEMA_OPT_KEY : opt,
+            _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
+        }
+
+        package_dict = {
+            # IMPORTER_TYPE = 'iso19139'old
+            'extras': _c.DEFAULT_EXTRAS, # initial extras
+            'type': _type,
+            'owner_org': organization.get('id'),
+            'license_id': 'notspecified'
+        }
+
+        errors = []
+        plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+        extractor = plugin.get_input_extractor(_type, import_context) 
+        extractor(package_dict, errors, import_context)   
+
+        opt['validation'] = False  
+        _t.update_extras_from_context(package_dict, import_context)
+
 
         context = self._get_default_context()
         package = toolkit.get_action('package_create')(context, package_dict)
