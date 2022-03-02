@@ -8,7 +8,12 @@
             "supported": true,
             "clone": true,
             "output": true,
-            "resources":{}
+            "resources":{
+                "stac-asset": {
+                    "supported": true,
+                    "clone": false
+                }
+            }
         }
     }
 }
