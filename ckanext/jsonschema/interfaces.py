@@ -21,7 +21,7 @@ class IBinder(Interface):
         # TODO jinja2 template body as model ?
         pass
 
-    def dump_to_output(self, body, type, opt, version, data, output_format, context):
+    def dump_to_output(self, data, errors, context, output_format):
         '''
         serialize to body the data model in the desired form
         '''
@@ -34,8 +34,7 @@ class IBinder(Interface):
         Can be used as preprocessing step f.e. a transformation to a different jsonschema model
         If there isn't a before extractor for the type, should return None
         '''
-
-        raise KeyError('Before extractor not implemented')
+        return lambda data, errors, context : None
         
 
     def get_package_extractor(self, package_type, context):
@@ -47,7 +46,7 @@ class IBinder(Interface):
         Could be removed?
         '''
 
-        raise KeyError('get_package_extractor not implemented')
+        raise NotImplementedError('get_package_extractor not implemented')
 
 
     def get_resource_extractor(self, package_type, resource_type):
@@ -56,7 +55,7 @@ class IBinder(Interface):
         The extractor will create the data model from the incoming body in context
         '''
 
-        raise KeyError('get_resource_extractor not implemented')
+        raise NotImplementedError('get_resource_extractor not implemented')
 
     def extract_id(self, body, type, opt, verion, errors, context):
         '''
@@ -69,4 +68,4 @@ class IBinder(Interface):
         '''
         Clones a package        
         '''
-        raise Exception('clone operation not supported for this format')
+        raise NotImplementedError('clone operation not supported for this format')

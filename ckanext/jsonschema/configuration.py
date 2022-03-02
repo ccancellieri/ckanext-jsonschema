@@ -62,6 +62,9 @@ def get_plugin(operation, dataset_type, resource_type=None):
         else:
             plugin = configuration.get(operation).get(dataset_type).get(PLUGIN_KEY)
     
+        if not plugin:
+            raise Exception()
+        
         return plugin
 
     except:
@@ -202,7 +205,7 @@ def get_supported_types():
 def get_output_types():
     return get_configuration().get(OUTPUT_KEY).keys()
 
-def get_resource_types(dataset_type):
+def get_supported_resource_types(dataset_type):
 
     configuration = get_configuration()
     resource_types = {}

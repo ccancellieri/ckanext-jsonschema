@@ -47,8 +47,8 @@ class JsonschemaIso(p.SingletonPlugin):
         pass
         #TODO
 
-
-    def get_before_extractor(self, package_type, context):
+    # TODO
+    def get_input_extractor(self, package_type, context):
         
         extractors = {
             TYPE_ISO19139: extractor_iso19139._extract_iso
@@ -59,13 +59,14 @@ class JsonschemaIso(p.SingletonPlugin):
         if extractor_for_type:
             return extractor_for_type
         else:
-            raise KeyError('Before extractor not defined for package with type {}'.format(package_type))
+            raise KeyError('Input extractor not defined for package with type {}'.format(package_type))
+
 
     def get_package_extractor(self, package_type, context):
         
         extractors = {
             TYPE_ISO: extractor._extract_from_iso,
-        }
+        }   
 
         extractor_for_type = extractors.get(package_type)
 
@@ -108,18 +109,7 @@ class JsonschemaIso(p.SingletonPlugin):
 
         elif dataset_type == TYPE_ISO19139:
             return extractor_iso19139._extract_id(body)
-        
-
-    def extract_from_json(self, data, errors, context):
-
-        _type = _t.get_context_type(context)
-        _extractor = self.resolver.get(_type)
-
-        if _extractor:
-            _extractor(data, errors, context)
-        else:
-            Exception('Extractor not in resolver for type: {}'.format(_type))
-    
+            
 
     def dump_to_output(self, data, errors, context, output_format):
         import ckan.lib.base as base

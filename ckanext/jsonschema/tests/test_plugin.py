@@ -75,6 +75,6 @@ class TestPlugin(object):
 
         if len(supported_types) > 0:
             # we cast supported_types to list because in Python3 would be a dict_keys
-            resource_types = configuration.get_resource_types(list(supported_types)[0])
+            resource_types = configuration.get_supported_resource_types(list(supported_types)[0])
             assert isinstance(resource_types, list_type)
 

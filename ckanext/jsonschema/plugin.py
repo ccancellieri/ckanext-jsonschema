@@ -98,7 +98,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_opt': lambda : _c.SCHEMA_OPT,
             'jsonschema_get_version': lambda : _c.SCHEMA_VERSION,
 
-            'jsonschema_handled_resource_types': configuration.get_resource_types,
+            'jsonschema_handled_resource_types': configuration.get_supported_resource_types,
             'jsonschema_handled_dataset_types': configuration.get_supported_types,
             'jsonschema_handled_input_types': configuration.get_input_types,
             'jsonschema_handled_output_types': configuration.get_output_types,
@@ -171,7 +171,18 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     ##############
 
     def package_types(self):
-        return configuration.get_input_types()
+
+        package_types = []
+
+        for package_type in configuration.get_supported_types():
+            if package_type not in package_types:
+                package_types.append(package_type)
+        
+        for package_type in configuration.get_input_types():
+            if package_type not in package_types:
+                package_types.append(package_type)
+        
+        return package_types
 
     # def setup_template_variables(self, context, data_dict):
         # # TODO: https://github.com/ckan/ckan/issues/6518

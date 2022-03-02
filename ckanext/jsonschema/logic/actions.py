@@ -67,30 +67,44 @@ def importer(context, data_dict):
         # e.error_summary = json.dumps(message)
         raise ValidationError(message)
 
-    package_dict={}
-    # IMPORTER_TYPE = 'iso19139'old
+
+
+    # CREATE EXTRAS
     _type = data_dict.get(_c.SCHEMA_TYPE_KEY)
-    package_dict['type'] = _type
-    package_dict['owner_org'] = data_dict.get('owner_org')
-    package_dict['license_id'] = data_dict.get('license_id')
     
     opt = dict(_c.SCHEMA_OPT)
-    
     opt.update({
         'imported' : True,
         'source_format':'xml' if from_xml else 'json',
         'source_url': url,
         'imported_on': str(datetime.datetime.now())
-        })
-    extras = []
-    package_dict['extras'] = extras
-    extras.append({ 'key': _c.SCHEMA_BODY_KEY, 'value' : body })
-    extras.append({ 'key': _c.SCHEMA_TYPE_KEY, 'value' : _type })
-    extras.append({ 'key': _c.SCHEMA_OPT_KEY, 'value' :  opt })
-    extras.append({ 'key': _c.SCHEMA_VERSION_KEY, 'value' : _c.SCHEMA_VERSION })
+    })
 
 
     # IMPORT - PREPROCESSING -
+    import_context = {
+        _c.SCHEMA_BODY_KEY: _t.as_dict(body),
+        _c.SCHEMA_TYPE_KEY : _type,
+        _c.SCHEMA_OPT_KEY : opt,
+        _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
+    }
+
+    package_dict = {
+        # IMPORTER_TYPE = 'iso19139'old
+        'extras': _c.DEFAULT_EXTRAS, # initial extras
+        'type': _type,
+        'owner_org': data_dict.get('owner_org'),
+        'license_id': data_dict.get('license_id')
+    }
+
+    errors = []
+    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+    extractor = plugin.get_input_extractor(_type, import_context) 
+    extractor(package_dict, errors, import_context)   
+
+    opt['validation'] = False  
+    _t.update_extras_from_context(package_dict, import_context)
+
 
     #TODO resources store back to the package_dict
     try:

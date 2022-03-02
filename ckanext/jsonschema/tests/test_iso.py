@@ -68,6 +68,7 @@ class TestIso(object):
         opt = dict(_c.SCHEMA_OPT)
 
         opt.update({
+            'validation': False,
             'imported' : True,
             'source_format':'xml',
             'source_url': "localhost:test",

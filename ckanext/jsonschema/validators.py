@@ -1,5 +1,6 @@
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
+from ckan.plugins.core import PluginNotFoundException
 
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
@@ -61,7 +62,11 @@ def schema_check(key, data, errors, context):
     '''
     _data = df.unflatten(data)
     
-    body, type, _, _ = get_extras_from_data(_data)
+    body, type, opt, _ = get_extras_from_data(_data)
+
+    ######################### TODO #########################
+    if opt.get('validation') == False:
+        return
 
     if not type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
@@ -120,6 +125,14 @@ def resource_extractor(key, data, errors, context):
         
         body, resource_type, opt, version = get_extras_from_resource(resource)
 
+        # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
+        #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
+
+        if resource_type not in configuration.get_supported_resource_types(dataset_type):
+            return          
+
+        plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, dataset_type, resource_type)
+        
         context.update({
             _c.SCHEMA_BODY_KEY: body,
             _c.SCHEMA_TYPE_KEY : resource_type,
@@ -127,24 +140,17 @@ def resource_extractor(key, data, errors, context):
             _c.SCHEMA_VERSION_KEY : version
         })
 
-        # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
-        #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
-
-
         try:
-            plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, dataset_type, resource_type)
             extractor = plugin.get_resource_extractor(dataset_type, resource_type, context)
             extractor(resource, errors, context)
-        except KeyError:
-            pass
+            _t.update_extras_from_resource_context(resource, context)
+            data.update(df.flatten_dict(_data))
+
         except df.StopOnError:
             raise
         except Exception as e:
             stop_with_error(str(e),key,errors)
-        else:
-            _t.update_extras_from_resource_context(resource, context)
 
-    data.update(df.flatten_dict(_data))
 
 def before_extractor(key, data, errors, context):
 
@@ -152,15 +158,22 @@ def before_extractor(key, data, errors, context):
 
     body, _type, opt, version = get_extras_from_data(_data)
 
+    
+    if _type not in configuration.get_input_types():
+        return
+    
+    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+    
+    ######################### TODO #########################
+    opt.update({'validation': True})
+     
     context.update({
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : _type,
         _c.SCHEMA_OPT_KEY : opt,
         _c.SCHEMA_VERSION_KEY : version
     })
-    
-    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
-    
+
     try:
         extractor = plugin.get_before_extractor(_type, context) 
         extractor(_data, errors, context)        
@@ -170,8 +183,6 @@ def before_extractor(key, data, errors, context):
         # update datamodel
         data.update(df.flatten_dict(_data))
         
-    except KeyError:
-        pass
     except df.StopOnError:
         raise
     except Exception as e:
@@ -186,16 +197,20 @@ def extractor(key, data, errors, context):
 
     body, package_type, opt, version = get_extras_from_data(_data)
 
+    
+    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
+
+    if package_type not in configuration.get_supported_types():
+        return
+
+    plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, package_type)
+
     context.update({
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : package_type,
         _c.SCHEMA_OPT_KEY : opt,
         _c.SCHEMA_VERSION_KEY : version
     })
-    
-    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
-
-    plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, package_type)
 
     try:
         extractor = plugin.get_package_extractor(package_type, context)

@@ -94,3 +94,22 @@ PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join
 REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
 PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join(PATH_ROOT,'config')))
+
+DEFAULT_EXTRAS = [
+   {
+      "key": SCHEMA_BODY_KEY,
+      "value": SCHEMA_OPT
+   },
+   {
+      "key": SCHEMA_OPT_KEY,
+      "value": SCHEMA_OPT
+   },
+   {
+      "key": SCHEMA_TYPE_KEY,
+      "value": ""
+   },
+   {
+      "key": SCHEMA_VERSION_KEY,
+      "vaule": SCHEMA_VERSION
+   }
+]

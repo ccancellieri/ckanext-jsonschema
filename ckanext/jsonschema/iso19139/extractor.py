@@ -25,9 +25,6 @@ def _extract_from_iso(data, errors, context):
         _extract_iso_data_identification(data, context)
     except Exception as e:
         _v.stop_with_error('Error decoding data identification: {}'.format(str(e)), 'data identification', errors)
-    # TODO
-
-    return data, errors, context
 
 
 

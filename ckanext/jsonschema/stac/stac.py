@@ -28,7 +28,12 @@ class JsonSchemaStac(plugins.SingletonPlugin):
         return extract_id(dataset_type, body)
 
 
-    def dump_to_output(self, body, dataset_type, opt, version, data, output_format, context):
+    def dump_to_output(self, data, errors, context, output_format):
+
+        body = _t.get_context_body(context)
+        dataset_type = _t.get_context_type(context)
+
+
         pkg = _t.get(self.extract_id(body, dataset_type))
         if pkg:
             try:
@@ -41,13 +46,15 @@ class JsonSchemaStac(plugins.SingletonPlugin):
                     log.error(message)
 
 
-    def get_before_extractor(self, package_type, context):
+    def get_input_extractor(self, package_type, context):
 
         body = _t.get_context_body(context)
         stac_type = body.get('type')
 
         extractors = {
-            _c.TYPE_STAC_ITEM: ItemExtractor().assets_to_resources,
+            _c.TYPE_STAC_ITEM: ItemExtractor().extract_from_json,
+            _c.TYPE_STAC_CATALOG: CatalogExtractor().extract_from_json,
+            _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
         }
 
         extractor_for_type = extractors.get(stac_type)
@@ -56,7 +63,7 @@ class JsonSchemaStac(plugins.SingletonPlugin):
             return extractor_for_type
         else:
             raise KeyError('Extractor not defined for package with type {}, resolved in {}'.format(package_type, stac_type))
-        
+                
 
     def get_package_extractor(self, package_type, context):
         
