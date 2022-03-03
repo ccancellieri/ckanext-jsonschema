@@ -78,3 +78,9 @@ class TestPlugin(object):
             resource_types = configuration.get_supported_resource_types(list(supported_types)[0])
             assert isinstance(resource_types, list_type)
 
+    def test_get_supported_resource_types_with_non_existing_package_type(self):
+    
+        configuration.setup()
+        resource_types = configuration.get_supported_resource_types('non_existing_package_type')
+    
+        assert resource_types == []
