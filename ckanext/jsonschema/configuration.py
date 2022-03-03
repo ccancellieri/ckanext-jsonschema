@@ -216,8 +216,12 @@ def get_supported_resource_types(dataset_type):
         if 'resources' in package_type_configuration:
             resource_types[jsonschema_type_name] = package_type_configuration['resources'].keys()
             
+    try:
+        resource_types = resource_types[dataset_type]
+    except:
+        resource_types = []
     
-    return resource_types[dataset_type]
+    return resource_types 
     
 
 def _get_jsonschema_plugin_from_name(plugin_name):
