@@ -14,7 +14,7 @@ PACKAGE_OPERATIONS = [INPUT_KEY, SUPPORTED_KEY, OUTPUT_KEY, CLONE_KEY]
 # TODO move me and relatives to plugin.pu
 import ckanext.jsonschema.interfaces as _i
 from ckan.plugins import PluginImplementations
-JSONSCHEMA_PLUGINS = PluginImplementations(_i.IBinder)
+JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(_i.IBinder)
 
 INPUT_TYPES = []
 SUPPORTED_TYPES = []
@@ -132,7 +132,7 @@ def _configure_jsonschema_types(jsonschema_types, configuration, plugin_name):
 
                 _check_double_declaration(jsonschema_type_name, jsonschema_type_config, plugin_name, operation)
 
-                jsonschema_type_config[PLUGIN_KEY] = _get_jsonschema_plugin_from_name(plugin_name)
+                jsonschema_type_config[PLUGIN_KEY] = _lookup_jsonschema_plugin_from_name(plugin_name)
 
         # insert the resource into every operation of the type
         if 'resources' in jsonschema_type:     
@@ -161,7 +161,7 @@ def _configure_resources(resources, jsonschema_type_name, configuration, plugin_
                 if 'resources' not in configuration[operation][jsonschema_type_name]:
                     configuration[operation][jsonschema_type_name]['resources'] = {}
 
-                configuration[operation][jsonschema_type_name]['resources'][resource_type] = {PLUGIN_KEY: _get_jsonschema_plugin_from_name(plugin_name)}
+                configuration[operation][jsonschema_type_name]['resources'][resource_type] = {PLUGIN_KEY: _lookup_jsonschema_plugin_from_name(plugin_name)}
 
 ############# END SETUP #############
 ############# VALIDATIONS #############
@@ -186,7 +186,7 @@ def _validate_schemas():
 def _validate_configuration_files():
     '''Checks that every jsonschema_plugin has its own configuration file'''
 
-    for plugin in JSONSCHEMA_PLUGINS:
+    for plugin in JSONSCHEMA_IBINDER_PLUGINS:
         configuration_files = get_input_configuration().keys()
         if plugin.name not in configuration_files:
             raise PluginNotFoundException('The plugin {} was installed but no configuration file was found'.format(plugin.name)) 
@@ -215,18 +215,13 @@ def get_supported_resource_types(dataset_type):
 
         if 'resources' in package_type_configuration:
             resource_types[jsonschema_type_name] = package_type_configuration['resources'].keys()
-            
-    try:
-        resource_types = resource_types[dataset_type]
-    except:
-        resource_types = []
-    
-    return resource_types 
+
+    return resource_types.get(dataset_type, [])
     
 
-def _get_jsonschema_plugin_from_name(plugin_name):
+def _lookup_jsonschema_plugin_from_name(plugin_name):
 
-    for plugin in JSONSCHEMA_PLUGINS:
+    for plugin in JSONSCHEMA_IBINDER_PLUGINS:
         if plugin.name == plugin_name:
             return plugin
             

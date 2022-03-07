@@ -59,9 +59,6 @@
             "output": true,
             "formats": {},
             "resources": {} 
-        },
-        "iso2": {
-            "package_type": "iso"
         }
     }
 }

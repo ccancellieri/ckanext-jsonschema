@@ -22,26 +22,6 @@ SCHEMA_VERSION=1 # TODO MAKE DEFAULT VERSION CONFIGURABLE....
 # TODO schema Mapping
 SCHEMA_TYPE_KEY='jsonschema_type'
 
-# (Optional)
-# List of formats supported 
-# ckanext.jsonschema.dataset.formats = []
-SUPPORTED_DATASET_FORMATS = config.get('ckanext.jsonschema.dataset.formats', ['jsonschema'])
-if isinstance(SUPPORTED_DATASET_FORMATS,str):
-   # log.debug("DEFAULT_FORMATS is still a string: {}".format(PATH_SCHEMA))
-   DEFAULT_FORMATS = json.loads(SUPPORTED_DATASET_FORMATS)
-if not isinstance(SUPPORTED_DATASET_FORMATS,list):
-   raise Exception('SUPPORTED_DATASET_FORMATS should be an array of valid format strings')
-
-# (Optional)
-# List of formats supported 
-# ckanext.jsonschema.dataset.formats = []
-SUPPORTED_RESOURCE_FORMATS = config.get('ckanext.jsonschema.resource.formats', ['resource-dataset'])
-if isinstance(SUPPORTED_RESOURCE_FORMATS,str):
-   # log.debug("DEFAULT_FORMATS is still a string: {}".format(PATH_SCHEMA))
-   SUPPORTED_RESOURCE_FORMATS = json.loads(SUPPORTED_RESOURCE_FORMATS)
-if not isinstance(SUPPORTED_RESOURCE_FORMATS,list):
-   raise Exception('SUPPORTED_RESOURCE_FORMATS should be an array of valid format strings')
-
 
 # (Internal)
 ##############################
@@ -50,6 +30,7 @@ if not isinstance(SUPPORTED_RESOURCE_FORMATS,list):
 JSON_SCHEMA_KEY = 'schema'
 JSON_TEMPLATE_KEY = 'template'
 JSON_CONFIG_KEY = 'config'
+JSON_VIEW_CONFIG_KEY = 'view_config'
 JSONSCHEMA_CONFIG = {}
 JS_MODULE_KEY = 'module'
 JSON_CATALOG = {
@@ -94,6 +75,7 @@ PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join
 REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
 PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join(PATH_ROOT,'config')))
+PATH_VIEW_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.view_config', path.join(PATH_ROOT,'view_config')))
 
 DEFAULT_EXTRAS = [
    {
@@ -113,3 +95,4 @@ DEFAULT_EXTRAS = [
       "vaule": SCHEMA_VERSION
    }
 ]
+

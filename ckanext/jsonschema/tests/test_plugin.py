@@ -1,9 +1,10 @@
-"""Tests for plugin.py."""
+'''Tests for plugin.py.'''
 
 
 import ckan.plugins
 import ckan.tests.helpers as helpers
 import ckanext.jsonschema.configuration as configuration
+import ckanext.jsonschema.view_configuration as view_configuration
 from ckan.logic.schema import default_create_package_schema
 from ckan.plugins.core import PluginNotFoundException
 from ckanext.jsonschema.plugin import _modify_package_schema
@@ -58,12 +59,6 @@ class TestPlugin(object):
 
         configuration.setup()
 
-        try:
-            configuration._get_jsonschema_plugin_from_name("random_plugin_name")
-            assert False('No error was raised when requesting to configuration a non existing plugin')
-        except PluginNotFoundException:
-            assert True
-
         input_types = configuration.get_input_types()
         assert isinstance(input_types, list_type)
         
@@ -77,6 +72,22 @@ class TestPlugin(object):
             # we cast supported_types to list because in Python3 would be a dict_keys
             resource_types = configuration.get_supported_resource_types(list(supported_types)[0])
             assert isinstance(resource_types, list_type)
+        
+        
+        try:
+            configuration._lookup_jsonschema_plugin_from_name('random_plugin_name')
+            assert False('No error was raised when requesting to configuration a non-existing plugin')
+        except PluginNotFoundException:
+            assert True
+
+        try:
+            configuration.get_plugin('random_operation', 'random_dataset', 'random_resource_type')
+            # Should raise PluginNotFoundException, so assert False if doesn't
+            assert False  
+        except PluginNotFoundException:
+            assert True
+
+        # TODO add test for working get_plugin also 
 
     def test_get_supported_resource_types_with_non_existing_package_type(self):
     
@@ -84,3 +95,22 @@ class TestPlugin(object):
         resource_types = configuration.get_supported_resource_types('non_existing_package_type')
     
         assert resource_types == []
+
+    def test_view_configuration(self):
+
+        from six import PY3
+
+        # When getting .keys() from a dict in Python3, the returned object is of type dict_keys instead of list
+        if PY3:
+            list_type = type({}.keys())
+        else:
+            list_type = list
+
+        input_configuration = view_configuration.get_input_configuration()
+        assert isinstance(input_configuration, dict)
+
+        view_configuration.setup()
+
+        
+
+    

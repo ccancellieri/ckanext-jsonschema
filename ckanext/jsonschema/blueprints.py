@@ -84,8 +84,17 @@ def read_schema(schema_type):
     _t.initialize()
     return json.dumps(_t.get_schema_of(schema_type))
 
+# /jsonschema/schema/iso
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_SCHEMA_PATH), view_func=read_schema, endpoint='schema', methods=[u'GET'])
 
+def read_nested_schema(path, schema_name):    
+    
+    import os
+
+    return read_schema(os.path.join(path, schema_name))
+
+# /jsonschema/schema/nested/iso
+jsonschema.add_url_rule('{}/<path:path>/<schema_name>'.format(_c.REST_SCHEMA_PATH), view_func=read_nested_schema, endpoint='nested_schema', methods=[u'GET'])
 
 
 def read_schema_file(filename, path=None):
@@ -105,7 +114,7 @@ def read_schema_file(filename, path=None):
 
     return read_schema(item)
 
-
+# /jsonschema/schema_file/iso.json
 jsonschema.add_url_rule('{}/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='schema_file', methods=[u'GET'])
 
 
@@ -118,6 +127,7 @@ def read_nested_schema_file(path, filename):
     
     return read_schema_file(filename, path)
 
+# /jsonschema/schema_file/nested/iso.json
 jsonschema.add_url_rule('{}/<path:path>/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_nested_schema_file, endpoint='nested_schema_file', methods=[u'GET'])
 
 

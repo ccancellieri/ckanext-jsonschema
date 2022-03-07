@@ -1,5 +1,17 @@
 from ckan.plugins.interfaces import Interface
 
+class IJsonschemaView(Interface):
+
+    def interpolate_data(resource):
+        '''
+        Uses the body of the resource to resolve links to external data and construct an object which contains those
+        External data could be csvs, smart-csvs, BigQuery references...
+
+        '''
+
+        return resource
+        
+
 class IBinder(Interface):
 
     # def opt_map(self, dataset_type, opt, version):

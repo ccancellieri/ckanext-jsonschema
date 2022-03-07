@@ -84,7 +84,8 @@ setup(
         harvester_iso19139=ckanext.jsonschema.iso19139:HarvesterIso19139
         jsonschema_iso=ckanext.jsonschema.iso19139:JsonschemaIso
         jsonschema_stac=ckanext.jsonschema.stac.stac:JsonSchemaStac
-        
+        jsonschema_dashboard=ckanext.jsonschema_dashboard.plugin:JsonschemaDashboard
+
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
     ''',

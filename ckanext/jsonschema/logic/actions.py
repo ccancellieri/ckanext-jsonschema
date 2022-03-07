@@ -98,7 +98,12 @@ def importer(context, data_dict):
     }
 
     errors = []
-    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+
+    try:
+        plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+    except PluginNotFoundException as e:
+        return { "success": False, "msg": str(e)}
+
     extractor = plugin.get_input_extractor(_type, import_context) 
     extractor(package_dict, errors, import_context)   
 
@@ -196,7 +201,11 @@ def clone_metadata(context, data_dict):
 
     errors = []
 
-    plugin = configuration.get_plugin(configuration.CLONE_KEY, _type)
+    try:
+        plugin = configuration.get_plugin(configuration.CLONE_KEY, _type)
+    except PluginNotFoundException as e:
+        return { "success": False, "msg": str(e)}
+
 
     try:
         plugin.clone(package_dict, errors, clone_context)
