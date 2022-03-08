@@ -43,7 +43,6 @@
     {% set TYPE_KEY = h.jsonschema_get_type_key() %}
     {% set BODY_KEY = h.jsonschema_get_body_key() %}
     {% set OPT_KEY = h.jsonschema_get_opt_key() %}
-    {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
 
     <div id="jsonschema-config-form" data-module="jsonschema"
@@ -53,9 +52,21 @@
         data-module-type = "{{ config_view[TYPE_KEY] }}"
         data-module-ckan-url = "{{ h.url_for('/',_external=True) }}" />
     
+
+    <div class="input-group">
+        <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{config_view[BODY_KEY]}}" type="hidden" class="form-control"/>
+        
+        <input id="field-extras-1-value" name="{{TYPE_KEY}}" value="{{config_view[TYPE_KEY]}}" type="hidden" class="form-control"/>
+        
+        <input id="field-extras-2-value" name="{{OPT_KEY}}" value="{{config_view[OPT_KEY]}}" type="hidden" class="form-control"/>
+    </div>
+
+
     {% endblock %}
     <p>
 
+        <!-- TODO ALIGN MODEL -->
+        <!-- TODO ALIGN CONFIG -->
         <div style="display: inline-block;">
             <button class="btn btn-primary" type="button"  data-toggle="collapse" 
                 title="{{_('Shows a table with copy to clipboard buttons for a fast usage of available informations from the dataset and resources')}}"

@@ -1,6 +1,5 @@
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
-from ckan.plugins.core import PluginNotFoundException
 
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
@@ -47,12 +46,6 @@ log = logging.getLogger(__name__)
 
 import json
 
-import jsonschema
-from jsonschema import Draft7Validator
-
-# TODO move me to tools
-_SCHEMA_RESOLVER = jsonschema.RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
-
 
 # TODO create validation in tools then call it from here.
 # TODO better message in case of validation Error (once in tools)
@@ -62,56 +55,44 @@ def schema_check(key, data, errors, context):
     '''
     _data = df.unflatten(data)
     
-    body, type, opt, _ = get_extras_from_data(_data)
+    body, _type, opt, _ = get_extras_from_data(_data)
 
     ######################### TODO #########################
     if opt.get('validation') == False:
         return
 
-    if not type:
+    if not _type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
 
-    schema = _t.get_schema_of(type)
+    schema = _t.get_schema_of(_type)
 
     if not schema:
-        stop_with_error('Unable to load a valid json-schema for type {}'.format(type), key, errors)
+        stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
 
 
-    is_error = draft_validation(schema, body, errors)
+    is_error = _t.draft_validation(schema, body, errors)
 
     if is_error:
         raise StopOnError()
 
-def draft_validation(schema, body, errors):
-    """Validates ..."""
+def view_schema_check(key, data, errors, context):
 
-    validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
+    _data = df.unflatten(data)
 
-    # For each error, build the error message for the frontend with the path and the message
-    is_error = False
+    body, _type, opt = get_extras_from_view(_data)
+    
+    if not _type:
+        stop_with_error('Unable to load a valid json schema type', key, errors)
 
-    for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
-        
-        is_error = True
+    schema = _t.get_schema_of(_type)
+    
+    if not schema:
+        stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
 
-        error_path = 'metadata'
+    is_error = _t.draft_validation(schema, body, errors)
 
-        for path in error.absolute_path:
-            if isinstance(path, int):
-                translated = _(', at element n.')
-                error_path = ('{} {} {}').format(error_path, translated, path + 1)
-            else:
-                error_path = ('{} -> {}').format(error_path, path)
-            
-
-        errors[('validation_error_' + str(idx), idx, 'path',)] = [error_path]
-        errors[('validation_error_' + str(idx), idx, 'message',)] = [error.message]
-
-        log.error('Stopped with error')
-        log.error('Path: {}'.format(error_path))
-        log.error('Message: {}'.format(error.message))
-
-    return is_error
+    if is_error:
+        raise StopOnError()
 
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)
@@ -253,6 +234,16 @@ def dataset_dump(dataset_id, format = None):
     return body
 
 
+def get_extras_from_data(data):
+    
+    body = _t.as_dict(_t.get_dataset_body(data))
+    type = _t.get_dataset_type(data)
+    opt = _t.as_dict(_t.get_dataset_opt(data))
+    version = _t.as_dict(_t.get_dataset_version(data))
+
+    return body, type, opt, version
+
+
 def get_extras_from_resource(resource):
     
     body = _t.as_dict(_t.get_resource_body(resource))
@@ -262,14 +253,14 @@ def get_extras_from_resource(resource):
 
     return body, type, opt, version
 
-def get_extras_from_data(data):
-    
-    body = _t.as_dict(_t.get_dataset_body(data))
-    type = _t.get_dataset_type(data)
-    opt = _t.as_dict(_t.get_dataset_opt(data))
-    version = _t.as_dict(_t.get_dataset_version(data))
 
-    return body, type, opt, version
+def get_extras_from_view(view):
+    
+    body = _t.as_dict(_t.get_view_body(view))
+    _type = _t.get_view_type(view)
+    opt = _t.as_dict(_t.get_view_opt(view))
+
+    return body, _type, opt
 
 ########### UNUSED
 

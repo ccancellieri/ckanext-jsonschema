@@ -160,7 +160,7 @@ def validate_metadata(context, data_dict):
     schema = _t.get_schema_of(type)
     
     errors = {}
-    is_error = _v.draft_validation(schema, body, errors)
+    is_error = _t.draft_validation(schema, body, errors)
     
     if is_error:
         raise ValidationError(df.unflatten(errors))

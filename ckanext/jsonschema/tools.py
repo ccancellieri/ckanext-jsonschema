@@ -7,11 +7,12 @@ import json
 import logging
 
 import ckanext.jsonschema.configuration as configuration
-import ckanext.jsonschema.view_configuration as view_configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
+import ckanext.jsonschema.view_configuration as view_configuration
 
+from jsonschema import Draft7Validator, RefResolver
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +52,6 @@ def reload():
     })
 
     configuration.setup()
-    view_configuration.setup()
     
     
 def read_all_module():
@@ -241,6 +241,9 @@ def get_dataset_body(dataset):
 def get_resource_body(resource):
     return _extract_from_resource(resource, _c.SCHEMA_BODY_KEY)
 
+def get_view_body(view):
+    return _extract_from_view(view, _c.SCHEMA_BODY_KEY)
+
 def get_type(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
 
@@ -250,6 +253,9 @@ def get_dataset_type(dataset = None):
 
 def get_resource_type(resource):
     return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
+
+def get_view_type(view):
+    return _extract_from_view(view, _c.SCHEMA_TYPE_KEY)
 
 def get_version(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_VERSION_KEY)
@@ -268,6 +274,9 @@ def get_dataset_opt(dataset):
 
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
+
+def get_view_opt(view):
+    return _extract_from_view(view, _c.SCHEMA_OPT_KEY)
 
 def get(dataset_id, resource_id = None, domain = None):
     
@@ -361,6 +370,13 @@ def _extract_from_dataset(dataset, domain):
                     return e['value']
     
     raise Exception("Missing parameter dataset or domain")
+
+def _extract_from_view(view, domain):
+    
+    if view and domain:
+        return view.get(domain)
+    
+    raise Exception("Missing parameter resource or domain")
 
 
 # TODO CKAN contribution
@@ -776,3 +792,35 @@ def interpolate_fields(model, template):
 
     return template
     ###########################################################################
+
+_SCHEMA_RESOLVER = RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
+def draft_validation(schema, body, errors):
+    """Validates ..."""
+
+    validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
+
+    # For each error, build the error message for the frontend with the path and the message
+    is_error = False
+
+    for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
+        
+        is_error = True
+
+        error_path = 'metadata'
+
+        for path in error.absolute_path:
+            if isinstance(path, int):
+                translated = _(', at element n.')
+                error_path = ('{} {} {}').format(error_path, translated, path + 1)
+            else:
+                error_path = ('{} -> {}').format(error_path, path)
+            
+
+        errors[('validation_error_' + str(idx), idx, 'path',)] = [error_path]
+        errors[('validation_error_' + str(idx), idx, 'message',)] = [error.message]
+
+        log.error('Stopped with error')
+        log.error('Path: {}'.format(error_path))
+        log.error('Message: {}'.format(error.message))
+
+    return is_error

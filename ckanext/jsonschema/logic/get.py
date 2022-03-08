@@ -59,3 +59,17 @@ def get_pkg(dataset_id):
     pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
 
     return pkg
+
+
+def get_view(resource_view_id):
+
+    from ckanext.jsonschema.tools import dictize_pkg
+
+    if not resource_view_id:
+        raise Exception('we expect a resource_view_id')
+
+    # may throw not found
+    resource_view = toolkit.get_action('resource_view_show')(None, {'id': resource_view_id})
+
+
+    return dictize_pkg(resource_view)
