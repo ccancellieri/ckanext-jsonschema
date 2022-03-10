@@ -10,7 +10,6 @@ import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
-import ckanext.terriajs.logic.query as query
 from ckan.plugins.toolkit import get_or_bust, h
 
 from jsonschema import Draft7Validator, RefResolver
