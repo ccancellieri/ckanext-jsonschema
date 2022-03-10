@@ -103,10 +103,6 @@ class TestTools(object):
         _test_getter(dataset_with_extras, _t.get_type)
 
 
-    def test_get_version(self, dataset_with_extras):
-        _test_getter(dataset_with_extras, _t.get_version)
-
-
     def test_get_opt(self, dataset_with_extras):
         _test_getter(dataset_with_extras, _t.get_opt)
 

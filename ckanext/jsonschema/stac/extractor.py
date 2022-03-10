@@ -90,8 +90,6 @@ class ItemExtractor(StacExtractor):
 
         body = _t.get_context_body(context)
         opt = _t.get_context_opt(context)
-        version = _t.get_context_version(context)
-
 
         _assets = {}
         if 'assets' in body:
@@ -125,7 +123,6 @@ class ItemExtractor(StacExtractor):
             
             _new_resource_dict = {
                 _jsonschema_c.SCHEMA_OPT_KEY: json.dumps(opt),
-                _jsonschema_c.SCHEMA_VERSION_KEY: version,
                 _jsonschema_c.SCHEMA_BODY_KEY: json.dumps(_asset),
                 _jsonschema_c.SCHEMA_TYPE_KEY: _c.TYPE_STAC_RESOURCE,
                 'url': _url,

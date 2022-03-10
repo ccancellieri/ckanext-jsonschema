@@ -39,7 +39,6 @@ def _extract_iso(data, errors, context):
     # root_fields = FrozenOrderedBidict({
     _body = _t.get_context_body(context)
     opt = _t.get_context_opt(context)
-    version = _t.get_context_version(context)
 
     _data = data
 
@@ -109,16 +108,16 @@ def _extract_iso(data, errors, context):
 
     contact = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:contact',))
     if contact:
-        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, version, _data, errors, context)
+        _contact = __responsible_parties(contact, TYPE_ISO_RESOURCE_METADATA_CONTACT, opt, _data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
     identification_info = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:identificationInfo',))
     if identification_info:
-        _identification_info = __identification_info(identification_info, opt, version, _data, errors, context)
+        _identification_info = __identification_info(identification_info, opt, _data, errors, context)
         _t.set_nested(_iso_profile, ('dataIdentification',), _identification_info)
 
     # Extract resources from body (to _data)
-    _extract_transfer_options(_body, opt, version, _data, errors, context)
+    _extract_transfer_options(_body, opt, _data, errors, context)
     
     distributionFormat = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributionFormat',))
     if distributionFormat:
@@ -132,7 +131,7 @@ def _extract_iso(data, errors, context):
     # distributor
     distributor = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:distributor',))
     if distributor:
-        _distributor = _extract_distributor(distributor, TYPE_ISO_RESOURCE_DISTRIBUTOR, opt, version, _data, errors, context)
+        _distributor = _extract_distributor(distributor, TYPE_ISO_RESOURCE_DISTRIBUTOR, opt, _data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
     # Update _data type
@@ -161,7 +160,7 @@ def _from_nested_list_extend_array_of_dict(source, source_array_path, get_mappin
                 nested_dicts = _t.as_list_of_dict(_nested_element, get_mapping)
                 _t.extend_nested(dest, dest_tuple, nested_dicts)
 
-def __identification_info(identification_info, opt, version, data, errors, context):
+def __identification_info(identification_info, opt, data, errors, context):
     _identification_info = {}
     if isinstance(identification_info,list):
         for i in identification_info:
@@ -216,27 +215,27 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
         citation = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:citation','gmd:CI_Citation',))
         if citation:
-            _citation = __citation(citation, opt, version, data, errors, context)
+            _citation = __citation(citation, opt, data, errors, context)
             _t.set_nested(_identification_info, ('citation',), _citation)
 
         pointOfContact = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:pointOfContact',))
         if pointOfContact:
-            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_RESOURCE_CONTACT, opt, version, data, errors, context)
+            _pointOfContact = __responsible_parties(pointOfContact, TYPE_ISO_RESOURCE_RESOURCE_CONTACT, opt, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
         resourceMaintenance = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceMaintenance','gmd:MD_MaintenanceInformation', 'gmd:contact',))
         if resourceMaintenance:
-            _resourceMaintenance = __responsible_parties(resourceMaintenance, TYPE_ISO_RESOURCE_MAINTAINER, opt, version, data, errors, context)
+            _resourceMaintenance = __responsible_parties(resourceMaintenance, TYPE_ISO_RESOURCE_MAINTAINER, opt, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
         graphic_overview = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:graphicOverview',))
         if graphic_overview:
-            _graphic_overview = __graphic_overview(graphic_overview, TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, opt, version, data, errors, context)
+            _graphic_overview = __graphic_overview(graphic_overview, TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, opt, data, errors, context)
             # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
         descriptiveKeywords = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:descriptiveKeywords',))
         if descriptiveKeywords:
-            _descriptiveKeywords = __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context)
+            _descriptiveKeywords = __descriptiveKeywords(descriptiveKeywords, opt, data, errors, context)
             _t.set_nested(_identification_info, ('descriptiveKeywords',), _descriptiveKeywords)
 
         resourceConstraints = _t.get_nested(identification_info, ('gmd:MD_DataIdentification','gmd:resourceConstraints',))
@@ -389,7 +388,7 @@ def __identification_info(identification_info, opt, version, data, errors, conte
 
     return _identification_info
     
-def __citation(citation, opt, version, data, errors, context):
+def __citation(citation, opt, data, errors, context):
     _citation = {}
     citation_fields = {
         ## DATA IDENTIFICATION ( citation )
@@ -436,12 +435,12 @@ def __citation(citation, opt, version, data, errors, context):
     
     cited_responsible_party = _t.get_nested(citation, ('gmd:citedResponsibleParty',))
     if cited_responsible_party:
-        _cited_responsible_parties = __responsible_parties(cited_responsible_party, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, opt, version, data, errors, context)
+        _cited_responsible_parties = __responsible_parties(cited_responsible_party, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, opt, data, errors, context)
         # EXTRACTED TO RESOURCES NO NEED TO SET BACK INTO ISO
 
     return _citation
 
-def __responsible_parties(cited_responsible_party, _type, opt, version, data, errors, context):
+def __responsible_parties(cited_responsible_party, _type, opt, data, errors, context):
 
     resources = data.get('resources', [])
     _responsible_parties = []
@@ -480,7 +479,6 @@ def __responsible_parties(cited_responsible_party, _type, opt, version, data, er
 
         _new_resource_dict = {
             _c.SCHEMA_OPT_KEY: json.dumps(opt),
-            _c.SCHEMA_VERSION_KEY: version,
             _c.SCHEMA_BODY_KEY: json.dumps(_p),
             _c.SCHEMA_TYPE_KEY: _type,
             'url': _url
@@ -490,7 +488,7 @@ def __responsible_parties(cited_responsible_party, _type, opt, version, data, er
     data.update({'resources': resources})
     return _responsible_parties
 
-def __graphic_overview(graphic_overview, _type, opt, version, data, errors, context):
+def __graphic_overview(graphic_overview, _type, opt, data, errors, context):
 
     resources = data.get('resources', [])
     _graphic_overview = []
@@ -509,7 +507,6 @@ def __graphic_overview(graphic_overview, _type, opt, version, data, errors, cont
 
         _new_resource_dict = {
             _c.SCHEMA_OPT_KEY: json.dumps(opt),
-            _c.SCHEMA_VERSION_KEY: version,
             _c.SCHEMA_BODY_KEY: json.dumps(_p),
             _c.SCHEMA_TYPE_KEY: _type,
             'url': _t.get_nested(go, ('gmd:MD_BrowseGraphic','gmd:fileName','gco:CharacterString',)) or ''
@@ -519,7 +516,7 @@ def __graphic_overview(graphic_overview, _type, opt, version, data, errors, cont
     data.update({'resources': resources})
     return _graphic_overview
 
-def __descriptiveKeywords(descriptiveKeywords, opt, version, data, errors, context):
+def __descriptiveKeywords(descriptiveKeywords, opt, data, errors, context):
     _descriptiveKeywords = []
     if not isinstance(descriptiveKeywords, list):
         descriptiveKeywords = [descriptiveKeywords]
@@ -631,7 +628,7 @@ def __spatial_representation_info(spatial_representation_info):
         _ret.update({ 'gridSpatialRepresentation' : _Grids })
     return _ret
 
-def _extract_distributor(distributor, _type, opt, version, data, errors, context):
+def _extract_distributor(distributor, _type, opt, data, errors, context):
 
     if not isinstance(distributor, list):
         distributor = [distributor]
@@ -639,10 +636,10 @@ def _extract_distributor(distributor, _type, opt, version, data, errors, context
         # TODO ??? gmd:distributorFormat
         _distributor_contact = _t.get_nested(distrib, ('gmd:MD_Distributor','gmd:distributorContact',))
         if _distributor_contact:
-            __responsible_parties(_distributor_contact, _type, opt, version, data, errors, context)
+            __responsible_parties(_distributor_contact, _type, opt, data, errors, context)
             return True
     
-def _extract_transfer_options(body, opt, version, data, errors, context):
+def _extract_transfer_options(body, opt, data, errors, context):
 
     _body = body
     _transfer_options = _t.get_nested(_body, ('gmd:MD_Metadata','gmd:distributionInfo','gmd:MD_Distribution','gmd:transferOptions',))
@@ -659,20 +656,20 @@ def _extract_transfer_options(body, opt, version, data, errors, context):
                 continue
             if isinstance(online, list):
                 for idx, online_resource in enumerate(list(online)):
-                    pop_online(online_resource, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, version, data, errors, context)
+                    pop_online(online_resource, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, data, errors, context)
                     online.remove(online_resource)
             else:
-                pop_online(online, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, version, data, errors, context)
+                pop_online(online, opt, TYPE_ISO_RESOURCE_ONLINE_RESOURCE, data, errors, context)
                 _t.pop_nested(options, ('gmd:MD_DigitalTransferOptions', 'gmd:onLine',))
 
-def pop_online(online_resource, opt, type, version, data, errors, context):
+def pop_online(online_resource, opt, type, data, errors, context):
     if isinstance(online_resource, list):
             for resource in online_resource:
-                get_online_resource(resource, opt, type, version, data, errors, context)
+                get_online_resource(resource, opt, type, data, errors, context)
     else:
-        get_online_resource(online_resource, opt, type, version, data, errors, context)
+        get_online_resource(online_resource, opt, type, data, errors, context)
 
-def get_online_resource(resource, opt, type, version, data, errors, context):
+def get_online_resource(resource, opt, type, data, errors, context):
     r = resource.pop('gmd:CI_OnlineResource', None)
     if not r:
         return
@@ -702,7 +699,6 @@ def get_online_resource(resource, opt, type, version, data, errors, context):
     
     _new_resource_dict = {
         _c.SCHEMA_OPT_KEY: json.dumps(opt),
-        _c.SCHEMA_VERSION_KEY: version,
         _c.SCHEMA_BODY_KEY: json.dumps(_new_resource_body),
         _c.SCHEMA_TYPE_KEY: type,
     }

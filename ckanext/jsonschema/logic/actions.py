@@ -86,7 +86,6 @@ def importer(context, data_dict):
         _c.SCHEMA_BODY_KEY: _t.as_dict(body),
         _c.SCHEMA_TYPE_KEY : _type,
         _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
     }
 
     package_dict = {
@@ -173,7 +172,7 @@ def clone_metadata(context, data_dict):
 
     _type = _t.get_dataset_type(pkg)
     body = _t.get_dataset_body(pkg)
-    version = _t.get_dataset_version(pkg)
+
 
     #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)
 
@@ -196,7 +195,6 @@ def clone_metadata(context, data_dict):
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : _type,
         _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_VERSION_KEY : version
     }
 
     errors = []
@@ -226,7 +224,6 @@ def clone_metadata(context, data_dict):
                     _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
                     _c.SCHEMA_TYPE_KEY : _t.get_resource_type(resource),
                     _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
-                    _c.SCHEMA_VERSION_KEY : _t.get_resource_version(resource)
                 }
 
                 plugin = configuration.get_plugin(configuration.CLONE_KEY, _type, _t.get_resource_type(resource))

@@ -619,7 +619,6 @@ else:
             import json
             package_dict[_c.SCHEMA_BODY_KEY]=j
             package_dict[_c.SCHEMA_OPT_KEY]=json.dumps({'harvested' : True})
-            package_dict[_c.SCHEMA_VERSION_KEY]=_c.SCHEMA_VERSION
             package_dict[_c.SCHEMA_TYPE_KEY]='iso'
 
             # We need to get the owner organization (if any) from the harvest

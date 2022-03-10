@@ -55,7 +55,7 @@ def schema_check(key, data, errors, context):
     '''
     _data = df.unflatten(data)
     
-    body, _type, opt, _ = get_extras_from_data(_data)
+    body, _type, opt = get_extras_from_data(_data)
 
     ######################### TODO #########################
     if opt.get('validation') == False:
@@ -104,7 +104,7 @@ def resource_extractor(key, data, errors, context):
     
     for resource in resources:
         
-        body, resource_type, opt, version = get_extras_from_resource(resource)
+        body, resource_type, opt = get_extras_from_resource(resource)
 
         # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
         #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
@@ -118,7 +118,6 @@ def resource_extractor(key, data, errors, context):
             _c.SCHEMA_BODY_KEY: body,
             _c.SCHEMA_TYPE_KEY : resource_type,
             _c.SCHEMA_OPT_KEY : opt,
-            _c.SCHEMA_VERSION_KEY : version
         })
 
         try:
@@ -137,7 +136,7 @@ def before_extractor(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, _type, opt, version = get_extras_from_data(_data)
+    body, _type, opt = get_extras_from_data(_data)
 
     ######################### TODO #########################
     opt.update({'validation': True})
@@ -145,8 +144,7 @@ def before_extractor(key, data, errors, context):
     context.update({
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : _type,
-        _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_VERSION_KEY : version
+        _c.SCHEMA_OPT_KEY : opt
     })
 
     if _type not in configuration.get_input_types():
@@ -175,7 +173,7 @@ def extractor(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, package_type, opt, version = get_extras_from_data(_data)
+    body, package_type, opt = get_extras_from_data(_data)
 
     
     #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
@@ -188,8 +186,7 @@ def extractor(key, data, errors, context):
     context.update({
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : package_type,
-        _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_VERSION_KEY : version
+        _c.SCHEMA_OPT_KEY : opt
     })
 
     try:
@@ -217,14 +214,13 @@ def dataset_dump(dataset_id, format = None):
     if format == None:
         return _data
 
-    body, type, opt, version = get_extras_from_data(_data)
+    body, type, opt = get_extras_from_data(_data)
 
     
     context = {
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : type,
         _c.SCHEMA_OPT_KEY : opt,
-        _c.SCHEMA_VERSION_KEY : version
     }
     errors = []
     
@@ -239,9 +235,8 @@ def get_extras_from_data(data):
     body = _t.as_dict(_t.get_dataset_body(data))
     type = _t.get_dataset_type(data)
     opt = _t.as_dict(_t.get_dataset_opt(data))
-    version = _t.as_dict(_t.get_dataset_version(data))
 
-    return body, type, opt, version
+    return body, type, opt
 
 
 def get_extras_from_resource(resource):
@@ -249,9 +244,8 @@ def get_extras_from_resource(resource):
     body = _t.as_dict(_t.get_resource_body(resource))
     type = _t.get_resource_type(resource)
     opt = _t.as_dict(_t.get_resource_opt(resource))
-    version = _t.as_dict(_t.get_resource_version(resource) or _c.SCHEMA_VERSION) #TODO
 
-    return body, type, opt, version
+    return body, type, opt
 
 
 def get_extras_from_view(view):
@@ -264,13 +258,6 @@ def get_extras_from_view(view):
 
 ########### UNUSED
 
-def _default_version(key, data, errors, context):
-    '''
-    Validator providing default values 
-    '''
-    if not data[key]:
-        data[key]=_c.SCHEMA_VERSION
-    return
 
 def _get_body(key, data, errors, context):
     body = data.get(key)

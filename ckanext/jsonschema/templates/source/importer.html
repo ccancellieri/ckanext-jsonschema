@@ -4,7 +4,6 @@
 {% set TYPE_KEY = h.jsonschema_get_type_key() %}
 {% set BODY_KEY = h.jsonschema_get_body_key() %}
 {% set OPT_KEY = h.jsonschema_get_opt_key() %}
-{% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
 <form id="importer" enctype="multipart/form-data" action={{ h.url_for('/api/action/jsonschema_importer', _external=True) }} class="form-horizontal dataset-form" method="post">
     <p>

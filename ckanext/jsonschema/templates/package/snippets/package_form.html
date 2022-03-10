@@ -63,19 +63,16 @@
       {% set TYPE_KEY = h.jsonschema_get_type_key() %}
       {% set BODY_KEY = h.jsonschema_get_body_key() %}
       {% set OPT_KEY = h.jsonschema_get_opt_key() %}
-      {% set VERSION_KEY = h.jsonschema_get_version_key() %}
       
 
       {% if c.action == 'new' %}
         {% set schema_type = h.jsonschema_get_dataset_type(data) %}
         {% set body = h.jsonschema_get_template(schema_type) %}
         {% set opt = h.jsonschema_as_json(h.jsonschema_get_opt()) %}
-        {% set version = h.jsonschema_get_version() %}
       {% else %}
         {% set schema_type = h.jsonschema_get_dataset_type(data) %}
         {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
         {% set opt = h.jsonschema_as_json(h.jsonschema_get_dataset_opt(data)) %}
-        {% set version = h.jsonschema_get_dataset_version(data) %}
       {% endif %}
       
       {% set schema = h.jsonschema_get_schema(schema_type) %}
@@ -89,9 +86,6 @@
       
         <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
         <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="hidden" class="form-control"/>
-      
-        <input id="field-extras-3-key" name="extras__3__key" value="{{VERSION_KEY}}" type="hidden" />
-        <input id="field-extras-3-value" name="extras__3__value" value="{{version}}" type="hidden" class="form-control"/>
       </div>
 
       <div id="jsonschema-config-form" data-module="jsonschema"

@@ -257,15 +257,6 @@ def get_resource_type(resource):
 def get_view_type(view):
     return _extract_from_view(view, _c.SCHEMA_TYPE_KEY)
 
-def get_version(dataset_id, resource_id = None):
-    return get(dataset_id, resource_id, _c.SCHEMA_VERSION_KEY)
-
-def get_dataset_version(dataset):
-    return _extract_from_dataset(dataset, _c.SCHEMA_VERSION_KEY)
-
-def get_resource_version(resource):
-    return _extract_from_resource(resource, _c.SCHEMA_VERSION_KEY)
-
 def get_opt(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_OPT_KEY)
 
@@ -331,9 +322,6 @@ def get_context_body(context):
 
 def get_context_type(context):
     return _extract_from_context(context, _c.SCHEMA_TYPE_KEY)
-
-def get_context_version(context):
-    return _extract_from_context(context, _c.SCHEMA_VERSION_KEY)
 
 def get_context_opt(context):
     return _extract_from_context(context, _c.SCHEMA_OPT_KEY)
@@ -402,7 +390,6 @@ def update_extras_from_resource_context(resource, context):
     
     extras[_c.SCHEMA_BODY_KEY]=json.dumps(get_context_body(context))
     extras[_c.SCHEMA_TYPE_KEY]=get_context_type(context) # it is already a string
-    extras[_c.SCHEMA_VERSION_KEY]=json.dumps(get_context_version(context))
     extras[_c.SCHEMA_OPT_KEY]=json.dumps(get_context_opt(context))
 
 # def update_extras_from_resource_context(data, extras):
@@ -430,13 +417,11 @@ def update_extras_from_context(data, extras):
             e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
         elif key == _c.SCHEMA_TYPE_KEY:
             e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
-        elif key == _c.SCHEMA_VERSION_KEY:
-            e['value'] = extras.get(_c.SCHEMA_VERSION_KEY)
         elif key == _c.SCHEMA_OPT_KEY:
             e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
 
-def update_extras(data, body, type, opt, version):
+def update_extras(data, body, type, opt):
     # Checking extra data content for extration
     for e in data.get('extras',[]):
         key = e.get('key')
@@ -446,8 +431,6 @@ def update_extras(data, body, type, opt, version):
             e['value'] = json.dumps(body)
         elif key == _c.SCHEMA_TYPE_KEY:
             e['value'] = type
-        elif key == _c.SCHEMA_VERSION_KEY:
-            e['value'] = version
         elif key == _c.SCHEMA_OPT_KEY:
             e['value'] = json.dumps(opt)
 
