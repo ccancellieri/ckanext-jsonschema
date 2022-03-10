@@ -1,14 +1,18 @@
-import ckan.plugins.toolkit as toolkit
 import threading
+
+import ckan.plugins.toolkit as toolkit
 
 _ = toolkit._
 import json
 import logging
 
+import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
-import ckanext.jsonschema.configuration as configuration
+from ckan.plugins.toolkit import get_or_bust, h
+
+from jsonschema import Draft7Validator, RefResolver
 
 log = logging.getLogger(__name__)
 
@@ -43,12 +47,13 @@ def reload():
         _c.JSON_SCHEMA_KEY: read_all_schema(),
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module(),
-        _c.JSON_CONFIG_KEY: read_all_config()
+        _c.JSON_CONFIG_KEY: read_all_config(),
+        _c.JSON_VIEW_CONFIG_KEY: read_all_view_config()
     })
 
     configuration.setup()
     
-
+    
 def read_all_module():
     return utils._find_all_js(_c.PATH_MODULE)
 
@@ -60,6 +65,9 @@ def read_all_schema():
     
 def read_all_config():
     return utils._read_all_json(_c.PATH_CONFIG)
+    
+def read_all_view_config():
+    return utils._read_all_json(_c.PATH_VIEW_CONFIG)
 
 def initialize_core_schemas():
     utils._initialize_license_schema()
@@ -233,6 +241,9 @@ def get_dataset_body(dataset):
 def get_resource_body(resource):
     return _extract_from_resource(resource, _c.SCHEMA_BODY_KEY)
 
+def get_view_body(view):
+    return _extract_from_view(view, _c.SCHEMA_BODY_KEY)
+
 def get_type(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
 
@@ -242,6 +253,9 @@ def get_dataset_type(dataset = None):
 
 def get_resource_type(resource):
     return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
+
+def get_view_type(view):
+    return _extract_from_view(view, _c.SCHEMA_TYPE_KEY)
 
 def get_version(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_VERSION_KEY)
@@ -260,6 +274,9 @@ def get_dataset_opt(dataset):
 
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
+
+def get_view_opt(view):
+    return _extract_from_view(view, _c.SCHEMA_OPT_KEY)
 
 def get(dataset_id, resource_id = None, domain = None):
     
@@ -353,6 +370,13 @@ def _extract_from_dataset(dataset, domain):
                     return e['value']
     
     raise Exception("Missing parameter dataset or domain")
+
+def _extract_from_view(view, domain):
+    
+    if view and domain:
+        return view.get(domain)
+    
+    raise Exception("Missing parameter resource or domain")
 
 
 # TODO CKAN contribution
@@ -552,9 +576,10 @@ def as_json(field):
 
 def render_template(template_name, extra_vars):
 
-    import jinja2
     import os
-    
+
+    import jinja2
+
     # setup for render
     templates_path = os.path.join(_c.PATH_ROOT, "jsonschema/templates")
     templateLoader = jinja2.FileSystemLoader(searchpath=templates_path)
@@ -666,3 +691,208 @@ def encode_str(value):
         value = value.encode("utf-8")
     
     return value
+
+
+################################ VIEWS ########################################
+import copy
+
+
+def _base(resource_view_id, force=False, force_to=False, itemOnly=False):
+
+    view = _g.get_view(resource_view_id)
+    
+    if not view:
+        raise Exception(_('No view found for view_id: {}'.format(str(resource_view_id))))
+
+    view_body = get_view_body(view)
+    if not view_body:
+        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(resource_view_id))))
+
+    view_type = get_view_type(view)
+    if not type:
+        raise Exception(_('No type found for view: {}'.format(str(resource_view_id))))
+
+    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
+    
+    # TODO
+    config = interpolate_fields(model, view_body)
+
+    opt = get_view_opt(view)
+
+    view_config = { 'config': config, 'type': view_type, 'opt': opt }
+
+    _config = _resolve(config, force, force_to)
+
+    # if itemOnly:
+    #     # do not wrap the item with a valid terria configuration
+    #     _config = _resolve(config, force, force_to)
+    # else:
+    #     # terria_config is an item we've to wrap to obtain a valid catalog
+    #     _config = copy.deepcopy(tools.get_config(constants.CATALOG_TYPE))
+    #     _config['catalog'].append(_resolve(config, force, force_to))
+    #     _config.update({'homeCamera':view_config['camera']})
+
+    return _config
+
+
+def _resolve(item, force=False, force_to=False):
+    '''resolve from LAZY_GROUP_TYPE to terriajs native format\
+        cherry picking the view by ID from all the available metadata views'''
+    
+    # TODO Type should reflect jsonschema_type vs type? 
+    type = item and item.get('type')
+    if not type:
+        #TODO LOG WARN
+        return item
+    
+    # elif type == _c.LAZY_ITEM_TYPE:
+    #     # let's resolve the view by id
+    #     view_config = _get_config(item.get('id'))
+        
+    #     if not view_config:
+    #         raise Exception(_('Unable to resolve view id: {}'.format(item.get('id'))))
+
+    #     # is it a nested lazy load item, let's try to resolve again
+    #     item.update(_resolve(view_config['config'], force, force_to))
+
+    # elif type == _c.LAZY_GROUP_TYPE:
+    #     item.update({u'type':u'group'})
+
+
+    # if force and item.get('type') != 'group':
+    #     item['isEnabled'] = force_to
+    # else:
+    #     items = item.get('items')
+    #     if items:
+    #         for _item in items:
+    #             _resolve(_item, force, force_to)
+    
+    return item
+
+def _get_config(view_id):
+
+    view = _g.get_view(view_id)
+    # view = view_id and query.view_by_id(view_id)
+    
+    if not view:
+        raise Exception(_('No view found for view_id: {}'.format(str(view_id))))
+
+    view_body = get_view_body(view)
+    if not view_body:
+        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view_id))))
+
+    view_type = get_view_type(view)
+    if not type:
+        raise Exception(_('No type found for view: {}'.format(str(view_id))))
+
+    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
+    #terriajs_config = get_or_bust(view_config,_c.TERRIAJS_CONFIG_KEY)
+    
+    # backward compatibility (the string is now stored as dict)
+    #if not isinstance(terriajs_config,dict):
+    #    terriajs_config = json.loads(terriajs_config)
+
+    # Interpolation
+    config = interpolate_fields(model, view_body)
+
+    opt = get_view_opt(view)
+
+    return { 'config': config, 'type': view_type, 'opt': opt }
+
+def _get_model(dataset_id, resource_id):
+    '''
+    Returns the model used by jinja2 template
+    '''
+
+    if not dataset_id or not resource_id:
+        raise Exception('wrong parameters we expect a dataset_id and a resource_id')
+
+    # TODO can we have a context instead of None?
+    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
+    if not pkg:
+        raise Exception('Unable to find dataset, check input params')
+
+
+    import ckan.lib.navl.dictization_functions as df
+    pkg = dictize_pkg(pkg)
+
+    # res = filter(lambda r: r['id'] == view.resource_id,pkg['resources'])[0]
+    res = next(r for r in pkg['resources'] if r['id'] == resource_id)
+    if not res:
+        raise Exception('Unable to find resource under this dataset, check input params')
+
+    # return the model as dict
+    _dict = {
+        'dataset':pkg,
+        'organization': get_or_bust(pkg,'organization'),
+        'resource':res,
+        'ckan':{'base_url':h.url_for('/', _external=True)},
+        'data': {} #TODO
+        #'terriajs':{'base_url': _c.TERRIAJS_URL}
+        }
+
+    return _dict 
+
+def interpolate_fields(model, template):
+    # What kind of object is template?
+    from six import PY3
+
+    ###########################################################################
+    # Jinja2 template
+    ###########################################################################
+
+
+    for f in template.keys():
+        # if f in constants.FIELDS_TO_SKIP:
+        #     continue
+        
+
+        interpolate = False
+
+        if PY3:
+            # TODO check python3 compatibility 'unicode' may disappear?
+            if isinstance(template[f],(str)):
+                interpolate = True
+        elif isinstance(template[f],(str, unicode)):
+                interpolate = True
+        
+    
+        if interpolate:
+            template = render_template(model, template)
+
+    return template
+    
+################################################################################
+
+
+_SCHEMA_RESOLVER = RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
+def draft_validation(schema, body, errors):
+    """Validates ..."""
+
+    validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
+
+    # For each error, build the error message for the frontend with the path and the message
+    is_error = False
+
+    for idx, error in enumerate(sorted(validator.iter_errors(body), key=str)):
+        
+        is_error = True
+
+        error_path = 'metadata'
+
+        for path in error.absolute_path:
+            if isinstance(path, int):
+                translated = _(', at element n.')
+                error_path = ('{} {} {}').format(error_path, translated, path + 1)
+            else:
+                error_path = ('{} -> {}').format(error_path, path)
+            
+
+        errors[('validation_error_' + str(idx), idx, 'path',)] = [error_path]
+        errors[('validation_error_' + str(idx), idx, 'message',)] = [error.message]
+
+        log.error('Stopped with error')
+        log.error('Path: {}'.format(error_path))
+        log.error('Message: {}'.format(error.message))
+
+    return is_error

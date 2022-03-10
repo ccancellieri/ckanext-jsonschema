@@ -21,7 +21,6 @@ import json
 
 # TYPE_ONLINE_RESOURCE='online-resource'
 
-SUPPORTED_RESOURCE_FORMATS = []
 
 def _extract_id(body):
     identification_info = _t.get_nested(body, ('gmd:MD_Metadata','gmd:fileIdentifier','gco:CharacterString'))

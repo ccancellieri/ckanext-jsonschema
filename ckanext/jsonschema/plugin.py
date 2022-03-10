@@ -152,8 +152,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
         _t.reload()
-    
-        
+
     # IValidators
     def get_validators(self):
 
@@ -254,6 +253,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #     schema.get('__after', []).append(_v.serializer)
     #     return schema
         
+
 def _modify_package_schema(schema):
     # insert in front
 
@@ -268,3 +268,6 @@ def _modify_package_schema(schema):
     # the following will be the first...
     before.insert(0, _v.schema_check)
     return schema
+
+
+        

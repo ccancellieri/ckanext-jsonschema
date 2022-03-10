@@ -4,9 +4,9 @@ import json
 
 import ckan.plugins
 import ckan.tests.helpers as helpers
+import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
-
 from ckanext.jsonschema.tests.conftest import get_jsonschema_resource
 
 
@@ -57,8 +57,10 @@ class TestTools(object):
             
 
     def test_get_schema_of(self):
+        
+        supported_types = configuration.get_supported_types() 
 
-        for format in _c.SUPPORTED_DATASET_FORMATS:
+        for format in supported_types:
             schema = _t.get_schema_of(format)
             
             assert schema is not None

@@ -105,9 +105,117 @@ When the validation is successfully, it is possible to use the confirmation butt
 At this point, the request is sent to the backend, and validation also occurs on this side. If there are no errors, the process is completed; otherwise the page is reloaded and the errors are displayed on the top.
 
 
-### Important Notes
 
-To be able to use insert the "license" field in the json body, this plugin creates the a schema file for license the first time it is needed.
-This file is written at PATH_SCHEMA/PATH_CORE_SCHEMA, so the process MUST have permission to write at PATH_SCHEMA, otherwise the startup will file (the creation of subpaths is managed by the code).
+
+
+### Configuration
+
+##TODO Table for variables (PATHS)
+
+##TODO Folder structure
+
+##DO NOT INSERT "core" folder
+
+
+
+The operations that can be performed for each package type and resource type implemented by Jsonschema based plugins are configured using JSON files.
+
+This plugin currently supports 4 operations on packages:
+
+- **input**: import packages from an external url
+- **supported**: manage the package (create, update, delete...)
+- **clone**: create a clone of the package into the CKAN instance
+- **output**: export the package in different formats (JSON, XML...)
+
+The operations on resources are:
+
+- **supported**: manage the resource (create, update, delete...)
+- **clone**: clone the resource
+
+
+
+For each Jsonschema plugin implementing the IBinder interface, you may put a configuration file under the folder **ckanext.jsonschema.path.config** (default is *config/*) called <*plugin_name>.json*.
+
+
+
+##### Configuration File
+
+A configuration file has this shape:
+
+`
+{
+    "plugin_name": "jsonschema_iso",
+    "description": "",
+    "jsonschema_types": {
+        "iso": {
+            "package_type": "iso",
+            "input": true,
+            "supported": true,
+            "clone": true,
+            "output": true,
+            "resources": {
+                "tabular-data-resource": {
+                    "label": "Table Data Resource",
+                    "clone": false,
+                    "supported": true
+                }
+            ...
+            }
+        },
+        ...
+    }
+}
+`
+
+
+
+| Property Name    | Path                                                         | Values  | Meaning                                                      |
+| ---------------- | :----------------------------------------------------------- | ------- | ------------------------------------------------------------ |
+| plugin_name      | root                                                         | String  | The name of the plugin. This is redundant with the configuration filename. |
+| description      | root                                                         | String  | Description for the plugin                                   |
+| jsonschema_types | root                                                         | Objects | This object contains an object for each jsonschema_type to configure |
+| package_type     | jsonschema_types/<jsonschema_type>                           | String  | The name of the package type which this jsonschema_type refers to. The package type is the type saved into the CKAN database. Different jsonschema types can refere to the same package_type |
+| input            | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the input operation is supported for this jsonschema_type. If True, adds the type to the importer interface. |
+| supported        | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the jsonschema_type is supported (should be true for every configured type) |
+| clone            | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the clone operation is supported for this jsonschema_type. |
+| output           | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the clone operation is supported for this jsonschema_type. |
+| resources        | jsonschema_types/<jsonschema_type>                           | Object  | This object contains an object for each resource compatible with the jsonschema_type |
+| clone            | jsonschema_types/<jsonschema_type><br />/resources/<resource_type> | Boolean | Tells if the clone operation is supported for this resource type under the specific jsonschema_type. If False, the resource will be skipped during a clone operation. |
+| suppor           | jsonschema_types/<jsonschema_type><br />/resources/<resource_type> | Boolean | Tells if the resource_type is supported (should be true for every configured type) |
+
+For an example, look at *config/jsonschema_iso.json*
+
+##TODO SCHEMA/TEMPLATE/ LOADING
+
+
+
+### Lazy Schema Setup
+
+##TODO Describe the lazy mechanism to 
+
+### License
+
+The Jsonschema plugin overtakes the license field for packages supported by plugins that use Jsonschema.
+CKAN's default license field is hidden, and it has to be included into the schema of the package.
+To be able to validate the license entry against the list of licenses loaded by CKAN, the list of licenses is materialized as a JSON so that it can be referenced in schemas.
+
+This is done lazily when the file is needed for the first time. 
+The file is written at PATH_SCHEMA/PATH_CORE_SCHEMA (default is schema/core/), so the process MUST have permission to write at PATH_SCHEMA, otherwise the startup will file (the creation of subpaths is managed by the code).
+
+##### Schema example
+
+`
+"license_id": {
+​   "propertyOrder": 1,
+​   "title": "License",
+​   "type": "string",
+​   "$ref": "core/licenses.json"
+}`
+
+##### Note
 
 From CKAN 2.8.9 it should be possible to create the file at the startup, so the lazy machinery could be avoided.
+
+
+
+## API
