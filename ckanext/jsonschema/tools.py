@@ -10,7 +10,8 @@ import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
-import ckanext.jsonschema.view_configuration as view_configuration
+import ckanext.terriajs.logic.query as query
+from ckan.plugins.toolkit import get_or_bust, h
 
 from jsonschema import Draft7Validator, RefResolver
 
@@ -694,78 +695,148 @@ def encode_str(value):
 
 
 ################################ VIEWS ########################################
-def get_config(view_id):
+import copy
 
-    view = view_id and query.view_by_id(view_id)
+
+def _base(resource_view_id, force=False, force_to=False, itemOnly=False):
+
+    view = _g.get_view(resource_view_id)
+    
+    if not view:
+        raise Exception(_('No view found for view_id: {}'.format(str(resource_view_id))))
+
+    view_body = get_view_body(view)
+    if not view_body:
+        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(resource_view_id))))
+
+    view_type = get_view_type(view)
+    if not type:
+        raise Exception(_('No type found for view: {}'.format(str(resource_view_id))))
+
+    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
+    
+    # TODO
+    config = interpolate_fields(model, view_body)
+
+    opt = get_view_opt(view)
+
+    view_config = { 'config': config, 'type': view_type, 'opt': opt }
+
+    _config = _resolve(config, force, force_to)
+
+    # if itemOnly:
+    #     # do not wrap the item with a valid terria configuration
+    #     _config = _resolve(config, force, force_to)
+    # else:
+    #     # terria_config is an item we've to wrap to obtain a valid catalog
+    #     _config = copy.deepcopy(tools.get_config(constants.CATALOG_TYPE))
+    #     _config['catalog'].append(_resolve(config, force, force_to))
+    #     _config.update({'homeCamera':view_config['camera']})
+
+    return _config
+
+
+def _resolve(item, force=False, force_to=False):
+    '''resolve from LAZY_GROUP_TYPE to terriajs native format\
+        cherry picking the view by ID from all the available metadata views'''
+    
+    # TODO Type should reflect jsonschema_type vs type? 
+    type = item and item.get('type')
+    if not type:
+        #TODO LOG WARN
+        return item
+    
+    # elif type == _c.LAZY_ITEM_TYPE:
+    #     # let's resolve the view by id
+    #     view_config = _get_config(item.get('id'))
+        
+    #     if not view_config:
+    #         raise Exception(_('Unable to resolve view id: {}'.format(item.get('id'))))
+
+    #     # is it a nested lazy load item, let's try to resolve again
+    #     item.update(_resolve(view_config['config'], force, force_to))
+
+    # elif type == _c.LAZY_GROUP_TYPE:
+    #     item.update({u'type':u'group'})
+
+
+    # if force and item.get('type') != 'group':
+    #     item['isEnabled'] = force_to
+    # else:
+    #     items = item.get('items')
+    #     if items:
+    #         for _item in items:
+    #             _resolve(_item, force, force_to)
+    
+    return item
+
+def _get_config(view_id):
+
+    view = _g.get_view(view_id)
+    # view = view_id and query.view_by_id(view_id)
+    
     if not view:
         raise Exception(_('No view found for view_id: {}'.format(str(view_id))))
 
-    view_config = view.get('config',None)
-    if not view_config:
+    view_body = get_view_body(view)
+    if not view_body:
         raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view_id))))
 
-    type = view_config and view_config.get(constants.TERRIAJS_TYPE_KEY,None)
+    view_type = get_view_type(view)
     if not type:
         raise Exception(_('No type found for view: {}'.format(str(view_id))))
 
-    model = _get_model(dataset_id=toolkit.get_or_bust(view,'package_id'),resource_id=toolkit.get_or_bust(view,'resource_id'))
-    terriajs_config = toolkit.get_or_bust(view_config,constants.TERRIAJS_CONFIG_KEY)
+    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
+    #terriajs_config = get_or_bust(view_config,_c.TERRIAJS_CONFIG_KEY)
     
     # backward compatibility (the string is now stored as dict)
-    if not isinstance(terriajs_config,dict):
-        terriajs_config = json.loads(terriajs_config)
+    #if not isinstance(terriajs_config,dict):
+    #    terriajs_config = json.loads(terriajs_config)
 
     # Interpolation
-    _terriajs_config = interpolate_fields(model,terriajs_config)
+    config = interpolate_fields(model, view_body)
 
-    camera={
-        'east':view_config.get('east',180),
-        'west':view_config.get('west',-180),
-        'north':view_config.get('north',90),
-        'south':view_config.get('south',-90)
-    }
-    return { 'config':_terriajs_config, 'type':type, 'camera':camera }
+    opt = get_view_opt(view)
 
+    return { 'config': config, 'type': view_type, 'opt': opt }
 
-def get_model(package_id, resource_id):
+def _get_model(dataset_id, resource_id):
     '''
     Returns the model used by jinja2 template
     '''
 
-    if not package_id or not resource_id:
-        raise Exception('wrong parameters we expect a package_id and a resource_id')
+    if not dataset_id or not resource_id:
+        raise Exception('wrong parameters we expect a dataset_id and a resource_id')
 
     # TODO can we have a context instead of None?
-    pkg = toolkit.get_action('package_show')(None, {'id': package_id})
+    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
     if not pkg:
         raise Exception('Unable to find dataset, check input params')
 
+
+    import ckan.lib.navl.dictization_functions as df
     pkg = dictize_pkg(pkg)
 
     # res = filter(lambda r: r['id'] == view.resource_id,pkg['resources'])[0]
     res = next(r for r in pkg['resources'] if r['id'] == resource_id)
-
-    plugin = view_configuration.get_plugin(res.get_or_bust('format', get_resource_type(res)))
-    data = plugin.interpolate_data(res)
-
     if not res:
         raise Exception('Unable to find resource under this dataset, check input params')
 
     # return the model as dict
     _dict = {
         'dataset':pkg,
-        'organization': toolkit.get_or_bust(pkg,'organization'),
+        'organization': get_or_bust(pkg,'organization'),
         'resource':res,
-        'data': data,
-        'ckan':{'base_url':toolkit.h.url_for('/', _external=True)},
-        'terriajs':{'base_url': constants.TERRIAJS_URL}
+        'ckan':{'base_url':h.url_for('/', _external=True)},
+        'data': {} #TODO
+        #'terriajs':{'base_url': _c.TERRIAJS_URL}
         }
 
     return _dict 
 
 def interpolate_fields(model, template):
     # What kind of object is template?
-
+    from six import PY3
 
     ###########################################################################
     # Jinja2 template
@@ -773,8 +844,8 @@ def interpolate_fields(model, template):
 
 
     for f in template.keys():
-        if f in constants.FIELDS_TO_SKIP:
-            continue
+        # if f in constants.FIELDS_TO_SKIP:
+        #     continue
         
 
         interpolate = False
@@ -783,7 +854,7 @@ def interpolate_fields(model, template):
             # TODO check python3 compatibility 'unicode' may disappear?
             if isinstance(template[f],(str)):
                 interpolate = True
-        elif isinstance(template[f],(str,unicode)):
+        elif isinstance(template[f],(str, unicode)):
                 interpolate = True
         
     
@@ -791,7 +862,9 @@ def interpolate_fields(model, template):
             template = render_template(model, template)
 
     return template
-    ###########################################################################
+    
+################################################################################
+
 
 _SCHEMA_RESOLVER = RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
 def draft_validation(schema, body, errors):
