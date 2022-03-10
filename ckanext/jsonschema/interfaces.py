@@ -26,7 +26,7 @@ class IBinder(Interface):
     #     '''
     #     return opt
     
-    def dump_to_json(self, body, type, version, key, data, context):
+    def dump_to_json(self, body, type, key, data, context):
         '''
         return a serialized version in the desired profile of the data model
         '''

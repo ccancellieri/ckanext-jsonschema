@@ -74,8 +74,7 @@ class TestIso(object):
         import_context = {
             _c.SCHEMA_BODY_KEY: _t.as_dict(body),
             _c.SCHEMA_TYPE_KEY : _type,
-            _c.SCHEMA_OPT_KEY : opt,
-            _c.SCHEMA_VERSION_KEY : _c.SCHEMA_VERSION
+            _c.SCHEMA_OPT_KEY : opt
         }
 
         package_dict = {

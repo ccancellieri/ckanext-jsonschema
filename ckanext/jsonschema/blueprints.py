@@ -174,12 +174,6 @@ def get_type(dataset_id, resource_id = None):
 jsonschema.add_url_rule('/{}/type/<dataset_id>/<resource_id>'.format(_c.TYPE), view_func=get_type, methods=[u'GET'])
 jsonschema.add_url_rule('/{}/type/<dataset_id>'.format(_c.TYPE), view_func=get_type, methods=[u'GET'])
 
-def get_version(dataset_id, resource_id = None):
-    return Response(stream_with_context(json.dumps(_t.get_version(dataset_id, resource_id))), mimetype='application/json')
-
-jsonschema.add_url_rule('/{}/version/<dataset_id>/<resource_id>'.format(_c.TYPE), view_func=get_version, methods=[u'GET'])
-jsonschema.add_url_rule('/{}/version/<dataset_id>'.format(_c.TYPE), view_func=get_version, methods=[u'GET'])
-
 def get_opt(dataset_id, resource_id = None):
     return Response(stream_with_context(json.dumps(_t.get_opt(dataset_id, resource_id))), mimetype='application/json')
 

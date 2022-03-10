@@ -25,14 +25,12 @@
 
           {% set opt = h.jsonschema_get_resource_opt(res) %}
 
-          {% set version = h.jsonschema_get_resource_version(res) %}
           <p>
             <div>
               <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
                 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#type" aria-expanded="false" aria-controls="type">Type</button>
                 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#body" aria-expanded="true" aria-controls="body">Full Metadata</button>
                 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#opt" aria-expanded="false" aria-controls="opt">Options</button>
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#version" aria-expanded="false" aria-controls="version">Version</button>
               </div>
               <div class="col">
                 <div class="row">
@@ -66,18 +64,6 @@
                       <p>
                         <h3>Type:</h3>
                         {{ schema_type }}
-                      </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="collapse" id="version">
-                    <div class="card card-body">
-                      {% if version %}
-                      <p>
-                        <h3>Version:</h3>
-                        {{ version }}
                       </p>
                       {% endif %}
                     </div>

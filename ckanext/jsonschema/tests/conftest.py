@@ -59,11 +59,7 @@ def dataset_with_extras(organization):
                 {    
                     "key": "jsonschema_opt",
                     "value": '{ \"key\": \"value\"}'
-                },
-                {    
-                    "key": "jsonschema_version",
-                    "value": '1'
-                }  
+                }
             ],
             
     }
@@ -79,8 +75,7 @@ def get_jsonschema_resource(dataset):
         'format': 'csv',
         'jsonschema_type': 'resource-dataset',
         'jsonschema_body': '{\"name\":\"\", \"description\": \"\"}',
-        'jsonschema_opt': '{ \"key\": \"value\"}',
-        'jsonschema_version': '1'
+        'jsonschema_opt': '{ \"key\": \"value\"}'
     }  
 
     resource = factories.Resource(**resource_body)

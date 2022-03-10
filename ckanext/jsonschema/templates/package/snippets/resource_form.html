@@ -57,18 +57,15 @@
       {% set TYPE_KEY = h.jsonschema_get_type_key() %}
       {% set BODY_KEY = h.jsonschema_get_body_key() %}
       {% set OPT_KEY = h.jsonschema_get_opt_key() %}
-      {% set VERSION_KEY = h.jsonschema_get_version_key() %}
 
       {% if c.action == 'new_resource' %}
         {% set schema_type = resource_types[0] %}
         {% set body = h.jsonschema_get_template(schema_type) %}
         {% set opt = h.jsonschema_as_json(h.jsonschema_get_opt()) %}
-        {% set version = h.jsonschema_get_version() %}
       {% else %}
         {% set schema_type = h.jsonschema_get_resource_type(data) %}
         {% set body = h.jsonschema_as_json(h.jsonschema_get_resource_body(data)) %}
         {% set opt = h.jsonschema_as_json(h.jsonschema_get_resource_opt(data)) %}
-        {% set version = h.jsonschema_get_resource_version(data) %}
       {% endif %}
 
       
@@ -109,14 +106,12 @@
       
         <input id="field-{{OPT_KEY}}" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
       
-        <input id="field-{{VERSION_KEY}}" name="{{VERSION_KEY}}" value="{{version}}" type="hidden" class="form-control"/>
       </div>
       
       <div id="jsonschema-config-form" data-module="jsonschema"
         data-module-opt = "{{ opt }}"
         data-module-schema = "{{ schema }}"
         data-module-body = "{{ body }}"
-        data-module-version = "{{ version }}"
         data-module-type = "{{ schema_type }}"
         data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"/>
       
