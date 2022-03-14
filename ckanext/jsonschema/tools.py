@@ -7,6 +7,7 @@ import json
 import logging
 
 import ckanext.jsonschema.configuration as configuration
+import ckanext.jsonschema.view_configuration as view_configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
@@ -680,7 +681,7 @@ def encode_str(value):
 import copy
 
 
-def _base(resource_view_id, force=False, force_to=False, itemOnly=False):
+def get_interpolated_view_model(resource_view_id):
 
     view = _g.get_view(resource_view_id)
     
@@ -691,96 +692,11 @@ def _base(resource_view_id, force=False, force_to=False, itemOnly=False):
     if not view_body:
         raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(resource_view_id))))
 
-    view_type = get_view_type(view)
-    if not type:
-        raise Exception(_('No type found for view: {}'.format(str(resource_view_id))))
+    view_type = view.get("view_type") 
 
     model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
     
-    # TODO
-    config = interpolate_fields(model, view_body)
-
-    opt = get_view_opt(view)
-
-    view_config = { 'config': config, 'type': view_type, 'opt': opt }
-
-    _config = _resolve(config, force, force_to)
-
-    # if itemOnly:
-    #     # do not wrap the item with a valid terria configuration
-    #     _config = _resolve(config, force, force_to)
-    # else:
-    #     # terria_config is an item we've to wrap to obtain a valid catalog
-    #     _config = copy.deepcopy(tools.get_config(constants.CATALOG_TYPE))
-    #     _config['catalog'].append(_resolve(config, force, force_to))
-    #     _config.update({'homeCamera':view_config['camera']})
-
-    return _config
-
-
-def _resolve(item, force=False, force_to=False):
-    '''resolve from LAZY_GROUP_TYPE to terriajs native format\
-        cherry picking the view by ID from all the available metadata views'''
-    
-    # TODO Type should reflect jsonschema_type vs type? 
-    type = item and item.get('type')
-    if not type:
-        #TODO LOG WARN
-        return item
-    
-    # elif type == _c.LAZY_ITEM_TYPE:
-    #     # let's resolve the view by id
-    #     view_config = _get_config(item.get('id'))
-        
-    #     if not view_config:
-    #         raise Exception(_('Unable to resolve view id: {}'.format(item.get('id'))))
-
-    #     # is it a nested lazy load item, let's try to resolve again
-    #     item.update(_resolve(view_config['config'], force, force_to))
-
-    # elif type == _c.LAZY_GROUP_TYPE:
-    #     item.update({u'type':u'group'})
-
-
-    # if force and item.get('type') != 'group':
-    #     item['isEnabled'] = force_to
-    # else:
-    #     items = item.get('items')
-    #     if items:
-    #         for _item in items:
-    #             _resolve(_item, force, force_to)
-    
-    return item
-
-def _get_config(view_id):
-
-    view = _g.get_view(view_id)
-    # view = view_id and query.view_by_id(view_id)
-    
-    if not view:
-        raise Exception(_('No view found for view_id: {}'.format(str(view_id))))
-
-    view_body = get_view_body(view)
-    if not view_body:
-        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view_id))))
-
-    view_type = get_view_type(view)
-    if not type:
-        raise Exception(_('No type found for view: {}'.format(str(view_id))))
-
-    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
-    #terriajs_config = get_or_bust(view_config,_c.TERRIAJS_CONFIG_KEY)
-    
-    # backward compatibility (the string is now stored as dict)
-    #if not isinstance(terriajs_config,dict):
-    #    terriajs_config = json.loads(terriajs_config)
-
-    # Interpolation
-    config = interpolate_fields(model, view_body)
-
-    opt = get_view_opt(view)
-
-    return { 'config': config, 'type': view_type, 'opt': opt }
+    return interpolate_fields(model, view_body, view_type)
 
 def _get_model(dataset_id, resource_id):
     '''
@@ -795,8 +711,6 @@ def _get_model(dataset_id, resource_id):
     if not pkg:
         raise Exception('Unable to find dataset, check input params')
 
-
-    import ckan.lib.navl.dictization_functions as df
     pkg = dictize_pkg(pkg)
 
     # res = filter(lambda r: r['id'] == view.resource_id,pkg['resources'])[0]
@@ -816,34 +730,115 @@ def _get_model(dataset_id, resource_id):
 
     return _dict 
 
-def interpolate_fields(model, template):
-    # What kind of object is template?
-    from six import PY3
+def _enhance_model_with_data_helpers(model, view_type):
+    '''
+    This methods adds data helpers from plugins to the model provided to the template renderer
+    Plugins implementing the IJsonschemaView interface can define the method get_data_helpers which returns a list of function
+    The function are injected with their name in the environment of jinja
+    '''
 
-    ###########################################################################
-    # Jinja2 template
-    ###########################################################################
+    for plugin in view_configuration.JSONSCHEMA_IVIEW_PLUGINS:
+        if plugin.info().get('name') == view_type:
+            for data_helper in plugin.get_data_helpers():
+                model[data_helper.__name__] = data_helper
 
+def interpolate_fields(model, template, view_type):
 
-    for f in template.keys():
-        # if f in constants.FIELDS_TO_SKIP:
-        #     continue
-        
+    def functionLoader(_template):
+        return _template
 
-        interpolate = False
+    import jinja2
+    Environment = jinja2.environment.Environment
+    FunctionLoader = jinja2.loaders.FunctionLoader 
+    TemplateSyntaxError = jinja2.TemplateSyntaxError
 
-        if PY3:
-            # TODO check python3 compatibility 'unicode' may disappear?
-            if isinstance(template[f],(str)):
-                interpolate = True
-        elif isinstance(template[f],(str, unicode)):
-                interpolate = True
-        
+    env = Environment(
+        loader=FunctionLoader(functionLoader),
+        autoescape=False,
+        trim_blocks=False,
+        keep_trailing_newline=True
+    )
+
+    _enhance_model_with_data_helpers(model, view_type)
     
-        if interpolate:
-            template = render_template(model, template)
+    try:
+        polished_template = json.dumps(template).replace('"{{',"{{").replace('}}"', '}}')
+        _template = env.get_template(polished_template)
+        template = json.loads(_template.render(model))
 
+    except TemplateSyntaxError as e:
+        raise Exception(_('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e))))
+    except Exception as e:
+        raise Exception(_('Unable to interpolate field: {}'.format(str(e))))
+
+    #return dictize_pkg(template)
     return template
+
+# def interpolate_fields(model, template):
+#     # What kind of object is template?
+#     from six import PY3
+
+#     ###########################################################################
+#     # Jinja2 template
+#     ###########################################################################
+#     def functionLoader(name):
+#         return template[name]
+
+#     import jinja2
+#     Environment = jinja2.environment.Environment
+#     FunctionLoader = jinja2.loaders.FunctionLoader 
+#     TemplateSyntaxError = jinja2.TemplateSyntaxError
+
+#     env = Environment(
+#         loader=FunctionLoader(functionLoader),
+#         autoescape=True,
+#         trim_blocks=False,
+#         keep_trailing_newline=True
+#     )
+
+#     def big_query():
+#         from ckanext.jsonschema_dashboard.plugin import interpolate_data
+#         query = "SELECT%20*%20FROM%20%60fao-maps-review.fao_dashboard.TestTable%60%20LIMIT%201000"
+#         return interpolate_data(query).json()
+
+#     model['big_query'] = big_query
+
+#     if 'items' in template:
+#         template['items'] = template['items'][0]
+
+#     for f in template.keys():
+#         # if f in constants.FIELDS_TO_SKIP:
+#         #     continue
+
+#         interpolate = False
+
+#         field = template[f]
+#         is_string = lambda field : (PY3 and isinstance(field, (str))) or (not PY3 and isinstance(template[f],(str, unicode)))
+#         is_object = lambda field : isinstance(field, object)
+#         is_list = lambda field : isinstance(field , list)
+
+#         if is_string(field):
+#             interpolate = True
+#         elif is_object(field):
+#             interpolate_fields(model, field)
+#         elif is_list(field):
+#             for item in field:
+#                 if is_object(item):
+#                     interpolate_fields(model, item)
+#                 elif is_list(item):
+#                     pass
+
+#         if interpolate:
+#             try:
+#                 _template = env.get_template(f)
+#                 template[f] = _template.render(model)
+
+#             except TemplateSyntaxError as e:
+#                 raise Exception(_('Unable to interpolate field \'{}\' line \'{}\'\nError:{}'.format(f,str(e.lineno),str(e))))
+#             except Exception as e:
+#                 raise Exception(_('Unable to interpolate field \'{}\': {}'.format(f,str(e))))
+
+#     return template
     
 ################################################################################
 

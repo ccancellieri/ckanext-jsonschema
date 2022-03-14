@@ -11,6 +11,8 @@ class IJsonschemaView(Interface):
 
         return resource
         
+    def get_data_helpers():
+        return []
 
 class IBinder(Interface):
 

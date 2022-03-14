@@ -26,7 +26,11 @@ def stop_with_error(message, key, errors):
     log.error('on key: {}'.format(key))
     log.error('Errors: {}'.format(str(errors)))
 
-    tuple_key = (key,)
+    tuple_key = key
+    if not isinstance(key, tuple):
+        tuple_key = (key,)
+        
+    
     if not tuple_key in errors:
         errors[tuple_key] = []
     
