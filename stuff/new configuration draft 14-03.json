@@ -1,0 +1,92 @@
+//PACKAGES
+{
+    "package-registry": {
+        "iso": {
+            "schema": "iso.json",
+            "label": "Iso",
+            "plugin_name": "jsonschema_iso"
+        },
+        "iso19139": {
+            "schema": "iso19139.json",
+            "label": "Iso19139",
+            "plugin_name": "jsonschema_iso"
+        },
+        "stac": {
+            "schema": "stac.json",
+            "label": "Stac",
+            "plugin_name": "jsonschema_stac"
+        }
+    }
+}
+
+//RESOURCES
+{
+    "resource-registry": {
+        "graphic_overview": {
+            "schema": "iso/graphic_overview.json",
+            "template": "iso/graphic_overview.json",
+            "plugin_name": "jsonschema_iso",
+            "label": "Graphic Overview"
+        },
+        "stac/graphic_overview": {
+            "schema": "stac/graphic_overview.json",
+            "template": "stac/graphic_overview.json",
+            "plugin_name": "jsonschema_stac",
+            "label": "Graphic Overview"
+        }
+    }
+}
+
+
+//PACKAGES-RESOURCES
+{
+   "package-resource": [
+        {
+            "package_type": "dataset",
+            //"jsonschema_type": "",
+            "resource_names": ["graphic-overview"],
+        },
+        {
+            "package_type": "iso",
+            "jsonschema_type": "iso",
+            "resource_names": ["graphic-overview"],
+        },
+        {
+            "package_type": "stac",
+            "jsonschema_type": "stac",
+            "resource_names": ["stac/graphic-overview"],
+        }
+    ]
+}
+
+{
+    "operations": {
+        "iso": {
+            "input": true,
+            "output": true, 
+            "editable": true, // old supported
+            // "input" : {
+            //     "xml": "iso19139",
+            //     "json": 
+            // },
+            // "output" : {
+            //     "xml": "iso19139"
+            // },
+            "clone": {
+                "resources": [
+                    "resource-contact",
+                    "metadata-contact",
+                    "cited-responsible-party", 
+                    "resource-maintainer", 
+                    "distributor"
+                ]
+            },
+        },
+        "iso19139": {
+            "input" : true,
+            "output" : false,
+            "clone": false,
+            "editable": false,
+        },
+    }
+}
