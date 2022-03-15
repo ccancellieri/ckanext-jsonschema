@@ -1,6 +1,7 @@
 import ckanext.jsonschema.constants as _c
-from ckan.plugins.core import PluginNotFoundException
+from ckanext.jsonschema.interfaces import JSONSCHEMA_IBINDER_PLUGINS
 
+from ckan.plugins.core import PluginNotFoundException
 import logging
 log = logging.getLogger(__name__)
 
@@ -10,11 +11,6 @@ OUTPUT_KEY = 'output'
 CLONE_KEY = 'clone'
 PLUGIN_KEY = 'plugin'
 PACKAGE_OPERATIONS = [INPUT_KEY, SUPPORTED_KEY, OUTPUT_KEY, CLONE_KEY]
-
-# TODO move me and relatives to plugin.pu
-import ckanext.jsonschema.interfaces as _i
-from ckan.plugins import PluginImplementations
-JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(_i.IBinder)
 
 INPUT_TYPES = []
 SUPPORTED_TYPES = []

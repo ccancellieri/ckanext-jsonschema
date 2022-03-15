@@ -95,22 +95,3 @@ class TestPlugin(object):
         resource_types = configuration.get_supported_resource_types('non_existing_package_type')
     
         assert resource_types == []
-
-    def test_view_configuration(self):
-
-        from six import PY3
-
-        # When getting .keys() from a dict in Python3, the returned object is of type dict_keys instead of list
-        if PY3:
-            list_type = type({}.keys())
-        else:
-            list_type = list
-
-        input_configuration = view_configuration.get_input_configuration()
-        assert isinstance(input_configuration, dict)
-
-        view_configuration.setup()
-
-        
-
-    

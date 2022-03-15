@@ -1,4 +1,6 @@
 from ckan.plugins.interfaces import Interface
+from ckan.plugins import PluginImplementations
+
 
 class IJsonschemaView(Interface):
 
@@ -83,3 +85,6 @@ class IBinder(Interface):
         Clones a package        
         '''
         raise NotImplementedError('clone operation not supported for this format')
+
+JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(IBinder)
+JSONSCHEMA_IVIEW_PLUGINS = PluginImplementations(IJsonschemaView)
