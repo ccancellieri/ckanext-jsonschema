@@ -124,3 +124,21 @@ def _initialize_license_schema():
 
     with open(file_path, "w") as f:
         f.write(json.dumps(data))
+
+def all_files_in_path_recursive(path, ext):
+    import os
+    
+    all_files = []
+
+    for subdir, dirs, files in os.walk(path):
+        for filename in files:
+            if filename.endswith(ext):
+
+                # this block gets the relative path starting at <path>
+                key_prefix = ""
+                if path != subdir:
+                    key_prefix = subdir.replace(path + os.sep, "")
+
+                all_files.append(os.path.join(key_prefix, filename))
+
+    return all_files

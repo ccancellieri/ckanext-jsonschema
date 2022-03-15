@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 ckanext/schema/core/licenses.json
+ckanext/schema/jsonschema_dashboard/*
+ckanext/template/jsonschema_dashboard/*

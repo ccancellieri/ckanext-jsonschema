@@ -1,5 +1,6 @@
 import threading
 
+import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 _ = toolkit._
@@ -49,7 +50,7 @@ def reload():
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module(),
         _c.JSON_CONFIG_KEY: read_all_config(),
-        _c.JSON_VIEW_CONFIG_KEY: read_all_view_config()
+        #_c.JSON_VIEW_CONFIG_KEY: read_all_view_config()
     })
 
     configuration.setup()
@@ -730,6 +731,19 @@ def _get_model(dataset_id, resource_id):
 
     return _dict 
 
+def _load_resource_content_from_disk(resource):
+    import ckan.lib.uploader as uploader
+    import json
+
+    upload = uploader.get_resource_uploader(resource)
+    filepath = upload.get_path(resource['id'])
+
+    with open(filepath) as f:
+        resource_content = json.loads(f.read())
+    
+    return resource_content
+
+
 def _enhance_model_with_data_helpers(model, view_type):
     '''
     This methods adds data helpers from plugins to the model provided to the template renderer
@@ -737,10 +751,37 @@ def _enhance_model_with_data_helpers(model, view_type):
     The function are injected with their name in the environment of jinja
     '''
 
-    for plugin in view_configuration.JSONSCHEMA_IVIEW_PLUGINS:
+    # TODO get current plugin
+
+    # TODO understand resource type jsonschema, url, localfile
+    # TODO schema validation
+
+    # here we should have a list of objects of schema dataSource
+    # data_helpers = plugin.get_data_helpers(json)
+    # model.update(data_helpers)
+    #   
+    #
+
+    try:
+        resource_content = _load_resource_content_from_disk(model['resource'])
+    except:
+        pass 
+        # TODO raise error
+
+    
+    # for plugin in view_configuration.JSONSCHEMA_IVIEW_PLUGINS:        
+    #     if plugin.info().get('name') == view_type:
+    #         for data_helper in plugin.get_data_helpers():
+    #             model[data_helper.__name__] = data_helper
+
+    for plugin in view_configuration.JSONSCHEMA_IVIEW_PLUGINS:   
         if plugin.info().get('name') == view_type:
-            for data_helper in plugin.get_data_helpers():
-                model[data_helper.__name__] = data_helper
+
+            data_helpers = plugin.get_data_helpers(resource_content)
+
+            # TODO CHECK FOR CONFLICTS
+            model.update(data_helpers)
+
 
 def interpolate_fields(model, template, view_type):
 
