@@ -4,7 +4,6 @@
 import ckan.plugins
 import ckan.tests.helpers as helpers
 import ckanext.jsonschema.configuration as configuration
-import ckanext.jsonschema.view_configuration as view_configuration
 from ckan.logic.schema import default_create_package_schema
 from ckan.plugins.core import PluginNotFoundException
 from ckanext.jsonschema.plugin import _modify_package_schema

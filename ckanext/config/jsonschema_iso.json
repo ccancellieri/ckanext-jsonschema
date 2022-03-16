@@ -12,7 +12,14 @@
                 "tabular-data-resource": {
                     "label": "Table Data Resource",
                     "clone": false,
-                    "supported": true
+                    "supported": true,
+                    "schema": "tabular-data-resource.json"
+                },
+                "jsonschema_dashboard/data-sources": {
+                    "label": "Data Source",
+                    "clone": false,
+                    "supported": true,
+                    "schema": "jsonschema_dashboard/data-sources.json"
                 },
                 "online-resource": {
                     "label": "Online resource",

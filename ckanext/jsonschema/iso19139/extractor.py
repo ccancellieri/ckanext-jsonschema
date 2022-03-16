@@ -307,3 +307,11 @@ def get_format(protocol = None, url = None):
         resource_type = protocols.get(protocol.lower().strip())
         if resource_type:
             return resource_type
+
+
+def _extract_data_sources(data, errors, context):
+
+    data.update({
+        'name': 'Data sources',
+        'format': 'JSON'
+    })

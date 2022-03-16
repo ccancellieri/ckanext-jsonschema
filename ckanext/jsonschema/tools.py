@@ -1,7 +1,8 @@
 import threading
 
-import ckan.plugins as plugins
+
 import ckan.plugins.toolkit as toolkit
+from ckan.logic import ValidationError
 
 _ = toolkit._
 import json
@@ -454,7 +455,7 @@ def as_json(field):
 
     if isinstance(field, unicode):
         value = value.encode('utf-8')
-    if isinstance(value, dict):
+    if isinstance(value, dict) or isinstance(value, list):
         try: 
             return json.dumps(value)
         except:
@@ -752,17 +753,33 @@ def _enhance_model_with_data_helpers(model, view_type):
     The function are injected with their name in the environment of jinja
     '''
 
-    # TODO understand resource type jsonschema, url, localfile
-    # TODO schema validation
+    resource_content = get_resource_content(model['resource'])
     
-    resource_content = _load_resource_content_from_disk(model['resource'])
-    
+    # get the plugin that manages the view; should always be just one
     plugin = next(plugin for plugin in JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
     data_helpers = plugin.get_data_helpers(resource_content)
 
     # TODO CHECK FOR CONFLICTS
     model.update(data_helpers)
 
+
+def get_resource_content(resource):
+
+    # TODO understand resource type jsonschema, url, localfile
+            # TODO schema validation in case of url or localfile
+    # TODO query resource options for customized logic on where to pick up data
+    # if jsonschema
+    # resource_content = json.loads(_t.get_resource_body(resource_body))
+    # else load from disk
+    is_jsonschema = get_resource_type(resource) != None
+    is_upload = resource.get('url_type') == 'upload'
+
+    if is_jsonschema:
+        resource_content = get_resource_body(resource)
+    elif is_upload:
+        resource_content = _load_resource_content_from_disk(resource)
+
+    return resource_content
 
 def interpolate_fields(model, template, view_type):
 
@@ -789,9 +806,11 @@ def interpolate_fields(model, template, view_type):
         template = json.loads(_template.render(model))
 
     except TemplateSyntaxError as e:
-        raise Exception(_('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e))))
+        message = _('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e)))
+        raise ValidationError({'message': message}, error_summary = message)
     except Exception as e:
-        raise Exception(_('Unable to interpolate field: {}'.format(str(e))))
+        message = _('Unable to interpolate field: {}'.format(str(e)))
+        raise ValidationError({'message': message}, error_summary = message)
 
     #return dictize_pkg(template)
     return template

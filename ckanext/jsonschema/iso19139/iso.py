@@ -23,7 +23,7 @@ from ckanext.jsonschema.iso19139.constants import (
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, TYPE_ISO_RESOURCE_DISTRIBUTOR, 
     TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_MAINTAINER, 
     TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
-    TYPE_ISO_RESOURCE_RESOURCE_CONTACT,
+    TYPE_ISO_RESOURCE_RESOURCE_CONTACT, TYPE_DATA_SOURCES
     )
 
 log = logging.getLogger(__name__)
@@ -88,6 +88,7 @@ class JsonschemaIso(p.SingletonPlugin):
             TYPE_ISO_RESOURCE_RESOURCE_CONTACT: extractor._extract_iso_resource_responsible,
             TYPE_ISO_RESOURCE_MAINTAINER: extractor._extract_iso_resource_responsible,
             TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible,
+            TYPE_DATA_SOURCES: extractor._extract_data_sources
         }
 
         extractor_for_type = extractors.get(resource_type)
