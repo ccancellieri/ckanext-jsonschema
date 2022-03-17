@@ -4,13 +4,14 @@ from ckan.logic import ValidationError
 _ = toolkit._
 import json
 import logging
+import os
 
 import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
+import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.utils as _u
 from ckan.plugins.toolkit import get_or_bust, h
-from ckanext.jsonschema.interfaces import JSONSCHEMA_IVIEW_PLUGINS
-
 
 log = logging.getLogger(__name__)
 
@@ -129,7 +130,7 @@ def _enhance_model_with_data_helpers(model, view_type):
     resource_content = get_resource_content(model['resource'])
     
     # get the plugin that manages the view; should always be just one
-    plugin = next(plugin for plugin in JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
+    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
     data_helpers = plugin.get_data_helpers(resource_content)
 
     # TODO CHECK FOR CONFLICTS
@@ -187,3 +188,107 @@ def interpolate_fields(model, template, view_type):
 
     #return dictize_pkg(template)
     return template
+
+
+#### VIEW CONFIGURATION #####
+
+VIEWS_KEY = 'views'
+CONFIG_KEY = 'config'
+INFO_KEY = 'info'
+
+def get_views(config):
+    return config.get(VIEWS_KEY)
+
+def get_config(config):
+    return config.get(CONFIG_KEY)
+
+def get_info(config):
+    return config.get(INFO_KEY)
+
+def is_jsonschema_view(view_type):
+
+    for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS:
+        info = plugin.info()
+
+        if info['name'] == view_type:
+            return True
+
+    return False
+        
+def _get_view(config, format, jsonschema_type=None):
+    
+    config_views = config.get(VIEWS_KEY)
+
+    for view in config_views:
+
+        if format == view.get('format'):
+            if not jsonschema_type and 'jsonschema_type' not in view:
+                return view
+            
+            if jsonschema_type and jsonschema_type == view.get('jsonschema_type'):
+                return view
+        
+    raise Exception('Misconfigured view for format: {} and jsonschema_type: {}'.format(format, jsonschema_type))
+
+def get_schema(config, format, jsonschema_type=None):
+    catalog_key = get_schema_type(config, format, jsonschema_type)
+    schema = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(catalog_key) 
+    return schema
+
+def get_schema_type(config, format, jsonschema_type=None):
+    view = _get_view(config, format, jsonschema_type)
+    return _u._get_key(view.get('schema'))
+
+def get_template(config, format, jsonschema_type=None):
+    view = _get_view(config, format, jsonschema_type)
+
+    view_template = view.get('template')
+    template = {}
+    
+    if view_template:
+        catalog_key = _u._get_key(view.get('template'))
+        template = _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(catalog_key) 
+        
+    return template
+
+def get_all_schemas_in_config(config):
+
+    config_views = config.get(VIEWS_KEY)
+    schemas = [view['schema'] for view in config_views if 'schema' in view]
+    
+    return schemas
+
+def get_all_templates_in_config(config):
+
+    config_views = config.get(VIEWS_KEY)
+    schemas = [view['template'] for view in config_views if 'template' in view]
+    
+    return schemas
+
+def get_all_modules_in_config(config):
+
+    config_views = config.get(VIEWS_KEY)
+    schemas = [view['module'] for view in config_views if 'module' in view]
+    
+    return schemas
+
+
+def _copy_to_jsonschema(source_base, destination, files):
+    '''
+    This method copies files from source_base to Jsonschema's destination folder
+    The files parameter is the list of files to copy
+    For each file, it retrieves <source_base>/<file> and copies it into <jsonschema>/<destinatiion>
+
+    Example: add_files_to_jsonschema(source_base, 'schema', [])
+    '''
+
+    for file in files:
+               
+        complete_absolute_plugin_path = os.path.join(source_base, file)
+        complete_absolute_jsonschema_path = os.path.join(destination, file)
+
+        if not os.path.exists(os.path.dirname(complete_absolute_jsonschema_path)):
+            os.makedirs(os.path.dirname(complete_absolute_jsonschema_path))
+        
+        # check if overwrites
+        os.popen('cp {} {}'.format(complete_absolute_plugin_path, complete_absolute_jsonschema_path)) 

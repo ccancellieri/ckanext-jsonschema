@@ -445,83 +445,6 @@ def as_json(value):
             pass
     return value
 
-# def resolve_resource_extras(dataset_type, resource, _as_dict = False):
-#     from ckanext.jsonschema.plugin import handled_resource_types
-#     # Pre-setting defaults
-#     resource_types = handled_resource_types(dataset_type)
-#     if resource_types:
-#         _type = resource_types[0]
-#         body = get_template_of(_type)
-#     else:
-#         _type = None
-#         body = {}
-    
-#     opt = dict(_c.SCHEMA_OPT)
-#     version = _c.SCHEMA_VERSION
-
-#     # Checking extra data content for extration
-#     e = resource.get('__extras',{})
-#     if not e:
-#         # edit existing resource
-#         e = resource
-
-#     body = e.get(_c.SCHEMA_BODY_KEY, body)
-#     _type = e.get(_c.SCHEMA_TYPE_KEY, _type)
-#     version = e.get(_c.SCHEMA_VERSION_KEY, version)
-#     opt = e.get(_c.SCHEMA_OPT_KEY, opt)
-    
-#     if _as_dict:
-#         body = as_dict(body)
-#         opt = as_dict(opt)
-#     else:
-#         # REMOVE AS_JSON
-#         body = as_json(body)
-#         opt = as_json(opt)
-    
-#     return {
-#         _c.SCHEMA_OPT_KEY : opt,
-#         _c.SCHEMA_BODY_KEY: body,
-#         _c.SCHEMA_TYPE_KEY: _type,
-#         _c.SCHEMA_VERSION_KEY: version
-#     }
-
-# def resolve_extras(data, _as_dict = False):
-#     # Pre-setting defaults
-#     _type = get_dataset_type(data)
-#     body = get_template_of(_type)
-#     opt = dict(_c.SCHEMA_OPT)
-#     version = _c.SCHEMA_VERSION
-
-#     # Checking extra data content for extration
-#     for e in data.get('extras',[]):
-#         key = e.get('key')
-#         if not key:
-#             raise Exception('Unable to resolve extras with an empty key')
-#         if key == _c.SCHEMA_BODY_KEY:
-#             body = e['value']
-#         elif key == _c.SCHEMA_TYPE_KEY:
-#             _type = e['value']
-#         elif key == _c.SCHEMA_VERSION_KEY:
-#             version = e['value']
-#         elif key == _c.SCHEMA_OPT_KEY:
-#             opt = e['value']
-    
-#     if _as_dict:
-#         body = as_dict(body)
-#         opt = as_dict(opt)
-#     else:
-#         body = as_json(body)
-#         opt = as_json(opt)
-    
-#     return {
-#         _c.SCHEMA_OPT_KEY : opt,
-#         _c.SCHEMA_BODY_KEY: body,
-#         _c.SCHEMA_TYPE_KEY: _type,
-#         _c.SCHEMA_VERSION_KEY: version
-#     }
-
-
-
 
 # def serializer(key, data, errors, context):
 
@@ -657,75 +580,6 @@ def encode_str(value):
     return value
 
 
-# def interpolate_fields(model, template):
-#     # What kind of object is template?
-#     from six import PY3
-
-#     ###########################################################################
-#     # Jinja2 template
-#     ###########################################################################
-#     def functionLoader(name):
-#         return template[name]
-
-#     import jinja2
-#     Environment = jinja2.environment.Environment
-#     FunctionLoader = jinja2.loaders.FunctionLoader 
-#     TemplateSyntaxError = jinja2.TemplateSyntaxError
-
-#     env = Environment(
-#         loader=FunctionLoader(functionLoader),
-#         autoescape=True,
-#         trim_blocks=False,
-#         keep_trailing_newline=True
-#     )
-
-#     def big_query():
-#         from ckanext.jsonschema_dashboard.plugin import interpolate_data
-#         query = "SELECT%20*%20FROM%20%60fao-maps-review.fao_dashboard.TestTable%60%20LIMIT%201000"
-#         return interpolate_data(query).json()
-
-#     model['big_query'] = big_query
-
-#     if 'items' in template:
-#         template['items'] = template['items'][0]
-
-#     for f in template.keys():
-#         # if f in constants.FIELDS_TO_SKIP:
-#         #     continue
-
-#         interpolate = False
-
-#         field = template[f]
-#         is_string = lambda field : (PY3 and isinstance(field, (str))) or (not PY3 and isinstance(template[f],(str, unicode)))
-#         is_object = lambda field : isinstance(field, object)
-#         is_list = lambda field : isinstance(field , list)
-
-#         if is_string(field):
-#             interpolate = True
-#         elif is_object(field):
-#             interpolate_fields(model, field)
-#         elif is_list(field):
-#             for item in field:
-#                 if is_object(item):
-#                     interpolate_fields(model, item)
-#                 elif is_list(item):
-#                     pass
-
-#         if interpolate:
-#             try:
-#                 _template = env.get_template(f)
-#                 template[f] = _template.render(model)
-
-#             except TemplateSyntaxError as e:
-#                 raise Exception(_('Unable to interpolate field \'{}\' line \'{}\'\nError:{}'.format(f,str(e.lineno),str(e))))
-#             except Exception as e:
-#                 raise Exception(_('Unable to interpolate field \'{}\': {}'.format(f,str(e))))
-
-#     return template
-    
-################################################################################
-
-
 _SCHEMA_RESOLVER = RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
 def draft_validation(schema, body, errors):
     """Validates ..."""
@@ -757,3 +611,16 @@ def draft_validation(schema, body, errors):
         log.error('Message: {}'.format(error.message))
 
     return is_error
+
+
+
+def format_number(n):
+    import math
+    
+    millnames = ['',' Thousand',' Million',' Billion',' Trillion']
+
+    n = float(n)
+    millidx = max(0,min(len(millnames)-1,
+                        int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
+
+    return '{:.0f}{}'.format(n / 10**(3 * millidx), millnames[millidx])
