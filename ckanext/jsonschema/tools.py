@@ -12,8 +12,6 @@ import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
-from ckan.plugins.toolkit import get_or_bust, h
-from ckanext.jsonschema.interfaces import JSONSCHEMA_IVIEW_PLUGINS
 
 from jsonschema import Draft7Validator, RefResolver
 
@@ -51,7 +49,6 @@ def reload():
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module(),
         _c.JSON_CONFIG_KEY: read_all_config(),
-        #_c.JSON_VIEW_CONFIG_KEY: read_all_view_config()
     })
 
     configuration.setup()
@@ -69,8 +66,6 @@ def read_all_schema():
 def read_all_config():
     return utils._read_all_json(_c.PATH_CONFIG)
     
-def read_all_view_config():
-    return utils._read_all_json(_c.PATH_VIEW_CONFIG)
 
 def initialize_core_schemas():
     utils._initialize_license_schema()
@@ -244,9 +239,6 @@ def get_dataset_body(dataset):
 def get_resource_body(resource):
     return _extract_from_resource(resource, _c.SCHEMA_BODY_KEY)
 
-def get_view_body(view):
-    return _extract_from_view(view, _c.SCHEMA_BODY_KEY)
-
 def get_type(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
 
@@ -257,9 +249,6 @@ def get_dataset_type(dataset = None):
 def get_resource_type(resource):
     return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
 
-def get_view_type(view):
-    return _extract_from_view(view, _c.SCHEMA_TYPE_KEY)
-
 def get_opt(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_OPT_KEY)
 
@@ -268,9 +257,6 @@ def get_dataset_opt(dataset):
 
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
-
-def get_view_opt(view):
-    return _extract_from_view(view, _c.SCHEMA_OPT_KEY)
 
 def get(dataset_id, resource_id = None, domain = None):
     
@@ -362,13 +348,6 @@ def _extract_from_dataset(dataset, domain):
     
     raise Exception("Missing parameter dataset or domain")
 
-def _extract_from_view(view, domain):
-    
-    if view and domain:
-        return view.get(domain)
-    
-    raise Exception("Missing parameter resource or domain")
-
 
 # TODO CKAN contribution
 # TODO check also tools.get_dataset_type
@@ -450,11 +429,10 @@ def as_dict(field):
 
 # REMOVE -> USE UTILS.
 # TODO check utils
-def as_json(field):
-    value = field
+def as_json(value):
 
-    if isinstance(field, unicode):
-        value = value.encode('utf-8')
+    value = encode_str(value)
+
     if isinstance(value, dict) or isinstance(value, list):
         try: 
             return json.dumps(value)
@@ -678,142 +656,6 @@ def encode_str(value):
     
     return value
 
-
-################################ VIEWS ########################################
-import copy
-
-
-def get_interpolated_view_model(resource_view_id):
-
-    view = _g.get_view(resource_view_id)
-    
-    if not view:
-        raise Exception(_('No view found for view_id: {}'.format(str(resource_view_id))))
-
-    view_body = get_view_body(view)
-    if not view_body:
-        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(resource_view_id))))
-
-    view_type = view.get("view_type") 
-
-    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
-    
-    return interpolate_fields(model, view_body, view_type)
-
-def _get_model(dataset_id, resource_id):
-    '''
-    Returns the model used by jinja2 template
-    '''
-
-    if not dataset_id or not resource_id:
-        raise Exception('wrong parameters we expect a dataset_id and a resource_id')
-
-    # TODO can we have a context instead of None?
-    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
-    if not pkg:
-        raise Exception('Unable to find dataset, check input params')
-
-    pkg = dictize_pkg(pkg)
-
-    # res = filter(lambda r: r['id'] == view.resource_id,pkg['resources'])[0]
-    res = next(r for r in pkg['resources'] if r['id'] == resource_id)
-    if not res:
-        raise Exception('Unable to find resource under this dataset, check input params')
-
-    # return the model as dict
-    _dict = {
-        'dataset': pkg,
-        'organization': get_or_bust(pkg,'organization'),
-        'resource':res,
-        'ckan':{'base_url':h.url_for('/', _external=True)},
-        #'data': {} #TODO
-        #'terriajs':{'base_url': _c.TERRIAJS_URL}
-        }
-
-    return _dict 
-
-def _load_resource_content_from_disk(resource):
-    import json
-
-    import ckan.lib.uploader as uploader
-
-    upload = uploader.get_resource_uploader(resource)
-    filepath = upload.get_path(resource['id'])
-
-    with open(filepath) as f:
-        resource_content = json.loads(f.read())
-    
-    return resource_content
-
-
-def _enhance_model_with_data_helpers(model, view_type):
-    '''
-    This methods adds data helpers from plugins to the model provided to the template renderer
-    Plugins implementing the IJsonschemaView interface can define the method get_data_helpers which returns a list of function
-    The function are injected with their name in the environment of jinja
-    '''
-
-    resource_content = get_resource_content(model['resource'])
-    
-    # get the plugin that manages the view; should always be just one
-    plugin = next(plugin for plugin in JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
-    data_helpers = plugin.get_data_helpers(resource_content)
-
-    # TODO CHECK FOR CONFLICTS
-    model.update(data_helpers)
-
-
-def get_resource_content(resource):
-
-    # TODO understand resource type jsonschema, url, localfile
-            # TODO schema validation in case of url or localfile
-    # TODO query resource options for customized logic on where to pick up data
-    # if jsonschema
-    # resource_content = json.loads(_t.get_resource_body(resource_body))
-    # else load from disk
-    is_jsonschema = get_resource_type(resource) != None
-    is_upload = resource.get('url_type') == 'upload'
-
-    if is_jsonschema:
-        resource_content = get_resource_body(resource)
-    elif is_upload:
-        resource_content = _load_resource_content_from_disk(resource)
-
-    return resource_content
-
-def interpolate_fields(model, template, view_type):
-
-    def functionLoader(_template):
-        return _template
-
-    import jinja2
-    Environment = jinja2.environment.Environment
-    FunctionLoader = jinja2.loaders.FunctionLoader 
-    TemplateSyntaxError = jinja2.TemplateSyntaxError
-
-    env = Environment(
-        loader=FunctionLoader(functionLoader),
-        autoescape=False,
-        trim_blocks=False,
-        keep_trailing_newline=True
-    )
-
-    _enhance_model_with_data_helpers(model, view_type)
-    
-    try:
-        polished_template = json.dumps(template).replace('"{{',"{{").replace('}}"', '}}')
-        _template = env.get_template(polished_template)
-        template = json.loads(_template.render(model))
-
-    except TemplateSyntaxError as e:
-        message = _('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e)))
-        raise ValidationError({'message': message}, error_summary = message)
-    except Exception as e:
-        message = _('Unable to interpolate field: {}'.format(str(e)))
-        raise ValidationError({'message': message}, error_summary = message)
-
-    #return dictize_pkg(template)
-    return template
 
 # def interpolate_fields(model, template):
 #     # What kind of object is template?

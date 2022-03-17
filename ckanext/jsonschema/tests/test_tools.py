@@ -125,5 +125,17 @@ class TestTools(object):
 
         jsons = _t.read_all_template()
         assert type(jsons) is dict
-        
-        
+
+    def test_as_json(self):
+
+        test_json = {"key": "value"}
+        result = _t.as_json(test_json)
+        assert type(result) is str
+
+        test_json = [{"key": "value"}]
+        result = _t.as_json(test_json)
+        assert type(result) is str
+
+        test_json = '[{\"key\": \"value\"}]'
+        result = _t.as_json(test_json)
+        assert type(result) is str

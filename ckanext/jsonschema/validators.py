@@ -1,5 +1,12 @@
+import logging
+
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
+import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.view_tools as _vt
+
+log = logging.getLogger(__name__)
 
 _get_or_bust= toolkit.get_or_bust
 _ = toolkit._
@@ -38,12 +45,6 @@ def stop_with_error(message, key, errors):
     
     raise StopOnError(_(message))
 
-import logging
-
-import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.tools as _t
-
-log = logging.getLogger(__name__)
 
 
 #############################################
@@ -254,9 +255,9 @@ def get_extras_from_resource(resource):
 
 def get_extras_from_view(view):
     
-    body = _t.as_dict(_t.get_view_body(view))
-    _type = _t.get_view_type(view)
-    opt = _t.as_dict(_t.get_view_opt(view))
+    body = _t.as_dict(_vt.get_view_body(view))
+    _type = _vt.get_view_type(view)
+    opt = _t.as_dict(_vt.get_view_opt(view))
 
     return body, _type, opt
 
