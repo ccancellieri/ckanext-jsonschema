@@ -32,6 +32,41 @@ def _extract_from_view(view, domain):
     raise Exception("Missing parameter resource or domain")
 
 
+
+def interpolate_fields(model, template, view_type):
+
+    def functionLoader(_template):
+        return _template
+
+    import jinja2
+    Environment = jinja2.environment.Environment
+    FunctionLoader = jinja2.loaders.FunctionLoader 
+    TemplateSyntaxError = jinja2.TemplateSyntaxError
+
+    env = Environment(
+        loader=FunctionLoader(functionLoader),
+        autoescape=False,
+        trim_blocks=False,
+        keep_trailing_newline=True
+    )
+
+    _enhance_model_with_data_helpers(model, view_type)
+    
+    try:
+        polished_template = json.dumps(template).replace('"{{',"{{").replace('}}"', '}}')
+        _template = env.get_template(polished_template)
+        template = json.loads(_template.render(model))
+
+    except TemplateSyntaxError as e:
+        message = _('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e)))
+        raise ValidationError({'message': message}, error_summary = message)
+    except Exception as e:
+        message = _('Unable to interpolate field: {}'.format(str(e)))
+        raise ValidationError({'message': message}, error_summary = message)
+
+    #return dictize_pkg(template)
+    return template
+
 def render_template(template_name, extra_vars):
 
     import os
@@ -106,7 +141,53 @@ def _get_model(dataset_id, resource_id):
 
     return _dict 
 
-def _load_resource_content_from_disk(resource):
+
+def _enhance_model_with_data_helpers(model, view_type):
+    '''
+    This methods adds data helpers from plugins to the model provided to the template renderer
+    Plugins implementing the IJsonschemaView interface can define the method get_data_helpers which returns a list of function
+    The function are injected with their name in the environment of jinja
+    '''
+
+    resource = model['resource']
+    
+    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
+    data_helpers = plugin.get_data_helpers(view_type, resource)
+
+    # TODO CHECK FOR CONFLICTS
+    model.update(data_helpers)
+
+
+def get_resource_content(resource):
+    '''
+    Plugin that implement IJsonschemaView should call this to get the resource content depending on the type of the resource
+    '''
+
+    # TODO understand resource type jsonschema, url, localfile
+            # TODO schema validation in case of url or localfile
+    # TODO query resource options for customized logic on where to pick up data
+    # if jsonschema
+    # resource_content = json.loads(_t.get_resource_body(resource_body))
+    # else load from disk
+    # TODO manage if resource is a link
+    is_jsonschema = _t.get_resource_type(resource) != None
+    is_upload = resource.get('url_type') == 'upload'
+    is_url = resource.get('url') and resource.get('url_type') == None
+
+    resource_content = {}
+    if is_jsonschema:
+        resource_content = load_resource_content_from_jsonschema_body(resource)
+    elif is_upload:
+        resource_content = load_resource_content_from_disk(resource)
+    elif is_url:
+        resource_content = load_resource_content_from_url(resource)
+
+    return resource_content
+
+def load_resource_content_from_jsonschema_body(resource):
+    return _t.get_resource_body(resource)
+
+def load_resource_content_from_disk(resource):
     import json
 
     import ckan.lib.uploader as uploader
@@ -120,75 +201,13 @@ def _load_resource_content_from_disk(resource):
     return resource_content
 
 
-def _enhance_model_with_data_helpers(model, view_type):
-    '''
-    This methods adds data helpers from plugins to the model provided to the template renderer
-    Plugins implementing the IJsonschemaView interface can define the method get_data_helpers which returns a list of function
-    The function are injected with their name in the environment of jinja
-    '''
+def load_resource_content_from_url(resource):
+    import requests
 
-    resource_content = get_resource_content(model['resource'])
-    
-    # get the plugin that manages the view; should always be just one
-    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
-    data_helpers = plugin.get_data_helpers(resource_content)
-
-    # TODO CHECK FOR CONFLICTS
-    model.update(data_helpers)
-
-
-def get_resource_content(resource):
-
-    # TODO understand resource type jsonschema, url, localfile
-            # TODO schema validation in case of url or localfile
-    # TODO query resource options for customized logic on where to pick up data
-    # if jsonschema
-    # resource_content = json.loads(_t.get_resource_body(resource_body))
-    # else load from disk
-    is_jsonschema = _t.get_resource_type(resource) != None
-    is_upload = resource.get('url_type') == 'upload'
-
-    if is_jsonschema:
-        resource_content = _t.get_resource_body(resource)
-    elif is_upload:
-        resource_content = _load_resource_content_from_disk(resource)
+    url = resource.get('url') 
+    resource_content = requests.get(url).json()
 
     return resource_content
-
-def interpolate_fields(model, template, view_type):
-
-    def functionLoader(_template):
-        return _template
-
-    import jinja2
-    Environment = jinja2.environment.Environment
-    FunctionLoader = jinja2.loaders.FunctionLoader 
-    TemplateSyntaxError = jinja2.TemplateSyntaxError
-
-    env = Environment(
-        loader=FunctionLoader(functionLoader),
-        autoescape=False,
-        trim_blocks=False,
-        keep_trailing_newline=True
-    )
-
-    _enhance_model_with_data_helpers(model, view_type)
-    
-    try:
-        polished_template = json.dumps(template).replace('"{{',"{{").replace('}}"', '}}')
-        _template = env.get_template(polished_template)
-        template = json.loads(_template.render(model))
-
-    except TemplateSyntaxError as e:
-        message = _('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e)))
-        raise ValidationError({'message': message}, error_summary = message)
-    except Exception as e:
-        message = _('Unable to interpolate field: {}'.format(str(e)))
-        raise ValidationError({'message': message}, error_summary = message)
-
-    #return dictize_pkg(template)
-    return template
-
 
 #### VIEW CONFIGURATION #####
 

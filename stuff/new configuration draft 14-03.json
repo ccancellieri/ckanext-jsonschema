@@ -53,27 +53,27 @@ schema/<path>/<to>/<file>.json
 
 iso/iso.json --> schema/iso/iso.json
 
-
+// Every resource for every package type
 //PACKAGES-RESOURCES
-{
-   "package-resource": [
-        {
-            "package_type": "dataset",
-            //"jsonschema_type": "",
-            "resource_names": ["graphic-overview"],
-        },
-        {
-            "package_type": "iso",
-            "jsonschema_type": "iso",
-            "resource_names": ["graphic-overview"],
-        },
-        {
-            "package_type": "stac",
-            "jsonschema_type": "stac",
-            "resource_names": ["stac-graphic-overview"],
-        }
-    ]
-}
+// {
+//    "package-resource": [
+//         {
+//             "package_type": "dataset",
+//             //"jsonschema_type": "",
+//             "resource_names": ["graphic-overview"],
+//         },
+//         {
+//             "package_type": "iso",
+//             "jsonschema_type": "iso",
+//             "resource_names": ["graphic-overview"],
+//         },
+//         {
+//             "package_type": "stac",
+//             "jsonschema_type": "stac",
+//             "resource_names": ["stac-graphic-overview"],
+//         }
+//     ]
+// }
 
 // {
 //     "operations": {
