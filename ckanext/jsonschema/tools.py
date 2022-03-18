@@ -8,7 +8,6 @@ _ = toolkit._
 import json
 import logging
 
-import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
@@ -48,10 +47,8 @@ def reload():
         _c.JSON_SCHEMA_KEY: read_all_schema(),
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module(),
-        _c.JSON_CONFIG_KEY: read_all_config(),
+        _c.JSON_REGISTRY_KEY: read_config()
     })
-
-    configuration.setup()
     
     
 def read_all_module():
@@ -65,6 +62,9 @@ def read_all_schema():
     
 def read_all_config():
     return utils._read_all_json(_c.PATH_CONFIG)
+
+def read_config():
+    return utils._json_load(_c.PATH_CONFIG, _c.FILENAME_REGISTRY)
     
 
 def initialize_core_schemas():

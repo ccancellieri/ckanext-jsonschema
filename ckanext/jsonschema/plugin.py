@@ -263,6 +263,3 @@ def _modify_package_schema(schema):
     # the following will be the first...
     before.insert(0, _v.schema_check)
     return schema
-
-
-        

@@ -28,15 +28,15 @@ SCHEMA_TYPE_KEY='jsonschema_type'
 #  Will contain the schema and template defined with the type-mapping
 JSON_SCHEMA_KEY = 'schema'
 JSON_TEMPLATE_KEY = 'template'
-JSON_CONFIG_KEY = 'config'
-JSON_VIEW_CONFIG_KEY = 'view_config'
+JSON_REGISTRY_KEY = 'registry'
+
 JSONSCHEMA_CONFIG = {}
 JS_MODULE_KEY = 'module'
 JSON_CATALOG = {
    JSON_SCHEMA_KEY: {},
    JSON_TEMPLATE_KEY: {},
    JS_MODULE_KEY: {},
-   JSON_CONFIG_KEY: {}
+   JSON_REGISTRY_KEY: {}
 }
 JSON_CATALOG_INITIALIZED = False
 #############################
@@ -74,6 +74,8 @@ PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join
 REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
 PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join(PATH_ROOT,'config')))
+FILENAME_REGISTRY='registry.json'
+
 PATH_VIEW_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.view_config', path.join(PATH_ROOT,'view_config')))
 
 DEFAULT_EXTRAS = [

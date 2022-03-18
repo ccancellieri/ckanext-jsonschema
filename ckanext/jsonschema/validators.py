@@ -117,7 +117,7 @@ def resource_extractor(key, data, errors, context):
         if resource_type not in configuration.get_supported_resource_types(dataset_type):
             return          
 
-        plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, dataset_type, resource_type)
+        plugin = configuration.get_plugin(dataset_type, resource_type)
         
         context.update({
             _c.SCHEMA_BODY_KEY: body,
@@ -155,7 +155,7 @@ def before_extractor(key, data, errors, context):
     if _type not in configuration.get_input_types():
         return
     
-    plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+    plugin = configuration.get_plugin(_type)
 
     try:
         extractor = plugin.get_before_extractor(_type, context) 
@@ -186,7 +186,7 @@ def extractor(key, data, errors, context):
     if package_type not in configuration.get_supported_types():
         return
 
-    plugin = configuration.get_plugin(configuration.SUPPORTED_KEY, package_type)
+    plugin = configuration.get_plugin(package_type)
 
     context.update({
         _c.SCHEMA_BODY_KEY: body,
@@ -229,7 +229,7 @@ def dataset_dump(dataset_id, format = None):
     }
     errors = []
     
-    plugin = configuration.get_plugin(configuration.OUTPUT_KEY, type)
+    plugin = configuration.get_plugin(type)
     body = plugin.dump_to_output(_data, errors, context, format)
     
     return body

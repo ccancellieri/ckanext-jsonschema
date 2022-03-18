@@ -86,7 +86,7 @@ class TestIso(object):
         }
 
         errors = []
-        plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+        plugin = configuration.get_plugin(_type)
         extractor = plugin.get_input_extractor(_type, import_context) 
         extractor(package_dict, errors, import_context)   
 
