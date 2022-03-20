@@ -31,7 +31,8 @@ def update(core_name, dict):
     # TODO dict must be flat (defined by an interface method (By jsonschema_type))
     pass
 
-    def configure_fields(core_name, jsonschema_type):
+    # TODO define interface IBinder?
+    def solr_configure_fields(core_name, jsonschema_type):
         pass
 
         # To add a new field to the schema, follow this example from the Bash prompt:
@@ -52,3 +53,7 @@ def update(core_name, dict):
         #     "type":"myNewTxtField",
         #     "stored":true }]
         # }
+
+        # NOTE: these configurations can be part of the REGISTRY config??
+
+        # see https://solr.apache.org/guide/6_6/schema-api.html#SchemaAPI-EXAMPLES
