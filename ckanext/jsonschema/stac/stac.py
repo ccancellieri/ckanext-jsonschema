@@ -35,6 +35,25 @@ supported_resource_types = {
     _c.TYPE_STAC_RESOURCE: ItemExtractor()._extract_json_resources,
 }
 
+def dump_to_output(data, errors, context, output_format):
+
+    body = _t.get_context_body(context)
+    pkg = _t.get(body.get('id'))
+
+    if pkg:
+        try:
+            pass
+            #raise Exception(('Unsupported requested format {}').format(dataset_type))
+        except Exception as e:
+            if e:
+                message = ('Error on: {} line: {} Message:{}').format(e.get('name', ''), e.get('lineno', ''), e.get('message', ''))
+                log.error(message)
+
+
+output_types = {
+    _c.TYPE_STAC: dump_to_output
+}
+
 class JsonSchemaStac(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(_i.IBinder, inherit=True)
@@ -51,24 +70,6 @@ class JsonSchemaStac(plugins.SingletonPlugin):
 
     def extract_id(self, body, dataset_type, opt, verion, errors, context):
         return extract_id(dataset_type, body)
-
-
-    def dump_to_output(self, data, errors, context, output_format):
-
-        body = _t.get_context_body(context)
-        dataset_type = _t.get_context_type(context)
-
-
-        pkg = _t.get(self.extract_id(body, dataset_type))
-        if pkg:
-            try:
-                if dataset_type == _c.TYPE_STAC:
-                    pass
-                raise Exception(('Unsupported requested format {}').format(dataset_type))
-            except Exception as e:
-                if e:
-                    message = ('Error on: {} line: {} Message:{}').format(e.get('name', ''), e.get('lineno', ''), e.get('message', ''))
-                    log.error(message)
 
     def get_input_types(self):
         return input_types.keys()
@@ -106,7 +107,7 @@ class JsonSchemaStac(plugins.SingletonPlugin):
 
     def get_resource_extractor(self, package_type, resource_type, context):
 
-        extractor_for_type = resource_types.get(resource_type)
+        extractor_for_type = supported_resource_types.get(resource_type)
 
         if extractor_for_type:
             return extractor_for_type

@@ -219,19 +219,20 @@ def dataset_dump(dataset_id, format = None):
     if format == None:
         return _data
 
-    body, type, opt = get_extras_from_data(_data)
+    body, package_type, opt = get_extras_from_data(_data)
 
     
     context = {
         _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : type,
+        _c.SCHEMA_TYPE_KEY : package_type,
         _c.SCHEMA_OPT_KEY : opt,
     }
     errors = []
     
-    plugin = configuration.get_plugin(type)
-    body = plugin.dump_to_output(_data, errors, context, format)
-    
+    plugin = configuration.get_plugin(package_type)
+    dump_to_output = plugin.get_dump_to_output(package_type)
+    body = dump_to_output(_data, errors, context, format)
+
     return body
 
 

@@ -97,20 +97,14 @@ def read_nested_schema(path, schema_name):
 jsonschema.add_url_rule('{}/<path:path>/<schema_name>'.format(_c.REST_SCHEMA_PATH), view_func=read_nested_schema, endpoint='nested_schema', methods=[u'GET'])
 
 
-def read_schema_file(filename, path=None):
+def read_schema_file(filename, path=''):
     '''
     Dumps the content of a local schema file.
     The file resolution is based on the configured schema folder and the (argument) json file name
     '''
 
     import os
-
-    filename = os.path.splitext(filename)[0]
-
-    if path:
-        item = os.path.join(path, filename)
-    else:
-        item = filename
+    item = os.path.join(path, filename)
 
     return read_schema(item)
 
@@ -118,17 +112,17 @@ def read_schema_file(filename, path=None):
 jsonschema.add_url_rule('{}/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='schema_file', methods=[u'GET'])
 
 
-def read_nested_schema_file(path, filename):
-    '''
-    Dumps the content of a local schema file, nested in folders.
-    The file resolution is based on the configured schema folder and the (arguments) path and the json file name
-    The file is searched at <configured_schema_folder>/<path>/<filename>
-    '''
+# def read_nested_schema_file(path, filename):
+#     '''
+#     Dumps the content of a local schema file, nested in folders.
+#     The file resolution is based on the configured schema folder and the (arguments) path and the json file name
+#     The file is searched at <configured_schema_folder>/<path>/<filename>
+#     '''
     
-    return read_schema_file(filename, path)
+#     return read_schema_file(filename, path)
 
 # /jsonschema/schema_file/nested/iso.json
-jsonschema.add_url_rule('{}/<path:path>/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_nested_schema_file, endpoint='nested_schema_file', methods=[u'GET'])
+jsonschema.add_url_rule('{}/<path:path>/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='nested_schema_file', methods=[u'GET'])
 
 
 def read_template(schema_type):

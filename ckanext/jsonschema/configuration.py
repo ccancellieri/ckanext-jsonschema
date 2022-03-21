@@ -17,8 +17,8 @@ PLUGIN_KEY = 'plugin'
 # RESOURCE_TYPES = []
 # OUTPUT_TYPES = []
 
-PACKAGE_REGISTRY_KEY = 'package-registry'
-RESOURCE_REGISTRY_KEY = 'resource-registry'
+# PACKAGE_REGISTRY_KEY = 'package-registry'
+# RESOURCE_REGISTRY_KEY = 'resource-registry'
 ############# SETUP #############
 
 
@@ -199,12 +199,14 @@ RESOURCE_REGISTRY_KEY = 'resource-registry'
 
 ############# END VALIDATIONS #############
 
+def get_registry():
+    return _c.JSON_CATALOG[_c.JSON_REGISTRY_KEY]
 
-def get_package_registry():
-    return _c.JSON_CATALOG[_c.JSON_REGISTRY_KEY].get(PACKAGE_REGISTRY_KEY)
+# def get_package_registry():
+#     return _c.JSON_CATALOG[_c.JSON_REGISTRY_KEY].get(PACKAGE_REGISTRY_KEY)
 
-def get_resource_registry():
-    return _c.JSON_CATALOG[_c.JSON_REGISTRY_KEY].get(RESOURCE_REGISTRY_KEY)
+# def get_resource_registry():
+#     return _c.JSON_CATALOG[_c.JSON_REGISTRY_KEY].get(RESOURCE_REGISTRY_KEY)
 
 def get_plugin(dataset_type, resource_type=None):
     '''
@@ -251,7 +253,15 @@ def get_supported_types():
     return supported_types
 
 def get_output_types():
-    return get_configuration().get(OUTPUT_KEY).keys()
+    # Currently this isn't used because we never need a list of outputtable types
+
+    output_types = []
+    for plugin in JSONSCHEMA_IBINDER_PLUGINS:
+        for output_type in plugin.get_output_types():
+            if output_type not in output_types:
+                output_types.append(output_type)
+
+    return output_types
 
 def get_supported_resource_types(package_type):
     '''

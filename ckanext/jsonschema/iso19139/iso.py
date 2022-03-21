@@ -80,6 +80,50 @@ clonable_resources_types = {
     TYPE_DATA_SOURCES: default_cloner,
 }
 
+def dump_to_output(data, errors, context, output_format):
+    import ckan.lib.base as base
+
+    body = _t.get_context_body(context)
+    pkg = _t.get(body.get('fileIdentifier'))
+    
+    # TODO why not use data as model is get_pkg a good model??
+
+    if pkg:
+        try:
+            ######################
+            # TODO so we have to use format and mimetype
+            # format 'can' be 1:1 with dataset_type
+            ##########
+
+            if output_format == 'xml':
+                return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
+            elif output_format == 'json':
+                return json.dumps(data)
+            elif output_format == 'html':
+                return base.render('iso/fullview.html', extra_vars={'dataset': pkg})
+                    
+            # if dataset_type == 'iso19139' and output_format == 'xml':
+            #     return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
+            
+            raise Exception('Unsupported requested format {}'.format(output_format))
+        except Exception as e:
+            try:
+                if hasattr(e, 'name'):
+                    message = 'Error on: {} line: {} Message:{}'.format(e.name, e.lineno, e.message)
+                    log.error(message)
+                else:
+                    raise
+            except:
+                log.error('Exception: {}'.format(type(e)))
+                log.error(str(e))
+                raise
+            # raise e
+
+output_types = {
+    TYPE_ISO: dump_to_output
+}
+
+
 class JsonschemaIso(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(_i.IBinder, inherit = True)
@@ -140,7 +184,10 @@ class JsonschemaIso(p.SingletonPlugin):
     def get_resource_cloner(self, package_type, resource_type):            
         return clonable_resources_types.get(resource_type)
 
-        
+
+    def get_dump_to_output(self, package_type):
+        return output_types.get(package_type)
+
     # IBinder
     def extract_id(self, data, errors, context):
         
@@ -153,44 +200,3 @@ class JsonschemaIso(p.SingletonPlugin):
         elif dataset_type == TYPE_ISO19139:
             return extractor_iso19139._extract_id(body)
             
-
-    def dump_to_output(self, data, errors, context, output_format):
-        import ckan.lib.base as base
-
-        body = _t.get_context_body(context)
-        pkg = _t.get(body.get('fileIdentifier'))
-        dataset_type = _t.get_context_type(context)
-        
-        # TODO why not use data as model is get_pkg a good model??
-
-        if pkg:
-            try:
-                ######################
-                # TODO so we have to use format and mimetype
-                # format 'can' be 1:1 with dataset_type
-                ##########
-
-                if dataset_type == 'iso':
-                    if output_format == 'xml':
-                        return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
-                    elif output_format == 'json':
-                        return json.dumps(data)
-                    elif output_format == 'html':
-                        return base.render('iso/fullview.html', extra_vars={'dataset': pkg})
-                        
-                # if dataset_type == 'iso19139' and output_format == 'xml':
-                #     return base.render('iso/iso19139.xml', extra_vars={'metadata': body, 'pkg': pkg})
-                
-                raise Exception('Unsupported requested format {}'.format(output_format))
-            except Exception as e:
-                try:
-                    if hasattr(e, 'name'):
-                        message = 'Error on: {} line: {} Message:{}'.format(e.name, e.lineno, e.message)
-                        log.error(message)
-                    else:
-                        raise
-                except:
-                    log.error('Exception: {}'.format(type(e)))
-                    log.error(str(e))
-                    raise
-                # raise e
