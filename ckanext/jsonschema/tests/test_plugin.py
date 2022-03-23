@@ -49,8 +49,8 @@ class TestPlugin(object):
         input_types = configuration.get_input_types()
         assert isinstance(input_types, list)
         
-        output_types = configuration.get_output_types()
-        assert isinstance(output_types, list)
+        # output_types = configuration.get_output_types()
+        # assert isinstance(output_types, list)
 
         supported_types = configuration.get_supported_types()
         assert isinstance(supported_types, list)
