@@ -18,22 +18,27 @@ def get_plugin(package_type, resource_type=None):
     be used in the future
     '''
 
-    registry = get_registry()
+    try:
+        
+        plugin_name = ""
+        registry = get_registry()
 
-    if resource_type:
-        plugin_name = registry.get(resource_type).get('plugin_name')
+        if resource_type:
+            plugin_name = registry.get(resource_type).get('plugin_name')
 
-        # this raises AttributeError: 'NoneType' object has no attribute 'get' if not configured
-        # must raise a speaking message
+            # this raises AttributeError: 'NoneType' object has no attribute 'get' if not configured
+            # must raise a speaking message
 
-    else:
-        plugin_name = registry.get(package_type).get('plugin_name')
+        else:
+            plugin_name = registry.get(package_type).get('plugin_name')
 
-        # this raises AttributeError: 'NoneType' object has no attribute 'get' if not configured
-        # must raise a speaking message
+            # this raises AttributeError: 'NoneType' object has no attribute 'get' if not configured
+            # must raise a speaking message
 
-    plugin_name = registry.get(package_type).get('plugin_name')
-    plugin = _lookup_jsonschema_plugin_from_name(plugin_name)
+        plugin = _lookup_jsonschema_plugin_from_name(plugin_name)
+
+    except TypeError:
+        raise PluginNotFoundException('The requested plugin: {} was not found'.format(plugin_name))    
 
     return plugin
 
@@ -91,4 +96,4 @@ def _lookup_jsonschema_plugin_from_name(plugin_name):
         if plugin.name == plugin_name:
             return plugin
             
-    raise PluginNotFoundException('Found a configuration file for plugin {} which is not installed'.format(plugin_name))    
+    raise PluginNotFoundException('The requested plugin: {} was not found'.format(plugin_name))    

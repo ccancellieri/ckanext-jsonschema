@@ -154,7 +154,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             var self = this;
 
             jsonschema.ckan_url = self.options.ckanUrl;
-            jsonschema.schema_file = 'jsonschema/schema_file/';
+            jsonschema.schema_file = 'jsonschema/schema/';
             jsonschema.reload=this.reload.bind(jsonschema);
             jsonschema.getEditor=this.getEditor.bind(jsonschema);
             jsonschema.getEditorAce=this.getEditorAce.bind(jsonschema);
