@@ -249,26 +249,27 @@ def _get_view(config, format, jsonschema_type=None):
         
     raise Exception('Misconfigured view for format: {} and jsonschema_type: {}'.format(format, jsonschema_type))
 
-def get_schema(config, format, jsonschema_type=None):
-    catalog_key = get_schema_type(config, format, jsonschema_type)
-    schema = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(catalog_key) 
-    return schema
-
-def get_schema_type(config, format, jsonschema_type=None):
-    view = _get_view(config, format, jsonschema_type)
-    return _u._get_key(view.get('schema'))
-
-def get_template(config, format, jsonschema_type=None):
-    view = _get_view(config, format, jsonschema_type)
-
-    view_template = view.get('template')
-    template = {}
+# def get_schema(config, format, jsonschema_type=None):
     
-    if view_template:
-        catalog_key = _u._get_key(view.get('template'))
-        template = _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(catalog_key) 
+#     catalog_key = get_schema_type(config, format, jsonschema_type)
+#     schema = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(catalog_key) 
+#     return schema
+
+# def get_schema_type(config, format, jsonschema_type=None):
+#     view = _get_view(config, format, jsonschema_type)
+#     return _u._get_key(view.get('schema'))
+
+# def get_template(config, format, jsonschema_type=None):
+#     view = _get_view(config, format, jsonschema_type)
+
+#     view_template = view.get('template')
+#     template = {}
+    
+#     if view_template:
+#         catalog_key = _u._get_key(view.get('template'))
+#         template = _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(catalog_key) 
         
-    return template
+#     return template
 
 def get_all_schemas_in_config(config):
 

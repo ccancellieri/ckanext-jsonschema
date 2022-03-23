@@ -99,7 +99,7 @@ def importer(context, data_dict):
     errors = []
 
     try:
-        plugin = configuration.get_plugin(configuration.INPUT_KEY, _type)
+        plugin = configuration.get_plugin(_type)
     except PluginNotFoundException as e:
         return { "success": False, "msg": str(e)}
 
@@ -200,13 +200,23 @@ def clone_metadata(context, data_dict):
     errors = []
 
     try:
-        plugin = configuration.get_plugin(configuration.CLONE_KEY, _type)
+        plugin = configuration.get_plugin(_type)
     except PluginNotFoundException as e:
         return { "success": False, "msg": str(e)}
 
 
     try:
-        plugin.clone(package_dict, errors, clone_context)
+
+        cloner = plugin.get_package_cloner(_type)
+
+        if not cloner:
+            message = 'No cloner configured for package type {}. Skipping'.format(_type)
+            log.info(message)
+            return { "success": False, "msg": message}
+
+        
+        cloner(package_dict, errors, clone_context)
+
 
         # Port back from context extras to data
         _t.update_extras_from_context(package_dict, clone_context)
@@ -226,14 +236,22 @@ def clone_metadata(context, data_dict):
                     _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
                 }
 
-                plugin = configuration.get_plugin(configuration.CLONE_KEY, _type, _t.get_resource_type(resource))
-                plugin.clone_resource(resource, errors, resource_clone_context)
+                resource_type = _t.get_resource_type(resource)
+                plugin = configuration.get_plugin(_type, resource_type)
+                
+                cloner = plugin.get_resource_cloner(_type, resource_type)
+
+                if not cloner:
+                    log.info('No cloner configured for resource type {} on package type {}. Skipping'.format(resource_type, _type))
+                    continue
+                
+                cloner(resource, errors, resource_clone_context)
 
                 _t.update_extras_from_resource_context(resource, resource_clone_context)
 
                 # attach to package_dict
                 package_dict['resources'].append(resource)
-            except PluginNotFoundException:
+            except PluginNotFoundException: #TODO remove, should raise error
                 pass 
 
         return toolkit.get_action('package_create')(context, package_dict)

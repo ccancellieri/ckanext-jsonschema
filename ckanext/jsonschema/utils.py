@@ -27,8 +27,8 @@ def _find_all_js(root):
     for subdir, dirs, files in os.walk(root):
         for filename in files:
             if filename.endswith('.js'):
-                name=os.path.splitext(filename)[0]
-                _dict[name]= os.path.join(subdir,filename)
+                #name=os.path.splitext(filename)[0]
+                _dict[filename]= os.path.join(subdir,filename)
                 # with open(os.path.join(subdir,filename), 'r') as f:
                 #     _dict[name]= f.readlines()
     return _dict
@@ -44,8 +44,7 @@ def _read_all_json(root, prefix=""):
                 if root != subdir:
                     key_prefix = subdir.replace(root + os.sep, "")
 
-                filename_no_ext = _get_key(filename)
-                key = os.path.join(key_prefix, filename_no_ext)
+                key = os.path.join(key_prefix, filename)
 
                 _dict[key]=_json_load(subdir,filename)
 

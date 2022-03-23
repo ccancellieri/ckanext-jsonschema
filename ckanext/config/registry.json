@@ -1,0 +1,79 @@
+{
+    "iso": {
+        "label": "Iso",
+        "plugin_name": "jsonschema_iso",
+        "schema": "iso.json",
+        "template": "iso.json",
+        "module": "iso.js"
+    },
+    "iso19139": {
+        "label": "Iso19139",
+        "schema": "",
+        "plugin_name": "jsonschema_iso"
+    },
+    "stac": {
+        "label": "Stac",
+        "schema": "stac.json",
+        "plugin_name": "jsonschema_stac"
+    },
+    "tabular-data-resource": {
+        "label": "Table Data Resource",
+        "schema": "tabular-data-resource.json",
+        "template": "tabular-data-resource.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "jsonschema_dashboard/data-sources": {
+        "label": "Data Source",
+        "schema": "jsonschema_dashboard/data-sources.json",
+        "template": "jsonschema_dashboard/data-sources.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "online-resource": {
+        "label": "Online resource",
+        "schema": "online-resource.json",
+        "template": "online-resource.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "graphic-overview": {
+        "label": "Graphic Overview",
+        "schema": "graphic-overview.json",
+        "template": "graphic-overview.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "resource-contact": {
+        "label": "Resource Contact",
+        "schema": "resource-contact.json",
+        "template": "resource-contact.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "metadata-contact": {
+        "label": "Metadata Contact",
+        "schema": "metadata-contact.json",
+        "template": "metadata-contact.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "cited-responsible-party": {
+        "label": "Responsible Party",
+        "schema": "cited-responsible-party.json",
+        "template": "cited-responsible-party.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "resource-maintainer": {
+        "label": "Maintainer",
+        "schema": "resource-maintainer.json",
+        "template": "resource-maintainer.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "distributor": {
+        "label": "Distributor",
+        "schema": "distributor.json",
+        "template": "distributor.json",
+        "plugin_name": "jsonschema_iso"
+    },
+    "jsonschema_dashboard": {
+        "label": "Dashboard",
+        "schema": "jsonschema_dashboard/dashboard.json",
+        "template": "jsonschema_dashboard/dashboard.json",
+        "plugin_name": "jsonschema_dashboard"
+    }
+}

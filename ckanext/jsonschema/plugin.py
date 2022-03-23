@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 
 class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.IConfigurable)
     plugins.implements(plugins.IDatasetForm)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IValidators)
@@ -146,6 +147,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
+    # IConfigurable
+    def configure(self, config):
         _t.reload()
 
     # IValidators
@@ -263,6 +266,3 @@ def _modify_package_schema(schema):
     # the following will be the first...
     before.insert(0, _v.schema_check)
     return schema
-
-
-        

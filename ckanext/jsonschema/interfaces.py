@@ -3,6 +3,13 @@ from ckan.plugins import PluginImplementations
 
 
 class IJsonschemaView(Interface):
+    
+    def register_jsonschema_resources():
+        '''
+        Use this method to register schemas, template, module to jsonschema's catalog
+        '''
+        
+        pass
 
     def interpolate_data(resource):
         '''
@@ -29,7 +36,14 @@ class IBinder(Interface):
 
     #     '''
     #     return opt
-    
+
+    def register_jsonschema_resources():
+        '''
+        Use this method to register schemas, template, module to jsonschema's catalog
+        '''
+        
+        pass
+
     def dump_to_json(self, body, type, key, data, context):
         '''
         return a serialized version in the desired profile of the data model
@@ -86,5 +100,82 @@ class IBinder(Interface):
         '''
         raise NotImplementedError('clone operation not supported for this format')
 
+    
+    def get_input_types(self):
+        ''' 
+        Returns the input types managed from the plugin
+        Could be implemented returning the keys of a map {type: extractor_function_for_type}
+        '''
+
+        return []
+
+    def get_supported_types(self):
+        ''' 
+        Returns the supported types managed from the plugin
+        Could be implemented returning the keys of a map {type: extractor_function_for_type}
+        '''
+
+        return []
+
+    def get_supported_resource_types(self):
+        ''' 
+        Returns the supported resource types managed from the plugin
+        Could be implemented returning the keys of a map {type: extractor_function_for_type}
+        '''
+
+        return []
+
+    def get_clonable_resource_types(self):
+        ''' 
+        Returns clonable resource types managed from the plugin
+        Could be implemented returning the keys of a map {type: extractor_function_for_type}
+        '''
+        
+        return []
+        
+    def get_input_extractor(self, package_type, context):
+        ''' 
+        Returns input extractor function for the package type
+        '''
+        
+        return None
+
+    def get_package_extractor(self, package_type, context):
+        ''' 
+        Returns extractor function for the package type
+        '''
+        
+        return None
+
+    def get_resource_extractor(self, package_type, resource_type, context):
+        ''' 
+        Returns extractor function for the resource type
+        '''
+        
+        return None
+
+    def get_package_cloner(self, package_type):
+        ''' 
+        Returns cloner extractor function for the package type
+        '''
+
+    def get_resource_cloner(self, package_type, resource_type):            
+        ''' 
+        Returns cloner extractor function for the resource type
+        '''
+
 JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(IBinder)
 JSONSCHEMA_IVIEW_PLUGINS = PluginImplementations(IJsonschemaView)
+
+def get_all_jsonschema_plugins():
+    jsonschema_plugins = [] #all jsonschema plugins
+
+    for plugin in JSONSCHEMA_IBINDER_PLUGINS:
+        if plugin not in jsonschema_plugins:
+            jsonschema_plugins.append(plugin)
+
+    for plugin in JSONSCHEMA_IVIEW_PLUGINS:
+        if plugin not in jsonschema_plugins:
+            jsonschema_plugins.append(plugin)
+
+    return jsonschema_plugins

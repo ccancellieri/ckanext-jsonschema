@@ -1,8 +1,6 @@
 import threading
 
-
 import ckan.plugins.toolkit as toolkit
-from ckan.logic import ValidationError
 
 _ = toolkit._
 import json
@@ -10,6 +8,7 @@ import logging
 
 import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.utils as utils
 
@@ -48,11 +47,16 @@ def reload():
         _c.JSON_SCHEMA_KEY: read_all_schema(),
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module(),
-        _c.JSON_CONFIG_KEY: read_all_config(),
+        _c.JSON_REGISTRY_KEY: read_config()
     })
 
-    configuration.setup()
-    
+    jsonschema_plugins = _i.get_all_jsonschema_plugins()
+            
+    for plugin in jsonschema_plugins:
+        try:
+            plugin.register_jsonschema_resources()
+        except TypeError:
+            pass
     
 def read_all_module():
     return utils._find_all_js(_c.PATH_MODULE)
@@ -65,7 +69,24 @@ def read_all_schema():
     
 def read_all_config():
     return utils._read_all_json(_c.PATH_CONFIG)
+
+def read_config():
+    return utils._json_load(_c.PATH_CONFIG, _c.FILENAME_REGISTRY)
     
+def add_schemas_to_catalog(path):
+
+    schemas = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY]
+    schemas.update(utils._read_all_json(path))
+    
+def add_templates_to_catalog(path):
+
+    schemas = _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY]
+    schemas.update(utils._read_all_json(path))
+
+def add_modules_to_catalog(path):
+
+    schemas = _c.JSON_CATALOG[_c.JS_MODULE_KEY]
+    schemas.update(utils._find_all_js(path))
 
 def initialize_core_schemas():
     utils._initialize_license_schema()
@@ -221,14 +242,39 @@ def as_datetime(dict, path, strptime_format='%Y-%m-%d'):
     # on_dup = OVERWRITE
 
 
-def get_schema_of(type):
-    return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(type)
+def get_schema_of(_type):
 
-def get_template_of(type):
-    return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(type)
+    try:
+        registry = configuration.get_registry()
+        filename = registry.get(_type).get('schema')
+    except:
+        # the type could not be in the registry
+        # it would be the case in nested references within schemas
+        # in that case fetch the filename directly from the catalog
+        filename = _type
 
-def get_module_for(type):
-    return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(type)
+    
+    return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(filename)
+
+def get_template_of(_type):
+
+    try:
+        registry = configuration.get_registry()
+        filename = registry.get(_type).get('template')
+    except:
+        filename = _type
+
+    return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(filename)
+
+def get_module_for(_type):
+
+    try:
+        registry = configuration.get_registry()
+        filename = registry.get(_type).get('module')
+    except:
+        filename = _type
+
+    return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(filename)
 
 def get_body(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_BODY_KEY)
@@ -580,7 +626,21 @@ def encode_str(value):
     return value
 
 
-_SCHEMA_RESOLVER = RefResolver(base_uri='file://{}/'.format(_c.PATH_SCHEMA), referrer=None)
+
+class CustomRefResolver(RefResolver):
+
+    def resolve(self, ref):
+        '''
+        Resolve the given reference.
+        '''
+        return ref, _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][ref]
+
+
+_SCHEMA_RESOLVER = CustomRefResolver(
+    base_uri='file://{}/'.format(_c.PATH_SCHEMA), 
+    referrer=None
+)
+
 def draft_validation(schema, body, errors):
     """Validates ..."""
 

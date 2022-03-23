@@ -10,6 +10,50 @@ from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalogExtractor, C
 
 log = logging.getLogger(__name__)
 
+
+input_types = {
+    _c.TYPE_STAC: ""
+}
+
+input_extractors = {
+    _c.TYPE_STAC_ITEM: ItemExtractor().extract_from_json,
+    _c.TYPE_STAC_CATALOG: CatalogExtractor().extract_from_json,
+    _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
+}
+
+supported_types = {
+    _c.TYPE_STAC: ""
+}
+
+supported_extractors = {
+    _c.TYPE_STAC_ITEM: ItemExtractor().extract_from_json,
+    _c.TYPE_STAC_CATALOG: CatalogExtractor().extract_from_json,
+    _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
+}
+
+supported_resource_types = {
+    _c.TYPE_STAC_RESOURCE: ItemExtractor()._extract_json_resources,
+}
+
+def dump_to_output(data, errors, context, output_format):
+
+    body = _t.get_context_body(context)
+    pkg = _t.get(body.get('id'))
+
+    if pkg:
+        try:
+            pass
+            #raise Exception(('Unsupported requested format {}').format(dataset_type))
+        except Exception as e:
+            if e:
+                message = ('Error on: {} line: {} Message:{}').format(e.get('name', ''), e.get('lineno', ''), e.get('message', ''))
+                log.error(message)
+
+
+output_types = {
+    _c.TYPE_STAC: dump_to_output
+}
+
 class JsonSchemaStac(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(_i.IBinder, inherit=True)
@@ -27,37 +71,21 @@ class JsonSchemaStac(plugins.SingletonPlugin):
     def extract_id(self, body, dataset_type, opt, verion, errors, context):
         return extract_id(dataset_type, body)
 
+    def get_input_types(self):
+        return input_types.keys()
 
-    def dump_to_output(self, data, errors, context, output_format):
+    def get_supported_types(self):
+        return supported_types.keys()
 
-        body = _t.get_context_body(context)
-        dataset_type = _t.get_context_type(context)
-
-
-        pkg = _t.get(self.extract_id(body, dataset_type))
-        if pkg:
-            try:
-                if dataset_type == _c.TYPE_STAC:
-                    pass
-                raise Exception(('Unsupported requested format {}').format(dataset_type))
-            except Exception as e:
-                if e:
-                    message = ('Error on: {} line: {} Message:{}').format(e.get('name', ''), e.get('lineno', ''), e.get('message', ''))
-                    log.error(message)
-
-
+    def get_supported_resource_types(self):
+        return supported_resource_types.keys()
+    
     def get_input_extractor(self, package_type, context):
 
         body = _t.get_context_body(context)
         stac_type = body.get('type')
 
-        extractors = {
-            _c.TYPE_STAC_ITEM: ItemExtractor().extract_from_json,
-            _c.TYPE_STAC_CATALOG: CatalogExtractor().extract_from_json,
-            _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
-        }
-
-        extractor_for_type = extractors.get(stac_type)
+        extractor_for_type = input_extractors.get(stac_type)
 
         if extractor_for_type:
             return extractor_for_type
@@ -70,13 +98,7 @@ class JsonSchemaStac(plugins.SingletonPlugin):
         body = _t.get_context_body(context)
         stac_type = body.get('type')
 
-        extractors = {
-            _c.TYPE_STAC_ITEM: ItemExtractor().extract_from_json,
-            _c.TYPE_STAC_CATALOG: CatalogExtractor().extract_from_json,
-            _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
-        }
-
-        extractor_for_type = extractors.get(stac_type)
+        extractor_for_type = supported_extractors.get(stac_type)
 
         if extractor_for_type:
             return extractor_for_type
@@ -85,14 +107,9 @@ class JsonSchemaStac(plugins.SingletonPlugin):
 
     def get_resource_extractor(self, package_type, resource_type, context):
 
-        extractors = {
-            _c.TYPE_STAC_RESOURCE: ItemExtractor()._extract_json_resources,
-        }
-
-        extractor_for_type = extractors.get(resource_type)
+        extractor_for_type = supported_resource_types.get(resource_type)
 
         if extractor_for_type:
             return extractor_for_type
         else:
             raise KeyError('Extractor not defined for resource with type {}'.format(resource_type))
-        
