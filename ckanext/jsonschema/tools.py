@@ -1,18 +1,16 @@
 import threading
 
-
 import ckan.plugins.toolkit as toolkit
-from ckan.logic import ValidationError
 
 _ = toolkit._
 import json
 import logging
 
-import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.logic.get as _g
-import ckanext.jsonschema.interfaces as _i
-import ckanext.jsonschema.utils as utils
 import ckanext.jsonschema.configuration as configuration
+import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.interfaces as _i
+import ckanext.jsonschema.logic.get as _g
+import ckanext.jsonschema.utils as utils
 
 from jsonschema import Draft7Validator, RefResolver
 
@@ -248,7 +246,7 @@ def get_schema_of(_type):
 
     try:
         registry = configuration.get_registry()
-        filename = registry.get(_type, _type).get('schema')
+        filename = registry.get(_type).get('schema')
     except:
         # the type could not be in the registry
         # it would be the case in nested references within schemas
@@ -260,15 +258,21 @@ def get_schema_of(_type):
 
 def get_template_of(_type):
 
-    registry = configuration.get_registry()
-    filename = registry.get(_type, _type).get('template')
+    try:
+        registry = configuration.get_registry()
+        filename = registry.get(_type).get('template')
+    except:
+        filename = _type
 
     return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(filename)
 
 def get_module_for(_type):
 
-    registry = configuration.get_registry()
-    filename = registry.get(_type, _type).get('module')
+    try:
+        registry = configuration.get_registry()
+        filename = registry.get(_type).get('module')
+    except:
+        filename = _type
 
     return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(filename)
 
@@ -629,8 +633,7 @@ class CustomRefResolver(RefResolver):
         '''
         Resolve the given reference.
         '''
-        cleaned_ref = ref.replace('.json', '') # should be removed
-        return cleaned_ref, _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][cleaned_ref]
+        return ref, _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][ref]
 
 
 _SCHEMA_RESOLVER = CustomRefResolver(

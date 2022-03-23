@@ -75,6 +75,8 @@ jsonschema.add_url_rule(
 
 ########################################
 ## Schema proxy
+## When the frontend wants to load a schema/template/module, it knows only the jsonschema type, so it calls the REST_SCHEMA_PATH APIs
+## Once the root file is loaded, it could have relative paths to other .jsons, so the REST_SCHEMA_FILE_PATH API is used to fetch directly the file
 
 def read_schema(schema_type):
     '''
@@ -84,17 +86,17 @@ def read_schema(schema_type):
     _t.initialize()
     return json.dumps(_t.get_schema_of(schema_type))
 
-# /jsonschema/schema/iso
+#/jsonschema/schema/iso
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_SCHEMA_PATH), view_func=read_schema, endpoint='schema', methods=[u'GET'])
 
-def read_nested_schema(path, schema_name):    
+# def read_nested_schema(path, schema_name):    
     
-    import os
+#     import os
 
-    return read_schema(os.path.join(path, schema_name))
+#     return read_schema(os.path.join(path, schema_name))
 
-# /jsonschema/schema/nested/iso
-jsonschema.add_url_rule('{}/<path:path>/<schema_name>'.format(_c.REST_SCHEMA_PATH), view_func=read_nested_schema, endpoint='nested_schema', methods=[u'GET'])
+# # /jsonschema/schema/nested/iso
+# jsonschema.add_url_rule('{}/<path:path>/<schema_name>'.format(_c.REST_SCHEMA_PATH), view_func=read_nested_schema, endpoint='nested_schema', methods=[u'GET'])
 
 
 def read_schema_file(filename, path=''):
@@ -112,16 +114,16 @@ def read_schema_file(filename, path=''):
 jsonschema.add_url_rule('{}/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='schema_file', methods=[u'GET'])
 
 
-# def read_nested_schema_file(path, filename):
-#     '''
-#     Dumps the content of a local schema file, nested in folders.
-#     The file resolution is based on the configured schema folder and the (arguments) path and the json file name
-#     The file is searched at <configured_schema_folder>/<path>/<filename>
-#     '''
+def read_nested_schema_file(path, filename):
+    '''
+    Dumps the content of a local schema file, nested in folders.
+    The file resolution is based on the configured schema folder and the (arguments) path and the json file name
+    The file is searched at <configured_schema_folder>/<path>/<filename>
+    '''
     
-#     return read_schema_file(filename, path)
+    return read_schema_file(filename, path)
 
-# /jsonschema/schema_file/nested/iso.json
+#/jsonschema/schema_file/nested/iso.json
 jsonschema.add_url_rule('{}/<path:path>/<filename>'.format(_c.REST_SCHEMA_FILE_PATH), view_func=read_schema_file, endpoint='nested_schema_file', methods=[u'GET'])
 
 
