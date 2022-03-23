@@ -45,32 +45,20 @@ class TestPlugin(object):
 
     def test_configuration(self):
 
-        from six import PY3
-
-        # When getting .keys() from a dict in Python3, the returned object is of type dict_keys instead of list
-        if PY3:
-            list_type = type({}.keys())
-        else:
-            list_type = list
-
-        input_configuration = configuration.get_input_configuration()
-        assert isinstance(input_configuration, dict)
-
-        configuration.setup()
 
         input_types = configuration.get_input_types()
-        assert isinstance(input_types, list_type)
+        assert isinstance(input_types, list)
         
         output_types = configuration.get_output_types()
-        assert isinstance(output_types, list_type)
+        assert isinstance(output_types, list)
 
         supported_types = configuration.get_supported_types()
-        assert isinstance(supported_types, list_type)
+        assert isinstance(supported_types, list)
 
         if len(supported_types) > 0:
             # we cast supported_types to list because in Python3 would be a dict_keys
             resource_types = configuration.get_supported_resource_types(list(supported_types)[0])
-            assert isinstance(resource_types, list_type)
+            assert isinstance(resource_types, list)
         
         
         try:
@@ -80,7 +68,7 @@ class TestPlugin(object):
             assert True
 
         try:
-            configuration.get_plugin('random_operation', 'random_dataset', 'random_resource_type')
+            configuration.get_plugin('random_dataset', 'random_resource_type')
             # Should raise PluginNotFoundException, so assert False if doesn't
             assert False  
         except PluginNotFoundException:
@@ -89,8 +77,10 @@ class TestPlugin(object):
         # TODO add test for working get_plugin also 
 
     def test_get_supported_resource_types_with_non_existing_package_type(self):
+        # UPDATE 23/03: now get_supported_resource_types returns every supported resource
+        # without taking into account the package type
+
     
-        configuration.setup()
         resource_types = configuration.get_supported_resource_types('non_existing_package_type')
     
-        assert resource_types == []
+        assert isinstance(resource_types, list)
