@@ -10,7 +10,8 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.utils as _u
+import ckanext.jsonschema_dashboard.constants as _dc
+
 from ckan.plugins.toolkit import get_or_bust, h
 
 log = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ def interpolate_fields(model, template, view_type):
         keep_trailing_newline=True
     )
 
-    _enhance_model_with_data_helpers(model, view_type)
+    _enhance_model_with_data_helpers(model, template, view_type)
     
     try:
         polished_template = json.dumps(template).replace('"{{',"{{").replace('}}"', '}}')
@@ -105,44 +106,45 @@ def get_interpolated_view_model(resource_view_id):
 
     view_type = view.get("view_type") 
 
-    model = _get_model(dataset_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
+    model = _get_model(package_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
     
     return interpolate_fields(model, view_body, view_type)
 
-def _get_model(dataset_id, resource_id):
+def _get_model(package_id, resource_id):
     '''
     Returns the model used by jinja2 template
     '''
 
-    if not dataset_id or not resource_id:
-        raise Exception('wrong parameters we expect a dataset_id and a resource_id')
+    if not package_id or not resource_id:
+        raise Exception('wrong parameters we expect a package_id and a resource_id')
 
     # TODO can we have a context instead of None?
-    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
+    pkg = toolkit.get_action('package_show')(None, {'id':package_id})
     if not pkg:
-        raise Exception('Unable to find dataset, check input params')
+        raise Exception('Unable to find package, check input params')
 
     pkg = _t.dictize_pkg(pkg)
 
     # res = filter(lambda r: r['id'] == view.resource_id,pkg['resources'])[0]
     res = next(r for r in pkg['resources'] if r['id'] == resource_id)
     if not res:
-        raise Exception('Unable to find resource under this dataset, check input params')
+        raise Exception('Unable to find resource under this package, check input params')
+
+    organization_id = pkg.get('owner_org')
 
     # return the model as dict
     _dict = {
-        'dataset': pkg,
         'organization': get_or_bust(pkg,'organization'),
+        'package': pkg,
         'resource':res,
         'ckan':{'base_url':h.url_for('/', _external=True)},
         #'data': {} #TODO
-        #'terriajs':{'base_url': _c.TERRIAJS_URL}
         }
 
     return _dict 
 
 
-def _enhance_model_with_data_helpers(model, view_type):
+def _enhance_model_with_data_helpers(model, template, view_type):
     '''
     This methods adds data helpers from plugins to the model provided to the template renderer
     Plugins implementing the IJsonschemaView interface can define the method get_data_helpers which returns a list of function
@@ -152,7 +154,7 @@ def _enhance_model_with_data_helpers(model, view_type):
     resource = model['resource']
     
     plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
-    data_helpers = plugin.get_data_helpers(view_type, resource)
+    data_helpers = plugin.get_data_helpers(view_type, template, resource)
 
     # TODO CHECK FOR CONFLICTS
     model.update(data_helpers)
@@ -219,7 +221,7 @@ def get_views(config):
     return config.get(VIEWS_KEY)
 
 def get_config(config):
-    return config.get(CONFIG_KEY)
+    return config.get(CONFIG_KEY, {})
 
 def get_info(config):
     return config.get(INFO_KEY)
@@ -234,20 +236,21 @@ def is_jsonschema_view(view_type):
 
     return False
         
-def _get_view(config, format, jsonschema_type=None):
+def get_view_configuration(config, resource_format, resource_jsonschema_type=None):
     
-    config_views = config.get(VIEWS_KEY)
-
-    for view in config_views:
-
-        if format == view.get('format'):
-            if not jsonschema_type and 'jsonschema_type' not in view:
-                return view
+    for view in get_views(config):
             
-            if jsonschema_type and jsonschema_type == view.get('jsonschema_type'):
+        if view.get(_dc.RESOURCE_FORMAT) == resource_format:
+            
+            # the configuration is on plain format
+            if not resource_jsonschema_type and not (_dc.RESOURCE_JSONSCHEMA_TYPE in view):
+                return view
+
+            # the configuration is on format and jsonschema_type and the jsonschema_type matches that of the resource
+            elif resource_jsonschema_type and _dc.RESOURCE_JSONSCHEMA_TYPE in view and resource_jsonschema_type == view.get(_dc.RESOURCE_JSONSCHEMA_TYPE):
                 return view
         
-    raise Exception('Misconfigured view for format: {} and jsonschema_type: {}'.format(format, jsonschema_type))
+    return None
 
 # def get_schema(config, format, jsonschema_type=None):
     

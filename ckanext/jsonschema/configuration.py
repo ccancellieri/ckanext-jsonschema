@@ -37,7 +37,7 @@ def get_plugin(package_type, resource_type=None):
 
         plugin = _lookup_jsonschema_plugin_from_name(plugin_name)
 
-    except TypeError:
+    except (TypeError, AttributeError):
         raise PluginNotFoundException('The requested plugin: {} was not found'.format(plugin_name))    
 
     return plugin

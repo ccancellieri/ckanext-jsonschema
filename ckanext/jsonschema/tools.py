@@ -255,7 +255,7 @@ def get_schema_of(_type):
 
     
     return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(filename)
-
+    
 def get_template_of(_type):
 
     try:
@@ -264,7 +264,7 @@ def get_template_of(_type):
     except:
         filename = _type
 
-    return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(filename)
+    return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(filename, {})
 
 def get_module_for(_type):
 

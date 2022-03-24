@@ -28,6 +28,12 @@
         "template": "jsonschema_dashboard/data-sources.json",
         "plugin_name": "jsonschema_iso"
     },
+    "dashboard-data-sources": {
+        "label": "Data Sources",
+        "schema": "jsonschema_dashboard/data-sources.json",
+        "template": "jsonschema_dashboard/data-sources.json",
+        "plugin_name": "jsonschema_iso"
+    },
     "online-resource": {
         "label": "Online resource",
         "schema": "online-resource.json",
