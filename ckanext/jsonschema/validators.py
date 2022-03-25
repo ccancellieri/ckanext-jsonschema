@@ -1,4 +1,5 @@
 import logging
+import os
 
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
@@ -74,8 +75,7 @@ def schema_check(key, data, errors, context):
     if not schema:
         stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
 
-
-    is_error = _t.draft_validation(schema, body, errors)
+    is_error = _t.draft_validation(_type, body, errors)
 
     if is_error:
         raise StopOnError()
@@ -90,11 +90,11 @@ def view_schema_check(key, data, errors, context):
         stop_with_error('Unable to load a valid json schema type', key, errors)
 
     schema = _t.get_schema_of(_type)
-    
+
     if not schema:
         stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
 
-    is_error = _t.draft_validation(schema, body, errors)
+    is_error = _t.draft_validation(_type, body, errors)
 
     if is_error:
         raise StopOnError()

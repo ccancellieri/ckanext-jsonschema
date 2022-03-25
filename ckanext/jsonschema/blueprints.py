@@ -158,5 +158,15 @@ def get_format(dataset_id, format = 'json'):
 jsonschema.add_url_rule('/{}/<dataset_id>.<format>'.format(_c.TYPE), view_func=get_format, methods=[u'GET'])
 
 
+def get_registry_entry(jsonschema_type):
+    entry =json.dumps(_t.get_from_registry(jsonschema_type))
+
+    if entry:
+        return Response(stream_with_context(entry), mimetype = 'application/json')
+    else:
+        return toolkit.abort(404, _('Entry not found for jsonschema_type: {}').format(jsonschema_type))
+jsonschema.add_url_rule('/{}/registry/<jsonschema_type>'.format(_c.TYPE), view_func=get_registry_entry, methods=[u'GET'])
+
+
 #from ckanext.jsonschema.logic.get import get_licenses_enum
 #jsonschema.add_url_rule('/{}/core/schema/licenses.json'.format(_c.TYPE), view_func=get_licenses_enum, methods=[u'GET'])

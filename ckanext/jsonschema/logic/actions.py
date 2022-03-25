@@ -154,12 +154,10 @@ def validate_metadata(context, data_dict):
         raise NotFound("No package found with the specified uuid")
 
     body = _t.get_dataset_body(package)
-    type = _t.get_dataset_type(package)
-
-    schema = _t.get_schema_of(type)
+    _type = _t.get_dataset_type(package)
     
     errors = {}
-    is_error = _t.draft_validation(schema, body, errors)
+    is_error = _t.draft_validation(_type, body, errors)
     
     if is_error:
         raise ValidationError(df.unflatten(errors))

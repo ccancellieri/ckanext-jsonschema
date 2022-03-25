@@ -10,7 +10,6 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema_dashboard.constants as _dc
 
 from ckan.plugins.toolkit import get_or_bust, h
 
@@ -134,8 +133,8 @@ def _get_model(package_id, resource_id):
 
     # return the model as dict
     _dict = {
-        'organization': get_or_bust(pkg,'organization'),
         'package': pkg,
+        'organization': toolkit.get_action('organization_show')(None, {'id': organization_id}),
         'resource':res,
         'ckan':{'base_url':h.url_for('/', _external=True)},
         #'data': {} #TODO
@@ -226,6 +225,20 @@ def get_config(config):
 def get_info(config):
     return config.get(INFO_KEY)
 
+def get_view_jsonshema_types(config, resource):
+    # Takes also the resource
+    # Could filter view types based on format or resource jsonschema type
+
+    view_types = []
+
+    views = get_views(config)
+    for view in views:
+        view_jsonschema_type = view.get(_c.VIEW_JSONSCHEMA_TYPE)
+        if view_jsonschema_type not in view_types:
+            view_types.append(view_jsonschema_type)
+
+    return view_types
+
 def is_jsonschema_view(view_type):
 
     for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS:
@@ -240,14 +253,14 @@ def get_view_configuration(config, resource_format, resource_jsonschema_type=Non
     
     for view in get_views(config):
             
-        if view.get(_dc.RESOURCE_FORMAT) == resource_format:
+        if view.get(_c.RESOURCE_FORMAT) == resource_format:
             
             # the configuration is on plain format
-            if not resource_jsonschema_type and not (_dc.RESOURCE_JSONSCHEMA_TYPE in view):
+            if not resource_jsonschema_type and not (_c.RESOURCE_JSONSCHEMA_TYPE in view):
                 return view
 
             # the configuration is on format and jsonschema_type and the jsonschema_type matches that of the resource
-            elif resource_jsonschema_type and _dc.RESOURCE_JSONSCHEMA_TYPE in view and resource_jsonschema_type == view.get(_dc.RESOURCE_JSONSCHEMA_TYPE):
+            elif resource_jsonschema_type and _c.RESOURCE_JSONSCHEMA_TYPE in view and resource_jsonschema_type in view.get(_c.RESOURCE_JSONSCHEMA_TYPE):
                 return view
         
     return None

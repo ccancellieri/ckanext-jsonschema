@@ -5,6 +5,7 @@ import ckan.plugins.toolkit as toolkit
 _ = toolkit._
 import json
 import logging
+import os
 
 import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
@@ -241,6 +242,9 @@ def as_datetime(dict, path, strptime_format='%Y-%m-%d'):
     # on_dup = OnDup(key=RAISE, val=DROP_OLD, kv=RAISE)
     # on_dup = OVERWRITE
 
+def get_from_registry(_type):
+    registry = configuration.get_registry()
+    return registry.get(_type)
 
 def get_schema_of(_type):
 
@@ -633,16 +637,26 @@ class CustomRefResolver(RefResolver):
         '''
         Resolve the given reference.
         '''
-        return ref, _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][ref]
+        import os
+        
+        url = os.path.dirname(ref)
+        path_to_schema = os.path.join(self.resolution_scope, ref)
+
+        return url, _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][path_to_schema]
 
 
-_SCHEMA_RESOLVER = CustomRefResolver(
-    base_uri='file://{}/'.format(_c.PATH_SCHEMA), 
-    referrer=None
-)
 
-def draft_validation(schema, body, errors):
+def draft_validation(jsonschema_type, body, errors):
     """Validates ..."""
+
+    registry_entry = get_from_registry(jsonschema_type)
+    base_uri = os.path.dirname(registry_entry['schema'])
+    schema = get_schema_of(jsonschema_type)
+
+    _SCHEMA_RESOLVER = CustomRefResolver(
+        base_uri=base_uri, 
+        referrer=None
+    )
 
     validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)
 

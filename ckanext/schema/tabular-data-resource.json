@@ -1,5 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Tabular Data Resource",
   "description": "A Tabular Data Resource.",
   "type": "object",
