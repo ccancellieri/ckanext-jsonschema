@@ -213,14 +213,14 @@ def load_resource_content_from_url(resource):
 #### VIEW CONFIGURATION #####
 
 VIEWS_KEY = 'views'
-CONFIG_KEY = 'config'
+OPT_KEY = 'opt'
 INFO_KEY = 'info'
 
 def get_views(config):
     return config.get(VIEWS_KEY)
 
-def get_config(config):
-    return config.get(CONFIG_KEY, {})
+def get_opt(config):
+    return config.get(OPT_KEY, {})
 
 def get_info(config):
     return config.get(INFO_KEY)
@@ -233,9 +233,10 @@ def get_view_jsonshema_types(config, resource):
 
     views = get_views(config)
     for view in views:
-        view_jsonschema_type = view.get(_c.VIEW_JSONSCHEMA_TYPE)
-        if view_jsonschema_type not in view_types:
-            view_types.append(view_jsonschema_type)
+        view_jsonschema_types_list = view.get(_c.VIEW_JSONSCHEMA_TYPE)
+        for view_jsonschema_type in view_jsonschema_types_list: 
+            if view_jsonschema_type not in view_types:
+                view_types.append(view_jsonschema_type)
 
     return view_types
 
@@ -250,18 +251,29 @@ def is_jsonschema_view(view_type):
     return False
         
 def get_view_configuration(config, resource_format, resource_jsonschema_type=None):
+    '''
+    Returns the first (could be more than one) view configuration that matches the given resource 
+    '''
     
     for view in get_views(config):
+
+        format_matches = view.get(_c.RESOURCE_FORMAT) == resource_format or view.get(_c.WILDCARD_FORMAT, False) == True
             
-        if view.get(_c.RESOURCE_FORMAT) == resource_format:
+        if format_matches:
             
-            # the configuration is on plain format
-            if not resource_jsonschema_type and not (_c.RESOURCE_JSONSCHEMA_TYPE in view):
+            match_only_format = not resource_jsonschema_type and not (_c.RESOURCE_JSONSCHEMA_TYPE in view)
+
+
+            if match_only_format:
                 return view
 
-            # the configuration is on format and jsonschema_type and the jsonschema_type matches that of the resource
-            elif resource_jsonschema_type and _c.RESOURCE_JSONSCHEMA_TYPE in view and resource_jsonschema_type in view.get(_c.RESOURCE_JSONSCHEMA_TYPE):
-                return view
+
+            else:
+                available_for_all_resource_jsonschema_types = view.get(_c.WILDCARD_JSONSCHEMA_TYPE, False) == True
+                jsonschema_type_matches = (resource_jsonschema_type and resource_jsonschema_type in view.get(_c.RESOURCE_JSONSCHEMA_TYPE, [])) 
+                
+                if available_for_all_resource_jsonschema_types or jsonschema_type_matches:
+                    return view
         
     return None
 

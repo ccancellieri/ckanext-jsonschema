@@ -246,6 +246,15 @@ def get_from_registry(_type):
     registry = configuration.get_registry()
     return registry.get(_type)
 
+def get_label_from_registry(_type):
+    registry_entry = get_from_registry(_type)
+
+    if registry_entry:
+        return registry_entry.get('label', _type)
+    else:
+        return _type
+
+
 def get_schema_of(_type):
 
     try:

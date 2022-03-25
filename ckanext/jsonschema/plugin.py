@@ -101,6 +101,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             
             #'jsonschema_get_resource_label': configuration.get_resource_label
             #jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
+            'jsonschema_get_label_from_registry': _t.get_label_from_registry 
         }
 
 

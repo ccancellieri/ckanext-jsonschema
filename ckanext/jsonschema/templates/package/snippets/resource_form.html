@@ -78,26 +78,10 @@
           <label for="field-{{TYPE_KEY}}">Resource type</label>
           <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
             {% for resource_type in resource_types %}
-              {% set _label = resource_type %}
-              {% if resource_type == 'resource-contact' %}
-                {% set _label = 'Contact' %}
-              {% elif resource_type == 'graphic-overview' %}
-                  {% set _label = 'Graphic overview' %}
-              {% elif resource_type == 'online-resource' %}
-                {% set _label = 'Online resource' %}
-              {% elif resource_type == 'resource-maintainer' %}
-                {% set _label = 'Maintainer' %}
-              {% elif resource_type == 'distributor' %}
-                {% set _label = 'Distributor' %}
-              {% elif resource_type == 'metadata-contact' %}
-                {% set _label = 'Metadata contact' %}
-              {% elif resource_type == 'cited-responsible-party' %}
-                {% set _label = 'Cited contact' %}
-              {% endif %}
               {% if resource_type == schema_type %}
-                <option value="{{ resource_type }}" selected>{{ _label }}</option>
+                <option value="{{ resource_type }}" selected>{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>
               {% else %}
-                <option value="{{ resource_type }}" >{{ _label }}</option>
+                <option value="{{ resource_type }}" >{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>
               {% endif %}
             {% endfor %}
           </select>

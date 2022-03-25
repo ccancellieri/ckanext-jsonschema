@@ -105,32 +105,32 @@ ckan.module('jsonschema', function (jQuery, _) {
         },
         reload: async function (jsonschema_type, editor = true, use_template = true) {
 
-            const promises = [
-                jsonschema.fetch('jsonschema/registry/' + jsonschema_type),
-                jsonschema.fetch('jsonschema/schema/' + jsonschema_type)
-            ];
-            await Promise.allSettled(promises).
-                then((results) => {
-                    schema = results[0].value.schema
-                    resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1)
-                    jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url)
-                    
-                    jsonschema.jsonschema_schema = results[1].value;
+            jsonschema.jsonschema_type = jsonschema_type;
+
+            jsonschema.fetch('jsonschema/registry/' + jsonschema_type)
+            .then(registry_entry => {
+                
+                schema = registry_entry.schema
+                resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1)
+                jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url)
+
+                jsonschema.fetch('jsonschema/schema/' + schema)
+                .then(schema => {
+                    jsonschema.jsonschema_schema = schema
                 })
 
+                if (use_template){
+                    // TODO alert...
+                    jsonschema
+                    .fetch('jsonschema/template/' + jsonschema_type)
+                    .then((result) => {
+                        jsonschema.jsonschema_body = result
+                    })
+                }
+            })
 
-            let module;
-            if (!use_template){
-                // TODO alert...
-                jsonschema.jsonschema_type = jsonschema_type;
-                jsonschema
-                .fetch('jsonschema/template/' + jsonschema_type)
-                .then((result) => {
-                    jsonschema.jsonschema_body = result
-                })
-            }
 
-            module = await jsonschema.dynamic_module(jsonschema_type);
+            let module = await jsonschema.dynamic_module(jsonschema_type);
             // if (module){
             //     module.initialize()
             // }
@@ -185,7 +185,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             // initialize editor
             // editor=false // TODO remove only 2 DEBUG
             editor = true
-            jsonschema.reload(jsonschema.jsonschema_type, editor = editor, use_template = true);
+            jsonschema.reload(jsonschema.jsonschema_type, editor = editor, use_template = false);
         },
         getEditorAce: function (use_template = true){
             this.isHowto=false
@@ -210,7 +210,7 @@ ckan.module('jsonschema', function (jQuery, _) {
 
             let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
-                if (use_template){
+                if (!use_template){
                     value = this.editor.getValue();
                 }
                 this.editor.destroy();
@@ -334,7 +334,7 @@ ckan.module('jsonschema', function (jQuery, _) {
 
             let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
-                if (use_template){
+                if (!use_template){
                     value = this.editor.getValue();
                 }
                 this.editor.destroy();
