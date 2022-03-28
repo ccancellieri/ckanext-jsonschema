@@ -102,13 +102,12 @@ def resolve_module(schema_type):
     '''
     Dumps the url of a js module file name matching the schema type
     '''
-    import os
-
+    
     _t.initialize()
     module = _t.get_module_for(schema_type)
     if module:
-        # return Response(stream_with_context(module), mimetype='text/plain')
-        return send_file(module, mimetype='application/javascript')
+        return Response(stream_with_context(module), mimetype='application/javascript')
+        #return send_file(module, mimetype='application/javascript')
     return abort(404, _('Unable to locate JS module for type: {}'.format(schema_type)))
 
 jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_MODULE_FILE_PATH), view_func=resolve_module, endpoint='module', methods=[u'GET'])

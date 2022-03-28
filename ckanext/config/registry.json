@@ -85,18 +85,21 @@
         "label": "Dashboard",
         "schema": "jsonschema_dashboard/dashboard.json",
         "template": "jsonschema_dashboard/dashboard.json",
+        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
         "plugin_name": "jsonschema_dashboard"
     },
     "jsonschema_dashboard_groupcard": {
         "label": "GroupCard",
         "schema": "jsonschema_dashboard/GroupCard.json",
         "template": "jsonschema_dashboard/GroupCard.json",
+        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
         "plugin_name": "jsonschema_dashboard"
     },
     "jsonschema_dashboard_scorecard": {
         "label": "ScoreCard",
         "schema": "jsonschema_dashboard/ScoreCard.json",
         "template": "jsonschema_dashboard/ScoreCard.json",
+        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
         "plugin_name": "jsonschema_dashboard"
     }
 }
