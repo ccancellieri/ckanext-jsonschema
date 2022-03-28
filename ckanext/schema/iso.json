@@ -1,7 +1,6 @@
 {
     "type": "object",
     "title": "Metadata",
-    
     "required": [
         "fileIdentifier",
         "metadataStandardName",
@@ -25,30 +24,17 @@
             "propertyOrder": 30,
             "title": "Character Set",
             "description": "Character coding standard used for the metadata set",
-            "$ref": "character-set.json",
-            "options": {
-                "hidden": true
-            }
+            "$ref": "character-set.json"
         },
         "metadataStandardName": {
             "propertyOrder": 40,
             "title": "Metadata standard name",
-            "type": "string",
-            "enum": [
-                "ISO 19115:2003/19139"
-            ],
-            "options": {
-                "hidden": true
-            }
+            "type": "string"
         },
         "metadataStandardVersion": {
             "propertyOrder": 50,
             "title": "Metadata standard version",
-            "type": "string",
-            "default": "1",
-            "options": {
-                "hidden": true
-            }
+            "type": "string"
         },
         "parentIdentifier": {
             "propertyOrder": 60,

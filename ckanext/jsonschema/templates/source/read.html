@@ -57,7 +57,7 @@
 {% set body = h.jsonschema_get_dataset_body(pkg) %}
 
 {% set schema_type = h.jsonschema_get_dataset_type(pkg) %}
-
+  
 {% set opt = h.jsonschema_get_dataset_opt(pkg) %}
 
 <p>
@@ -124,16 +124,17 @@
         </tr>
       </thead>
       <tbody>
-          {% if pkg.url %}
           <tr>
             <th scope="row" class="dataset-label">{{ _('Source') }}</th>
-            {% if h.is_url(pkg.url) %}
+            {% set opt = h.jsonschema_get_dataset_opt(pkg) %}
+            {% if opt.source_url and h.is_url(opt.source_url) %}
+              <td class="dataset-details" property="foaf:homepage">
+                <a href="{{opt.source_url}}" target="_blank">Source URL</a>
+              </td>
+            {% elif pkg.url %}
               <td class="dataset-details" property="foaf:homepage">{{ h.link_to(pkg.url, pkg.url, rel='foaf:homepage', target='_blank') }}</td>
-            {% else %}
-              <td class="dataset-details" property="foaf:homepage">{{ pkg.url }}</td>
             {% endif %}
           </tr>
-          {% endif %}
           {% if pkg.metadata_modified %}
           <tr>
             <th scope="row" class="dataset-label">{{ _("Last Updated") }}</th>
