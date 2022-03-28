@@ -12,6 +12,7 @@ import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
 
 from ckan.plugins.toolkit import get_or_bust, h
+from ckan.logic import NotFound
 
 log = logging.getLogger(__name__)
 
@@ -94,9 +95,9 @@ def render_template(template_name, extra_vars):
 
 def get_interpolated_view_model(resource_view_id):
 
-    view = _g.get_view(resource_view_id)
-    
-    if not view:
+    try:
+        view = _g.get_view(resource_view_id)
+    except NotFound as e:
         raise Exception(_('No view found for view_id: {}'.format(str(resource_view_id))))
 
     view_body = get_view_body(view)
