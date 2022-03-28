@@ -107,39 +107,24 @@ ckan.module('jsonschema', function (jQuery, _) {
 
             jsonschema.jsonschema_type = jsonschema_type;
 
-            jsonschema.fetch('jsonschema/registry/' + jsonschema_type)
-            .then(registry_entry => {
-                
-                schema = registry_entry.schema
-                resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1)
-                jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url)
+            registry_entry = await jsonschema.fetch('jsonschema/registry/' + jsonschema_type)
 
-                jsonschema.fetch('jsonschema/schema/' + schema)
-                .then(schema => {
-                    jsonschema.jsonschema_schema = schema
-                })
+            schema = registry_entry.schema
+            resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1)
+            jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url)
 
-                if (use_template){
-                    // TODO alert...
-                    jsonschema
-                    .fetch('jsonschema/template/' + jsonschema_type)
-                    .then((result) => {
-                        jsonschema.jsonschema_body = result
-                    })
-                }
-            })
+            jsonschema.jsonschema_schema = await jsonschema.fetch('jsonschema/schema/' + schema)
 
+            if (use_template){
+                // TODO alert...+
+                jsonschema.jsonschema_body = await jsonschema.fetch('jsonschema/template/' + jsonschema_type)
+            }
 
-            let module = await jsonschema.dynamic_module(jsonschema_type);
-            // if (module){
-            //     module.initialize()
-            // }
             if (editor){
                 jsonschema.getEditor(use_template);
             } else {
                 jsonschema.getEditorAce(use_template);
-            }
-        
+            }        
         },
         fetch: function (path) {
             var url = new URL(encodeURI(path),jsonschema.ckan_url);
