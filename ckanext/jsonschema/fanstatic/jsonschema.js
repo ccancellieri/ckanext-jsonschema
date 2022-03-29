@@ -91,10 +91,10 @@ ckan.module('jsonschema', function (jQuery, _) {
         jsonschema_opt: undefined,
 
         editor: undefined,
-        dynamic_module: async function (type){
+        dynamic_module: async function (url){
             let module;
             try {
-                module = await import(jsonschema.ckan_url+'jsonschema/module/'+type);
+                module = await import(jsonschema.ckan_url+'jsonschema/module/'+url);
                 if (module){
                     module.initialize();   
                 }
@@ -103,7 +103,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
             return  module
         },
-        reload: async function (jsonschema_type, editor = true, use_template = true) {
+        reload: async function (jsonschema_type, editor = true, use_template = false) {
 
             jsonschema.jsonschema_type = jsonschema_type;
 
@@ -114,10 +114,13 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url)
 
             jsonschema.jsonschema_schema = await jsonschema.fetch('jsonschema/schema/' + schema)
-
+            
+            jsonschema.module = await jsonschema.dynamic_module(registry_entry.module);
+            
             if (use_template){
                 // TODO alert...+
-                jsonschema.jsonschema_body = await jsonschema.fetch('jsonschema/template/' + jsonschema_type)
+                template = registry_entry.template
+                jsonschema.jsonschema_body = await jsonschema.fetch('jsonschema/template/' + template)
             }
 
             if (editor){
@@ -172,7 +175,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             editor = true
             jsonschema.reload(jsonschema.jsonschema_type, editor = editor, use_template = false);
         },
-        getEditorAce: function (use_template = true){
+        getEditorAce: function (use_template = false){
             this.isHowto=false
             
             //let schema = jsonschema.jsonschema_schema;
@@ -312,7 +315,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
 
         },
-        getEditor: function (use_template = true){
+        getEditor: function (use_template = false){
             this.isHowto=true
 
             let schema = jsonschema.jsonschema_schema;

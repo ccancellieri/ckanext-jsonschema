@@ -76,7 +76,7 @@
         <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>
         <p>
           <label for="field-{{TYPE_KEY}}">Resource type</label>
-          <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, keep_old = false);">
+          <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, use_template = true);">
             {% for resource_type in resource_types %}
               {% if resource_type == schema_type %}
                 <option value="{{ resource_type }}" selected>{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>

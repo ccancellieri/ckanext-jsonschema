@@ -96,7 +96,7 @@ def read_template(schema_type):
     _t.initialize()
     return json.dumps(_t.get_template_of(schema_type))
 
-jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_TEMPLATE_PATH), view_func=read_template, endpoint='template', methods=[u'GET'])
+jsonschema.add_url_rule('{}/<path:schema_type>'.format(_c.REST_TEMPLATE_PATH), view_func=read_template, endpoint='template', methods=[u'GET'])
 
 def resolve_module(schema_type):
     '''
@@ -110,7 +110,7 @@ def resolve_module(schema_type):
         #return send_file(module, mimetype='application/javascript')
     return abort(404, _('Unable to locate JS module for type: {}'.format(schema_type)))
 
-jsonschema.add_url_rule('{}/<schema_type>'.format(_c.REST_MODULE_FILE_PATH), view_func=resolve_module, endpoint='module', methods=[u'GET'])
+jsonschema.add_url_rule('{}/<path:schema_type>'.format(_c.REST_MODULE_FILE_PATH), view_func=resolve_module, endpoint='module', methods=[u'GET'])
 
 
 ###### GET API

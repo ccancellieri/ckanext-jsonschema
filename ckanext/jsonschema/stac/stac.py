@@ -4,7 +4,6 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.logic.get as _g
 from ckanext.jsonschema.stac import constants as _c
 from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalogExtractor, CollectionExtractor, extract_id
 
