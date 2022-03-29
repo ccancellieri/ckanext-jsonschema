@@ -4,14 +4,14 @@ from ckan.plugins import PluginImplementations
 
 class IJsonschemaView(Interface):
     
-    def register_jsonschema_resources():
+    def register_jsonschema_resources(self):
         '''
         Use this method to register schemas, template, module to jsonschema's catalog
         '''
         
         pass
 
-    def interpolate_data(resource):
+    def interpolate_data(self, resource):
         '''
         Uses the body of the resource to resolve links to external data and construct an object which contains those
         External data could be csvs, smart-csvs, BigQuery references...
@@ -20,8 +20,11 @@ class IJsonschemaView(Interface):
 
         return resource
         
-    def get_data_helpers():
+    def get_data_helpers(self):
         return []
+
+    def wrap_view(self, view, content):
+        return content
 
 class IBinder(Interface):
 

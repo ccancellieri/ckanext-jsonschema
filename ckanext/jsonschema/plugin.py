@@ -148,6 +148,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
+        #import ckanext.jsonschema.indexer as indexer
+        #indexer.init_core('jsonschema_core')
+        
     # IConfigurable
     def configure(self, config):
         _t.reload()

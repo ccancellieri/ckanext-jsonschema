@@ -259,22 +259,21 @@ ckan.module('jsonschema', function (jQuery, _) {
                 strictSchema: false
             });
 
-            if (!jsonschema.validate){
-                jsonschema.ajv.compileAsync(jsonschema.jsonschema_schema).then(
-                    function(val){
-                        jsonschema.validate=val;
-                        jsonschema.editorOnChange(jsonschema.ajvValidation());
-                    }
-                ).catch(err => {
-                    if (confirm("An error occurred validating the schema: schema not supported by this editor.\n"+
-                                "Continuing validation will be disabled, this may allow creating corrupted configurations:\nContinue?")){
-                        console.error(err);
-                    } else {
-                        jsonschema.getEditor();
-                        return;
-                    }
-                });
-            }
+            jsonschema.ajv.compileAsync(jsonschema.jsonschema_schema).then(
+                function(val){
+                    jsonschema.validate=val;
+                    jsonschema.editorOnChange(jsonschema.ajvValidation());
+                }
+            ).catch(err => {
+                if (confirm("An error occurred validating the schema: schema not supported by this editor.\n"+
+                            "Continuing validation will be disabled, this may allow creating corrupted configurations:\nContinue?")){
+                    console.error(err);
+                } else {
+                    jsonschema.getEditor();
+                    return;
+                }
+            });
+            
             this.editor.on('ready',this.editorReady);
             this.editor.on('change',()=>{
 

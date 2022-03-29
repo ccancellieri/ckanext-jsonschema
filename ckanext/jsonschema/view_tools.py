@@ -12,7 +12,6 @@ import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
 
 from ckan.plugins.toolkit import get_or_bust, h
-from ckan.logic import NotFound
 
 log = logging.getLogger(__name__)
 
@@ -31,8 +30,6 @@ def _extract_from_view(view, domain):
         return view.get(domain)
     
     raise Exception("Missing parameter resource or domain")
-
-
 
 def interpolate_fields(model, template, view_type):
 
@@ -92,17 +89,11 @@ def render_template(template_name, extra_vars):
     except Exception as e:
         log.error('Exception: {}'.format(str(e)))
 
-
-def get_interpolated_view_model(resource_view_id):
-
-    try:
-        view = _g.get_view(resource_view_id)
-    except NotFound as e:
-        raise Exception(_('No view found for view_id: {}'.format(str(resource_view_id))))
+def get_interpolated_view_model(view):
 
     view_body = get_view_body(view)
     if not view_body:
-        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(resource_view_id))))
+        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
 
     view_type = view.get("view_type") 
 
@@ -143,7 +134,6 @@ def _get_model(package_id, resource_id):
 
     return _dict 
 
-
 def _enhance_model_with_data_helpers(model, template, view_type):
     '''
     This methods adds data helpers from plugins to the model provided to the template renderer
@@ -158,7 +148,6 @@ def _enhance_model_with_data_helpers(model, template, view_type):
 
     # TODO CHECK FOR CONFLICTS
     model.update(data_helpers)
-
 
 def get_resource_content(resource):
     '''
@@ -202,7 +191,6 @@ def load_resource_content_from_disk(resource):
     
     return resource_content
 
-
 def load_resource_content_from_url(resource):
     import requests
 
@@ -210,6 +198,14 @@ def load_resource_content_from_url(resource):
     resource_content = requests.get(url).json()
 
     return resource_content
+
+def wrap_view(view, content):
+
+    view_type = view.get("view_type") 
+
+    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
+    content = plugin.wrap_view(view_type, content)
+    return content
 
 #### VIEW CONFIGURATION #####
 
