@@ -164,7 +164,7 @@ def get_registry_entry(jsonschema_type):
         return Response(stream_with_context(entry), mimetype = 'application/json')
     else:
         return toolkit.abort(404, _('Entry not found for jsonschema_type: {}').format(jsonschema_type))
-jsonschema.add_url_rule('/{}/registry/<jsonschema_type>'.format(_c.TYPE), view_func=get_registry_entry, methods=[u'GET'])
+jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), view_func=get_registry_entry, methods=[u'GET'])
 
 
 #from ckanext.jsonschema.logic.get import get_licenses_enum

@@ -92,6 +92,11 @@ ckan.module('jsonschema', function (jQuery, _) {
 
         editor: undefined,
         dynamic_module: async function (url){
+
+            if (!url){
+                return;
+            }
+
             let module;
             try {
                 module = await import(jsonschema.ckan_url+'jsonschema/module/'+url);
@@ -101,7 +106,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             } catch (error) {
                 console.error(error.message);
             }
-            return  module
+            return module;
         },
         reload: async function (jsonschema_type, editor = true, use_template = false) {
 
@@ -120,7 +125,12 @@ ckan.module('jsonschema', function (jQuery, _) {
             if (use_template){
                 // TODO alert...+
                 template = registry_entry.template
-                jsonschema.jsonschema_body = await jsonschema.fetch('jsonschema/template/' + template)
+                if (template){
+                    jsonschema.jsonschema_body = await jsonschema.fetch('jsonschema/template/' + template)
+                } else {
+                    jsonschema.jsonschema_body = {}
+                    console.warn('No template found for type: ' + template)
+                }
             }
 
             if (editor){

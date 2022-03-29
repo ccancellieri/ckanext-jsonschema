@@ -16,11 +16,6 @@
         "schema": "stac.json",
         "plugin_name": "jsonschema_stac"
     },
-    "stac-asset": {
-        "label": "Stac Asset",
-        "schema": "",
-        "plugin_name": "jsonschema_stac"
-    },
     "tabular-data-resource": {
         "label": "Table Data Resource",
         "schema": "tabular-data-resource.json",
