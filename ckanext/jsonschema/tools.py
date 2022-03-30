@@ -254,6 +254,32 @@ def get_label_from_registry(_type):
     else:
         return _type
 
+def is_supported_ckan_field(jsonschema_type, field):
+
+    registry_entry = get_from_registry(jsonschema_type)
+
+    if not registry_entry:
+        return False
+
+    if registry_entry.get(_c.WILDCARD_CKAN_FIELDS, False):
+        return True
+
+    supported_ckan_fields = registry_entry.get(_c.SUPPORTED_CKAN_FIELDS, [])
+    return field in supported_ckan_fields
+
+
+def is_supported_jsonschema_field(jsonschema_type, field):
+
+    registry_entry = get_from_registry(jsonschema_type)
+    
+    if not registry_entry:
+        return False
+
+    if registry_entry.get(_c.WILDCARD_JSONSCHEMA_FIELDS, False):
+        return True
+
+    supported_jsonschema_fields = registry_entry.get(_c.SUPPORTED_JSONSCHEMA_FIELDS, [])
+    return field in supported_jsonschema_fields
 
 def get_schema_of(_type):
 

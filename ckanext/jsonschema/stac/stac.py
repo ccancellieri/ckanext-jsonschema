@@ -30,9 +30,7 @@ supported_extractors = {
     _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
 }
 
-supported_resource_types = {
-    _c.TYPE_STAC_RESOURCE: ItemExtractor()._extract_json_resources,
-}
+supported_resource_types = {}
 
 def dump_to_output(data, errors, context, output_format):
 

@@ -7,6 +7,7 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.configuration as configuration
+import ckanext.jsonschema.logic.action.action as action
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -76,10 +77,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_opt_key': lambda : _c.SCHEMA_OPT_KEY,
             ############################
 
-            # 'jsonschema_get_body': lambda d_id, r_id = None : _t.get_body(d_id, r_id),
-            # 'jsonschema_get_type': lambda d_id, r_id = None : _t.get_type(d_id, r_id),
-            # 'jsonschema_get_opt': lambda d_id, r_id = None : _t.get_opt(d_id, r_id),
-
             'jsonschema_as_json': lambda payload : _t.as_json(payload),
 
             'jsonschema_get_dataset_body': lambda d : _t.as_dict(_t.safe_helper(_t.get_dataset_body, d)),
@@ -103,7 +100,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             
             #'jsonschema_get_resource_label': configuration.get_resource_label
             #jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
-            'jsonschema_get_label_from_registry': _t.get_label_from_registry 
+            'jsonschema_get_label_from_registry': _t.get_label_from_registry,
+
+            # VIEW MANIPULATION
+            'jsonschema_is_supported_ckan_field': _t.is_supported_ckan_field,
+            'jsonschema_is_supported_jsonschema_field': _t.is_supported_jsonschema_field
+
         }
 
 

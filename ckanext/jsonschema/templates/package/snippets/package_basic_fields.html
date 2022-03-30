@@ -1,60 +1,49 @@
 {% ckan_extends %}
 
-{% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
+{% set package_type = h.jsonschema_get_dataset_type() %}
+{% if package_type in h.jsonschema_handled_dataset_types() %}
   {% set jsonschema = true %}
 {% endif %}
 
 
 {% block package_basic_fields_title %}
-  {% if jsonschema %}
-  
-  {% else%}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'title') %}
+    {{super()}}
   {% endif %}
 {% endblock %}
 
 {% block package_basic_fields_url %}
-  {% if jsonschema %}
-    
-  {% else%}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'url') %}
+    {{super()}}
   {% endif %}
 {% endblock %}
 
 {% block package_basic_fields_custom %}
-  {% if jsonschema %}
-    
-  {% else%}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'custom') %}
+    {{super()}}
   {% endif %}
 {% endblock %}
 
 {% block package_basic_fields_description %}
-  {% if jsonschema %}
-    
-  {% else%}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'notes') %}
+    {{super()}}
   {% endif %}
 {% endblock %}
 
 {% block package_basic_fields_tags %}
-  {% if jsonschema %}
-    
-  {% else %}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'tags') %}
+    {{super()}}
   {% endif %}
 {% endblock %}
 
 {% block package_basic_fields_license %}
-  
-  {% if jsonschema %}
-      
-  {% else %}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'license') %}
+    {{super()}}
   {% endif %}
-
 {% endblock %}
 
 {% block package_basic_fields_org %}
-  {{super()}}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'owner_org') %}
+    {{super()}}
+  {% endif %}
 {% endblock %}

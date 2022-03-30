@@ -1,10 +1,22 @@
 {
+    "dataset": {
+        "label": "Dataset",
+        "supported_jsonschema_fields": ["opt"],
+        "supported_all_ckan_fields": true,
+        "supported_all_jsonschema_fields": false
+    },
+    "dataset-resource": {
+        "label": "Dataset Resource",
+        "supported_all_ckan_fields": true
+    },
     "iso": {
         "label": "Iso",
         "plugin_name": "jsonschema_iso",
         "schema": "iso.json",
         "template": "iso.json",
-        "module": "iso.js"
+        "module": "iso.js",
+        "supported_jsonschema_fields": ["body", "opt"],
+        "supported_ckan_fields": ["owner_org"]
     },
     "iso19139": {
         "label": "Iso19139",
@@ -32,7 +44,8 @@
         "label": "Online resource",
         "schema": "online-resource.json",
         "template": "online-resource.json",
-        "plugin_name": "jsonschema_iso"
+        "plugin_name": "jsonschema_iso",
+        "supported_ckan_fields": ["url", "format"]
     },
     "graphic-overview": {
         "label": "Graphic Overview",

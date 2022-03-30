@@ -24,8 +24,14 @@ def validate_resource(next_auth, context, data_dict):
     errors = {}
     key = ''
 
-    body, _type, opt = _v.get_extras_from_resource(data_dict)
-    
+    try:
+        body, _type, opt = _v.get_extras_from_resource(data_dict)
+    except:
+        # TODO 
+        # should raise error if not jsonschema resource 
+        return next_auth(context, data_dict)
+
+
     ######################### TODO #########################
     if opt.get('validation') == False:
         return

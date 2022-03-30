@@ -24,6 +24,14 @@
   {% endif %}
 {% endblock %}
 
+{% if jsonschema %}
+  {% set jsonschema_type_from_request = request.params.get('jsonschema_type') %}
+  {% if jsonschema_type_from_request %}
+    {% set schema_type = jsonschema_type_from_request %}
+  {% else %}
+    {% set schema_type = h.jsonschema_get_resource_type(data, resource_types[0]) %}
+  {% endif %}
+{% endif %}
 
 {% block basic_fields %}
   {% if jsonschema is undefined %}
@@ -52,13 +60,27 @@
         {% endif %}
     {% endblock %}
 
+    <script>
+      function reload(jsonschema_type){
+        {% if c.action == 'new_resource' %}
+        url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
+          {% else %}
+        url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
+        {% endif %}
+
+        //jsonschema_type = document.getElementById('field-{{TYPE_KEY}}').value
+
+        window.location.href = url + '?jsonschema_type=' + jsonschema_type
+      }
+    </script>
+
+
     {% if jsonschema is defined %}
 
       {% set TYPE_KEY = h.jsonschema_get_type_key() %}
       {% set BODY_KEY = h.jsonschema_get_body_key() %}
       {% set OPT_KEY = h.jsonschema_get_opt_key() %}
 
-      {% set schema_type = h.jsonschema_get_resource_type(data, resource_types[0]) %}
       {% set template = h.jsonschema_get_template(schema_type) %}
       {% set body = h.jsonschema_as_json(h.jsonschema_get_resource_body(data, template)) %}
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_resource_opt(data)) %}
@@ -69,7 +91,8 @@
         <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>
         <p>
           <label for="field-{{TYPE_KEY}}">Resource type</label>
-          <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}"  onChange="jsonschema.reload(value, editor = true, use_template = true);">
+
+          <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}" onChange="javascript:reload(value)">
             {% for resource_type in resource_types %}
               {% if resource_type == schema_type %}
                 <option value="{{ resource_type }}" selected>{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>
@@ -112,13 +135,19 @@
       </div>
     {% endif %}
 
+
     {% block basic_fields_url %}
+      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'url') %}
         {{super()}}
+      {% endif %}
     {% endblock %}
 
     {% block basic_fields_format %}
+      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'format') %}
         {{super()}}
+      {% endif %}
     {% endblock %}
+
   {% endif %}
 {% endblock %}
 

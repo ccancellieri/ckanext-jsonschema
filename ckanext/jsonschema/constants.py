@@ -74,14 +74,29 @@ PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join
 REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
 PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join(PATH_ROOT,'config')))
+
+
+# ---- REGISTRY ---- #
+
 FILENAME_REGISTRY='registry.json'
 
+# VIEWS
 PATH_VIEW_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.view_config', path.join(PATH_ROOT,'view_config')))
 RESOURCE_FORMAT = 'resource_format'
 WILDCARD_FORMAT = 'available_for_all_resource_formats'
 RESOURCE_JSONSCHEMA_TYPE = 'resource_jsonschema_type'
 WILDCARD_JSONSCHEMA_TYPE = 'available_for_all_resource_jsonschema_types'
 VIEW_JSONSCHEMA_TYPE = 'view_jsonschema_type'
+
+# JINJA CONFIGURATION
+SUPPORTED_CKAN_FIELDS = 'supported_ckan_fields'
+SUPPORTED_JSONSCHEMA_FIELDS = 'supported_jsonschema_fields'
+WILDCARD_CKAN_FIELDS = 'supported_all_ckan_fields'
+WILDCARD_JSONSCHEMA_FIELDS = 'supported_all_jsonschema_fields'
+
+
+# ---- END REGISTRY ---- #
+
 
 DEFAULT_EXTRAS = [
    {
