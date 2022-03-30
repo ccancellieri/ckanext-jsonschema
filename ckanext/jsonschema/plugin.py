@@ -54,7 +54,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_importer': importer,
             'jsonschema_reload': reload,
             'jsonschema_validate': validate_metadata,
-            'jsonschema_clone': clone_metadata
+            'jsonschema_clone': clone_metadata,
+            'resource_create': action.resource_create,
+            'resource_update': action.resource_update
         }
         return actions
 
