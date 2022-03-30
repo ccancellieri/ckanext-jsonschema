@@ -50,6 +50,22 @@ def stop_with_error(message, key, errors):
 
 #############################################
 
+def is_resource_form():
+    action = toolkit.c.action
+    return action in ['new_resource', 'resource_edit'] 
+    
+def get_resource(data):
+
+    resource_id = toolkit.c.resource_id
+
+    if resource_id:
+        resource = next(resource for resource in data.get('resources') if resource.get('id') == resource_id)
+    else:
+        resource = next(resource for resource in data.get('resources') if not resource.get('id'))
+
+    return resource
+
+
 import json
 
 
@@ -59,9 +75,14 @@ def schema_check(key, data, errors, context):
     '''
     Validator providing schema check capabilities
     '''
+
     _data = df.unflatten(data)
-    
-    body, _type, opt = get_extras_from_data(_data)
+
+    if is_resource_form():
+        resource = get_resource(_data)
+        body, _type, opt = get_extras_from_resource(resource)
+    else:
+        body, _type, opt = get_extras_from_data(_data)
 
     ######################### TODO #########################
     if opt.get('validation') == False:

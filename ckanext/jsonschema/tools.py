@@ -694,7 +694,7 @@ def draft_validation(jsonschema_type, body, errors):
         
         is_error = True
 
-        error_path = 'metadata'
+        error_path = 'Root'
 
         for path in error.absolute_path:
             if isinstance(path, int):
