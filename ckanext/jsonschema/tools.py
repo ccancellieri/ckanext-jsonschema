@@ -292,6 +292,12 @@ def get_module_for(_type):
 def get_body(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_BODY_KEY)
 
+def safe_helper(helper, data, default_return = {}):
+    try:
+        return helper(data)
+    except:
+        return default_return
+
 def get_dataset_body(dataset):
     return _extract_from_dataset(dataset, _c.SCHEMA_BODY_KEY)
 
@@ -406,8 +412,8 @@ def _extract_from_dataset(dataset, domain):
                     return e['value']
     
     raise Exception("Missing parameter dataset or domain")
-
-
+    
+    
 # TODO CKAN contribution
 # TODO check also tools.get_dataset_type
 def _get_dataset_type(data = None):
@@ -639,32 +645,44 @@ def encode_str(value):
     return value
 
 
-
+BASE_URI = ''
 class CustomRefResolver(RefResolver):
 
-    def resolve(self, ref):
-        '''
-        Resolve the given reference.
-        '''
+    def resolve_from_url(self, url):
+        """
+        Resolve the given remote URL.
+        """
+
+        from jsonschema.compat import urldefrag
+        import jsonschema.exceptions as exceptions 
         import os
-        
-        url = os.path.dirname(ref)
-        path_to_schema = os.path.join(self.resolution_scope, ref)
 
-        return url, _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][path_to_schema]
+        url, fragment = urldefrag(url)
+        try:
+            full_uri = os.path.join(BASE_URI, url)
+            document = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][full_uri]
+        except KeyError:
+            try:
+                document = self.resolve_remote(url)
+            except Exception as exc:
+                raise exceptions.RefResolutionError(exc)
 
+        return self.resolve_fragment(document, fragment)
 
 
 def draft_validation(jsonschema_type, body, errors):
     """Validates ..."""
 
     registry_entry = get_from_registry(jsonschema_type)
-    base_uri = os.path.dirname(registry_entry['schema'])
+
+    global BASE_URI
+    BASE_URI = os.path.dirname(registry_entry['schema'])
     schema = get_schema_of(jsonschema_type)
 
+    
     _SCHEMA_RESOLVER = CustomRefResolver(
-        base_uri=base_uri, 
-        referrer=None
+        base_uri=BASE_URI, 
+        referrer=None,
     )
 
     validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)

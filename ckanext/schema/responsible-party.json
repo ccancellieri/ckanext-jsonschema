@@ -92,7 +92,9 @@
                 "onlineResource": {
                     "propertyOrder": 20,
                     "title": "Web link",
-                    "$ref": "online-resource.json",
+                    "allOf": [
+                        {"$ref": "online-resource.json"}
+                    ],
                     "properties": {
                         "linkage":{
                             "propertyOrder": 40,

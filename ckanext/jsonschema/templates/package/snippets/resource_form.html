@@ -58,17 +58,10 @@
       {% set BODY_KEY = h.jsonschema_get_body_key() %}
       {% set OPT_KEY = h.jsonschema_get_opt_key() %}
 
-      {% if c.action == 'new_resource' %}
-        {% set schema_type = resource_types[0] %}
-        {% set body = h.jsonschema_get_template(schema_type) %}
-        {% set opt = h.jsonschema_as_json(h.jsonschema_get_opt()) %}
-      {% else %}
-        {% set schema_type = h.jsonschema_get_resource_type(data) %}
-        {% set body = h.jsonschema_as_json(h.jsonschema_get_resource_body(data)) %}
-        {% set opt = h.jsonschema_as_json(h.jsonschema_get_resource_opt(data)) %}
-      {% endif %}
-
-      
+      {% set schema_type = h.jsonschema_get_resource_type(data, resource_types[0]) %}
+      {% set template = h.jsonschema_get_template(schema_type) %}
+      {% set body = h.jsonschema_as_json(h.jsonschema_get_resource_body(data, template)) %}
+      {% set opt = h.jsonschema_as_json(h.jsonschema_get_resource_opt(data)) %}
 
       {% set schema = h.jsonschema_get_schema(schema_type) %}
       

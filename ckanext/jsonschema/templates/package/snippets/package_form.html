@@ -64,16 +64,10 @@
       {% set BODY_KEY = h.jsonschema_get_body_key() %}
       {% set OPT_KEY = h.jsonschema_get_opt_key() %}
       
+      {% set schema_type = h.jsonschema_get_dataset_type(data) %}
+      {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
+      {% set opt = h.jsonschema_as_json(h.jsonschema_get_dataset_opt(data)) %}
 
-      {% if c.action == 'new' %}
-        {% set schema_type = h.jsonschema_get_dataset_type(data) %}
-        {% set body = h.jsonschema_get_template(schema_type) %}
-        {% set opt = h.jsonschema_as_json(h.jsonschema_get_opt()) %}
-      {% else %}
-        {% set schema_type = h.jsonschema_get_dataset_type(data) %}
-        {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
-        {% set opt = h.jsonschema_as_json(h.jsonschema_get_dataset_opt(data)) %}
-      {% endif %}
       
       {% set schema = h.jsonschema_get_schema(schema_type) %}
       

@@ -80,14 +80,14 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             'jsonschema_as_json': lambda payload : _t.as_json(payload),
 
-            'jsonschema_get_dataset_body': lambda d : _t.as_dict(_t.get_dataset_body(d)),
+            'jsonschema_get_dataset_body': lambda d : _t.as_dict(_t.safe_helper(_t.get_dataset_body, d)),
             'jsonschema_get_dataset_type': _t.get_dataset_type,
-            'jsonschema_get_dataset_opt': lambda d : _t.as_dict(_t.get_dataset_opt(d)),
+            'jsonschema_get_dataset_opt': lambda d : _t.as_dict(_t.safe_helper(_t.get_dataset_opt, d, _c.SCHEMA_OPT)),
 
             #'jsonschema_get_resource': lambda r = None : _t.get(r),
-            'jsonschema_get_resource_body': lambda r : _t.as_dict(_t.get_resource_body(r)),
-            'jsonschema_get_resource_type': lambda r : _t.get_resource_type(r),
-            'jsonschema_get_resource_opt': lambda r : _t.as_dict(_t.get_resource_opt(r)),
+            'jsonschema_get_resource_body': lambda r, template = {} : _t.as_dict(_t.safe_helper(_t.get_resource_body, r, template)),
+            'jsonschema_get_resource_type': lambda r, default_type = '' : _t.safe_helper(_t.get_resource_type, r, default_type),
+            'jsonschema_get_resource_opt': lambda r : _t.as_dict(_t.safe_helper(_t.get_resource_opt, r, _c.SCHEMA_OPT)),
 
             # DEFAULTS
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
