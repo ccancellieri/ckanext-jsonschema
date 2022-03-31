@@ -89,7 +89,7 @@ def render_template(template_name, extra_vars):
     except Exception as e:
         log.error('Exception: {}'.format(str(e)))
 
-def get_interpolated_view_model(view):
+def get_interpolated_view_model(view_body, view_type):
 
     view_body = get_view_body(view)
     if not view_body:
@@ -155,12 +155,8 @@ def get_resource_content(resource):
     '''
 
     # TODO understand resource type jsonschema, url, localfile
-            # TODO schema validation in case of url or localfile
     # TODO query resource options for customized logic on where to pick up data
-    # if jsonschema
-    # resource_content = json.loads(_t.get_resource_body(resource_body))
-    # else load from disk
-    # TODO manage if resource is a link
+    
     is_jsonschema = _t.get_resource_type(resource) != None
     is_upload = resource.get('url_type') == 'upload'
     is_url = resource.get('url') and resource.get('url_type') == None

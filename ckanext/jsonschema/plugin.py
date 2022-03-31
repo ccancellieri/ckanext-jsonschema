@@ -268,6 +268,8 @@ def _modify_package_schema(schema):
         before = []
         schema['__before'] = before
 
+    # TODO
+    # Remove resource_extractor. Should be done with actions chain handler (resource_create, resource_update)
     before.insert(0, _v.resource_extractor)
     before.insert(0, _v.extractor)
     before.insert(0, _v.before_extractor)

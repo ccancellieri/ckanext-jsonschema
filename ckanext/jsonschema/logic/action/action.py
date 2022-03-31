@@ -40,11 +40,9 @@ def validate_resource(next_auth, context, data_dict):
     errors = {}
     key = ''
 
-    try:
-        body, _type, opt = _v.get_extras_from_resource(data_dict)
-    except:
-        # TODO 
-        # should raise error if not jsonschema resource 
+    body, _type, opt = _v.get_extras_from_resource(data_dict)
+    if not _type:
+        # not a jsonschema resource, skip validation and extraction
         return next_auth(context, data_dict)
 
 

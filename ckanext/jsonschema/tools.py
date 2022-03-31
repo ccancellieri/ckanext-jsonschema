@@ -258,8 +258,9 @@ def is_supported_ckan_field(jsonschema_type, field):
 
     registry_entry = get_from_registry(jsonschema_type)
 
+    # If not in registry, we want default behaviour (render CKAN's fields)
     if not registry_entry:
-        return False
+        return True
 
     if registry_entry.get(_c.WILDCARD_CKAN_FIELDS, False):
         return True
@@ -272,6 +273,7 @@ def is_supported_jsonschema_field(jsonschema_type, field):
 
     registry_entry = get_from_registry(jsonschema_type)
     
+    # If not in registry, we want default behaviour (don't render jsonschema)
     if not registry_entry:
         return False
 
@@ -424,7 +426,7 @@ def _extract_from_resource(resource, domain):
         extras = resource
 
     if extras and domain:
-        return extras[domain]
+        return extras.get(domain)
     
     raise Exception("Missing parameter resource or domain")
 
@@ -679,9 +681,10 @@ class CustomRefResolver(RefResolver):
         Resolve the given remote URL.
         """
 
-        from jsonschema.compat import urldefrag
-        import jsonschema.exceptions as exceptions 
         import os
+
+        import jsonschema.exceptions as exceptions
+        from jsonschema.compat import urldefrag
 
         url, fragment = urldefrag(url)
         try:
