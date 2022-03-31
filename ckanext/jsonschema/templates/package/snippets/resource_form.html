@@ -29,7 +29,10 @@
   {% if jsonschema_type_from_request %}
     {% set schema_type = jsonschema_type_from_request %}
   {% else %}
-    {% set schema_type = h.jsonschema_get_resource_type(data, 'dataset-resource') %}
+    {% set schema_type = h.jsonschema_get_resource_type(data) %}
+    {% if not schema_type %}
+      {% set schema_type = 'dataset-resource' %}
+    {% endif %}
   {% endif %}
 {% endif %}
 

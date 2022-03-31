@@ -85,7 +85,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             #'jsonschema_get_resource': lambda r = None : _t.get(r),
             'jsonschema_get_resource_body': lambda r, template = {} : _t.as_dict(_t.safe_helper(_t.get_resource_body, r, template)),
-            'jsonschema_get_resource_type': lambda r, default_type = '' : _t.safe_helper(_t.get_resource_type, r, default_type),
+            'jsonschema_get_resource_type': lambda r, default_type = None : _t.safe_helper(_t.get_resource_type, r, default_type),
             'jsonschema_get_resource_opt': lambda r : _t.as_dict(_t.safe_helper(_t.get_resource_opt, r, _c.SCHEMA_OPT)),
 
             # DEFAULTS
