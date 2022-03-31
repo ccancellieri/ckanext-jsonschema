@@ -1,5 +1,5 @@
 # validator
-jsonschema
+jsonschema<4.0
 #jsonschema-3.2.0-py2.py3
 # xml importer
 xmltodict==0.12.0
