@@ -424,7 +424,7 @@ def _extract_from_resource(resource, domain):
         extras = resource
 
     if extras and domain:
-        return extras.get(domain)
+        return extras[domain]
     
     raise Exception("Missing parameter resource or domain")
 

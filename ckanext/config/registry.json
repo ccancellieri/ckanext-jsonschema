@@ -1,10 +1,4 @@
 {
-    "dataset": {
-        "label": "Dataset",
-        "supported_jsonschema_fields": ["opt"],
-        "supported_all_ckan_fields": true,
-        "supported_all_jsonschema_fields": false
-    },
     "dataset-resource": {
         "label": "Dataset Resource",
         "supported_all_ckan_fields": true
@@ -38,25 +32,29 @@
         "label": "Data Sources",
         "schema": "jsonschema_dashboard/data-sources.json",
         "template": "jsonschema_dashboard/data-sources.json",
-        "plugin_name": "jsonschema_dashboard"
+        "plugin_name": "jsonschema_dashboard",
+        "supported_all_jsonschema_fields": true
     },
     "online-resource": {
         "label": "Online resource",
         "schema": "online-resource.json",
         "template": "online-resource.json",
         "plugin_name": "jsonschema_iso",
-        "supported_ckan_fields": ["url", "format"]
+        "supported_ckan_fields": ["url", "name", "description", "format"],
+        "supported_jsonschema_fields": ["body"]
     },
     "graphic-overview": {
         "label": "Graphic Overview",
         "schema": "graphic-overview.json",
         "template": "graphic-overview.json",
+        "supported_all_ckan_fields": true,
         "plugin_name": "jsonschema_iso"
     },
     "resource-contact": {
         "label": "Resource Contact",
         "schema": "resource-contact.json",
         "template": "resource-contact.json",
+        "supported_ckan_fields": ["name", "description"],
         "plugin_name": "jsonschema_iso"
     },
     "metadata-contact": {
