@@ -20,7 +20,8 @@
     "stac": {
         "label": "Stac",
         "schema": "stac.json",
-        "plugin_name": "jsonschema_stac"
+        "plugin_name": "jsonschema_stac",
+        "supported_ckan_fields": ["owner_org"]
     },
     "tabular-data-resource": {
         "label": "Table Data Resource",
