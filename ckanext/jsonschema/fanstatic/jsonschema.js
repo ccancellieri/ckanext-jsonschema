@@ -178,12 +178,13 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.jsonschema_type = self.options.type;
             jsonschema.jsonschema_body = self.options.body;
             jsonschema.jsonschema_opt = self.options.option;
+            jsonschema.use_template = self.options.useTemplate.toLowerCase() == "true";
             // jsonschema.jsonschema_schema = self.options.schema;
             
             // initialize editor
             // editor=false // TODO remove only 2 DEBUG
-            editor = true
-            jsonschema.reload(jsonschema.jsonschema_type, editor = editor, use_template = false);
+            editor = true;
+            jsonschema.reload(jsonschema.jsonschema_type, editor = editor, use_template = jsonschema.use_template);
         },
         getEditorAce: function (use_template = false){
             this.isHowto=false

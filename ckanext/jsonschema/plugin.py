@@ -104,8 +104,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             # VIEW MANIPULATION
             'jsonschema_is_supported_ckan_field': _t.is_supported_ckan_field,
-            'jsonschema_is_supported_jsonschema_field': _t.is_supported_jsonschema_field
+            'jsonschema_is_supported_jsonschema_field': _t.is_supported_jsonschema_field,
 
+            'jsonschema_url_quote': _t.url_quote
         }
 
 

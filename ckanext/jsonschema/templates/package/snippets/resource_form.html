@@ -28,7 +28,9 @@
   {% set jsonschema_type_from_request = request.params.get('jsonschema_type') %}
   {% if jsonschema_type_from_request %}
     {% set schema_type = jsonschema_type_from_request %}
+    {% set use_template = true %}
   {% else %}
+    {% set use_template = false %}
     {% set schema_type = h.jsonschema_get_resource_type(data) %}
     {% if not schema_type %}
       {% set schema_type = 'dataset-resource' %}
@@ -37,19 +39,6 @@
 {% endif %}
 
 {% block basic_fields %}
-
-    
-  <script>
-    function reload(jsonschema_type){
-      {% if c.action == 'new_resource' %}
-      url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
-        {% else %}
-      url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
-      {% endif %}
-
-      window.location.href = url + '?jsonschema_type=' + jsonschema_type
-    }
-  </script>
 
 
   <p>
@@ -77,6 +66,8 @@
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
           <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
 
+          <script src="https://unpkg.com/vanilla-picker@2"></script>
+
           <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
           <!-- Markdown -->
           <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
@@ -91,6 +82,19 @@
           <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
           <!-- autocomplete -->
           <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
+    
+          <script>
+            function reload(jsonschema_type){
+              {% if c.action == 'new_resource' %}
+              url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
+                {% else %}
+              url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
+              {% endif %}
+        
+              window.location.href = url + '?jsonschema_type=' + jsonschema_type
+            }
+          </script>
+        
       {% endif %}
   {% endblock %}
 
@@ -119,7 +123,9 @@
           data-module-schema = "{{ schema }}"
           data-module-body = "{{ body }}"
           data-module-type = "{{ schema_type }}"
-          data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"/>
+          data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"
+          data-module-use-template = "{{use_template}}"
+        />
         
         <div id="editor">
           <p>
