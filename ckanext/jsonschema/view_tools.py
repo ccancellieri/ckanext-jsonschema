@@ -89,18 +89,6 @@ def render_template(template_name, extra_vars):
     except Exception as e:
         log.error('Exception: {}'.format(str(e)))
 
-def get_interpolated_view_model(view_body, view_type):
-
-    view_body = get_view_body(view)
-    if not view_body:
-        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
-
-    view_type = view.get("view_type") 
-
-    model = _get_model(package_id=get_or_bust(view,'package_id'), resource_id=get_or_bust(view,'resource_id'))
-    
-    return interpolate_fields(model, view_body, view_type)
-
 def _get_model(package_id, resource_id):
     '''
     Returns the model used by jinja2 template

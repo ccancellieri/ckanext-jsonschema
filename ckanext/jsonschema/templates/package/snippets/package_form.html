@@ -23,10 +23,7 @@
   {% endblock %}
 
   {% block basic_fields %}
-  
     {{super()}}
-
-    
     {% block scripts %}
       {# which is the jsonschema type in this context/environment #}
       {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
@@ -54,17 +51,16 @@
 
       {% endif %}
     {% endblock %}  
-
   {% endblock %}
 
   {% block metadata_fields %}
-    {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
+    {% set schema_type = h.jsonschema_get_dataset_type(data) %}
+    {% if jsonschema and h.jsonschema_is_supported_jsonschema_field(schema_type, 'body') %}
 
       {% set TYPE_KEY = h.jsonschema_get_type_key() %}
       {% set BODY_KEY = h.jsonschema_get_body_key() %}
       {% set OPT_KEY = h.jsonschema_get_opt_key() %}
       
-      {% set schema_type = h.jsonschema_get_dataset_type(data) %}
       {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_dataset_opt(data)) %}
 
@@ -108,7 +104,6 @@
             </div>
         </p>
       </div>
-    {% else %}
-      {% snippet 'package/snippets/package_metadata_fields.html', data=data, errors=errors %}
     {% endif %}
+    {% snippet 'package/snippets/package_metadata_fields.html', package_type=schema_type, data=data, errors=errors %}
   {% endblock %}

@@ -4,6 +4,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.utils as _u
 from ckanext.jsonschema.stac import constants as _c
 from ckanext.jsonschema.stac.extractor import ItemExtractor, CatalogExtractor, CollectionExtractor, extract_id
 
@@ -30,7 +31,9 @@ supported_extractors = {
     _c.TYPE_STAC_COLLECTION: CollectionExtractor().extract_from_json
 }
 
-supported_resource_types = {}
+supported_resource_types = {
+    _c.TYPE_STAC_RESOURCE: ItemExtractor()._extract_json_resources,
+}
 
 def dump_to_output(data, errors, context, output_format):
 
@@ -39,7 +42,7 @@ def dump_to_output(data, errors, context, output_format):
 
     if pkg:
         try:
-            pass
+            return _u.json_to_xml({'body': body})
             #raise Exception(('Unsupported requested format {}').format(dataset_type))
         except Exception as e:
             if e:
@@ -110,3 +113,6 @@ class JsonSchemaStac(plugins.SingletonPlugin):
             return extractor_for_type
         else:
             raise KeyError('Extractor not defined for resource with type {}'.format(resource_type))
+
+    def get_dump_to_output(self, package_type):
+        return output_types.get(package_type)

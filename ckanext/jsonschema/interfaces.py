@@ -161,11 +161,20 @@ class IBinder(Interface):
         ''' 
         Returns cloner extractor function for the package type
         '''
+        return None
 
     def get_resource_cloner(self, package_type, resource_type):            
         ''' 
         Returns cloner extractor function for the resource type
         '''
+        return None
+
+    def get_dump_to_output(self, package_type):            
+        ''' 
+        Returns dump function for the package_type
+        '''
+        return None
+
 
 JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(IBinder)
 JSONSCHEMA_IVIEW_PLUGINS = PluginImplementations(IJsonschemaView)

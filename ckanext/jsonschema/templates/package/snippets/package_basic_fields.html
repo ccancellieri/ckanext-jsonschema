@@ -37,7 +37,7 @@
 {% endblock %}
 
 {% block package_basic_fields_license %}
-  {% if h.jsonschema_is_supported_ckan_field(package_type, 'license') %}
+  {% if h.jsonschema_is_supported_ckan_field(package_type, 'license_id') %}
     {{super()}}
   {% endif %}
 {% endblock %}

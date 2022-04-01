@@ -1,0 +1,41 @@
+{% import 'macros/form.html' as form %}
+{% ckan_extends %}
+
+{% block package_metadata_fields %}
+
+  {% block package_metadata_fields_url %}
+    {% if h.jsonschema_is_supported_ckan_field(package_type, 'url') %}
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
+  {% block package_metadata_fields_version %}
+    {% if h.jsonschema_is_supported_ckan_field(package_type, 'version') %}
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
+  {% block package_metadata_author %}
+    {% if h.jsonschema_is_supported_ckan_field(package_type, 'author') %}
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
+  {% block package_metadata_fields_maintainer %}
+    {% if h.jsonschema_is_supported_ckan_field(package_type, 'maintainer') %}
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
+  {% block package_metadata_fields_custom %}
+    {% block custom_fields %}
+      {% if h.jsonschema_is_supported_ckan_field(package_type, 'custom') %}
+        {{super()}}
+      {% endif %}
+    {% endblock %}
+  {% endblock %}
+
+  {% block dataset_fields %}
+  {% endblock %}
+
+{% endblock %}

@@ -170,8 +170,11 @@
 {% endblock %}
 
 {% block metadata_fields %}
+  
   {% if h.jsonschema_is_supported_ckan_field(schema_type, 'metadata_fields') %}
-    {{super()}}
+    {% if include_metadata %}
+      {{super()}}
+    {% endif %}
   {% endif %}
 {% endblock %}
 

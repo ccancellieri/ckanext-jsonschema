@@ -15,6 +15,7 @@
     "description":{
       "propertyOrder": 30,
       "type":"string",
+      "format": "textarea",
       "title": "Description"
     },
     "protocol":{
