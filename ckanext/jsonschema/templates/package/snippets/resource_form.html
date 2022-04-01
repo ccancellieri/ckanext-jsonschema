@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% if jsonschema %}
-  {% set jsonschema_type_from_request = request.params.get('jsonschema_type') %}
+  {% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
   {% if jsonschema_type_from_request %}
     {% set schema_type = jsonschema_type_from_request %}
     {% set use_template = true %}
@@ -48,7 +48,7 @@
       This is used only to select the needed resource type; if it is a jsonschema type resource, the type is
       inlcuded in the form below
     -->
-    <select id="select-resource-type" onChange="javascript:reload(value)">
+    <select id="select-resource-type" onChange="javascript:select_jsonschema_type(value)">
       {% for resource_type in resource_types %}
         {% if resource_type == schema_type %}
           <option value="{{ resource_type }}" selected>{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>
@@ -84,14 +84,14 @@
           <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
     
           <script>
-            function reload(jsonschema_type){
+            function select_jsonschema_type(jsonschema_type){
               {% if c.action == 'new_resource' %}
               url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
                 {% else %}
               url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
               {% endif %}
         
-              window.location.href = url + '?jsonschema_type=' + jsonschema_type
+              window.location.href = url + '?selected_jsonschema_type=' + jsonschema_type
             }
           </script>
         

@@ -51,7 +51,27 @@ def interpolate_fields(model, template, view_type):
     _enhance_model_with_data_helpers(model, template, view_type)
     
     try:
-        polished_template = json.dumps(template).replace('"{{',"{{").replace('}}"', '}}')
+        # We can have
+        # "{{array}}"  : {{array}}
+
+        # big_query_value
+        # "{{number}}" : {{number}}
+        # "{{string}}" : "{{string}}"
+        # "a {{number}} b" : "a {{number}} b"
+        # "a {{string}} b" : "a {{string}} b"
+        
+        # "{{metodo()}}" -> {{metodo}}
+        # "{{resource.id}}" -> "{{resource.id}}"
+
+        # "{{.*()}}" -> {{}}
+
+        import re
+
+        method_recognize_regex = '\"({{.*\(\)}})\"'
+        output_regex = '\g<1>'
+
+        polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
+        
         _template = env.get_template(polished_template)
         template = json.loads(_template.render(model))
 
