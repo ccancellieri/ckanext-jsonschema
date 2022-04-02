@@ -75,11 +75,14 @@ def interpolate_fields(model, template, view_type):
         method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\.\_\-]*\)\}\})\"'
         output_regex = '\g<1>'
         _template = None
+        rendered = None
 
         polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
         
         _template = env.get_template(polished_template)
+        
         rendered = _template.render(model)
+
         template = json.loads(rendered)
 
     except TemplateSyntaxError as e:
