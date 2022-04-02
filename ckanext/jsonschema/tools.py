@@ -674,20 +674,34 @@ def encode_str(value):
 
 class CustomRefResolver(RefResolver):
 
+    # def resolve_fragment(self, doc, frag):
+    #     return super(RefResolver, self).resolve_fragment(doc, frag)
+
     def resolve_from_url(self, url):
         """
         Resolve the given remote URL.
         """
 
         import os
-
         import jsonschema.exceptions as exceptions
         from jsonschema.compat import urldefrag
 
         url, fragment = urldefrag(url)
         try:
             # path = os.path.join(_c.PATH_SCHEMA, url)
-            full_uri = os.path.relpath(os.path.join(self.resolution_scope,url))
+            # self.base_uri
+            # self.pop_scope()
+            scope = None
+            if self.resolution_scope.lower().endswith('.json'):                
+                scope = self.resolution_scope
+                self.pop_scope()
+                resolved = self.resolve_from_url(url)
+                self.push_scope(scope)
+                return resolved
+
+            full_uri = os.path.relpath(os.path.join(self.resolution_scope, url))
+            
+            # full_uri = os.path.relpath(os.path.join(self.base_uri, url))
             document = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][full_uri]
         except KeyError:
             try:
