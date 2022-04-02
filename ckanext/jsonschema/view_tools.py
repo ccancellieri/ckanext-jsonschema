@@ -48,14 +48,19 @@ def interpolate_fields(model, template, view_type):
         keep_trailing_newline=True
     )
 
-    _enhance_model_with_data_helpers(model, template, view_type)
     
     try:
+        
+        _enhance_model_with_data_helpers(model, template, view_type)
+        
         # We can have
         # "{{array}}"  : {{array}}
 
         # big_query_value
         # "{{number}}" : {{number}}
+
+        # "text {{number}}" : "text {{number}}"
+        #  "{{number}} text" : "{{number}} text"
         # "{{string}}" : "{{string}}"
         # "a {{number}} b" : "a {{number}} b"
         # "a {{string}} b" : "a {{string}} b"
@@ -67,8 +72,9 @@ def interpolate_fields(model, template, view_type):
 
         import re
 
-        method_recognize_regex = '\"({{.*\(\)}})\"'
+        method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\.\_\-]*\)\}\})\"'
         output_regex = '\g<1>'
+        _template = None
 
         polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
         
@@ -76,10 +82,11 @@ def interpolate_fields(model, template, view_type):
         template = json.loads(_template.render(model))
 
     except TemplateSyntaxError as e:
-        message = _('Unable to interpolate field on line \'{}\'\nError:{}'.format(str(e.lineno),str(e)))
+        message = 'Unable to interpolate field on line \'{}\' Error:\'{}\' Value:\'{}\''\
+            .format(str(e.lineno),str(e.message), e.source)
         raise ValidationError({'message': message}, error_summary = message)
     except Exception as e:
-        message = _('Unable to interpolate field: {}'.format(str(e)))
+        message = 'Exception: \'{}\''.format(str(e))
         raise ValidationError({'message': message}, error_summary = message)
 
     #return dictize_pkg(template)

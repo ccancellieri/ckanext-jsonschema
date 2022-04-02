@@ -27,7 +27,7 @@ def initialize():
         initialize_lock.release()
         return
 
-    log.info("Writing core schema files")
+    log.info("Initialize core schema files")
 
     try:
         initialize_core_schemas()
@@ -672,8 +672,6 @@ def encode_str(value):
     
     return value
 
-
-BASE_URI = ''
 class CustomRefResolver(RefResolver):
 
     def resolve_from_url(self, url):
@@ -688,7 +686,8 @@ class CustomRefResolver(RefResolver):
 
         url, fragment = urldefrag(url)
         try:
-            full_uri = os.path.join(BASE_URI, url)
+            # path = os.path.join(_c.PATH_SCHEMA, url)
+            full_uri = os.path.relpath(os.path.join(self.resolution_scope,url))
             document = _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY][full_uri]
         except KeyError:
             try:
@@ -704,14 +703,14 @@ def draft_validation(jsonschema_type, body, errors):
 
     registry_entry = get_from_registry(jsonschema_type)
 
-    global BASE_URI
     BASE_URI = os.path.dirname(registry_entry['schema'])
     schema = get_schema_of(jsonschema_type)
 
     
     _SCHEMA_RESOLVER = CustomRefResolver(
-        base_uri=BASE_URI, 
+        base_uri=BASE_URI,
         referrer=None,
+        # store=_c.JSON_CATALOG[_c.JSON_SCHEMA_KEY]
     )
 
     validator = Draft7Validator(schema, resolver=_SCHEMA_RESOLVER)

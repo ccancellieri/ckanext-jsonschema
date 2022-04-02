@@ -178,7 +178,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.jsonschema_type = self.options.type;
             jsonschema.jsonschema_body = self.options.body;
             jsonschema.jsonschema_opt = self.options.option;
-            jsonschema.use_template = self.options.useTemplate.toLowerCase() == "true";
+            jsonschema.use_template = (self.options.useTemplate||"false").toLowerCase() == "true";
             // jsonschema.jsonschema_schema = self.options.schema;
             
             // initialize editor

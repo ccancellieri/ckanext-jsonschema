@@ -98,7 +98,10 @@ def json_to_xml(json):
 
     
 def _initialize_license_schema():
-    """This will break if there is non custom license group, which is if the licenses_group_url key is unset"""
+    """
+    This will break if there is non custom license group, 
+    which is if the licenses_group_url key is unset
+    """
     
     import ckan.model as model
     import ckanext.jsonschema.constants as _c 

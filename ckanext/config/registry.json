@@ -9,9 +9,9 @@
     "iso": {
         "label": "Iso",
         "plugin_name": "jsonschema_iso",
-        "schema": "iso.json",
-        "template": "iso.json",
-        "module": "iso.js",
+        "schema": "iso/iso.json",
+        "template": "iso/iso.json",
+        "module": "iso/iso.js",
         "supported_jsonschema_fields": ["body", "opt"],
         "supported_ckan_fields": ["owner_org"]
     },
@@ -24,23 +24,23 @@
 
     "distributor": {
         "label": "Distributor",
-        "schema": "distributor.json",
-        "template": "distributor.json",
+        "schema": "iso/distributor.json",
+        "template": "iso/distributor.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"]
     },
     "online-resource": {
         "label": "Online resource",
-        "schema": "online-resource.json",
-        "template": "online-resource.json",
+        "schema": "iso/online-resource.json",
+        "template": "iso/online-resource.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"],
         "supported_ckan_fields": ["url", "format"]
     },
     "graphic-overview": {
         "label": "Graphic Overview",
-        "schema": "graphic-overview.json",
-        "template": "graphic-overview.json",
+        "schema": "iso/graphic-overview.json",
+        "template": "iso/graphic-overview.json",
         "supported_all_ckan_fields": true,
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"],
@@ -48,29 +48,29 @@
     },
     "metadata-contact": {
         "label": "Metadata Contact",
-        "schema": "metadata-contact.json",
-        "template": "metadata-contact.json",
+        "schema": "iso/metadata-contact.json",
+        "template": "iso/metadata-contact.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"]
     },
     "resource-contact": {
         "label": "Resource Contact",
-        "schema": "resource-contact.json",
-        "template": "resource-contact.json",
+        "schema": "iso/resource-contact.json",
+        "template": "iso/resource-contact.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"]
     },
     "resource-maintainer": {
         "label": "Maintainer",
-        "schema": "resource-maintainer.json",
-        "template": "resource-maintainer.json",
+        "schema": "iso/resource-maintainer.json",
+        "template": "iso/resource-maintainer.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"]
     },
     "cited-responsible-party": {
         "label": "Responsible Party",
-        "schema": "cited-responsible-party.json",
-        "template": "cited-responsible-party.json",
+        "schema": "iso/cited-responsible-party.json",
+        "template": "iso/cited-responsible-party.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"],
         "supported_ckan_fields": ["url", "format"]
@@ -89,14 +89,14 @@
     
     "stac": {
         "label": "Stac",
-        "schema": "stac.json",
+        "schema": "stac/stac.json",
         "plugin_name": "jsonschema_stac",
         "supported_all_jsonschema_fields": true,
         "supported_ckan_fields": ["owner_org"]
     },
     "stac-asset": {
         "label": "Stac Asset",
-        "schema": "stac-asset.json",
+        "schema": "stac/stac-asset.json",
         "plugin_name": "jsonschema_stac",
         "supported_all_jsonschema_fields": true,
         "supported_ckan_fields": ["url", "format"]

@@ -28,9 +28,9 @@
   {% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
   {% if jsonschema_type_from_request %}
     {% set schema_type = jsonschema_type_from_request %}
-    {% set use_template = true %}
+    {% set use_template = True %}
   {% else %}
-    {% set use_template = false %}
+    {% set use_template = False %}
     {% set schema_type = h.jsonschema_get_resource_type(data) %}
     {% if not schema_type %}
       {% set schema_type = 'dataset-resource' %}
@@ -39,8 +39,6 @@
 {% endif %}
 
 {% block basic_fields %}
-
-
   <p>
     <label for="select-resource-type">{{_('Resource type')}}</label>
     <!-- 
@@ -98,6 +96,30 @@
       {% endif %}
   {% endblock %}
 
+    {% block basic_fields_name %}
+      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'name') %}
+        {{super()}}
+      {% endif %}   
+    {% endblock %}
+
+    {% block basic_fields_description %}
+      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'description') %}
+        {{super()}}
+      {% endif %}
+    {% endblock %}
+
+    {% block basic_fields_format %}
+      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'format') %}
+        {{super()}}
+      {% endif %}
+    {% endblock %}
+
+    {% block basic_fields_url %}
+      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'url') %}
+        {{super()}}
+      {% endif %}
+    {% endblock %}
+
 
     {% if jsonschema is defined %}
       {% if h.jsonschema_is_supported_jsonschema_field(schema_type, 'body') %}
@@ -124,7 +146,7 @@
           data-module-body = "{{ body }}"
           data-module-type = "{{ schema_type }}"
           data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"
-          data-module-use-template = "{{use_template}}"
+          data-module-use-template = {{use_template}}
         />
         
         <div id="editor">
@@ -148,31 +170,6 @@
 
         {% endif %}
     {% endif %}
-
-
-    {% block basic_fields_url %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'url') %}
-        {{super()}}
-      {% endif %}
-    {% endblock %}
-
-    {% block basic_fields_name %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'name') %}
-        {{super()}}
-      {% endif %}   
-    {% endblock %}
-
-    {% block basic_fields_description %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'description') %}
-        {{super()}}
-      {% endif %}
-    {% endblock %}
-
-    {% block basic_fields_format %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'format') %}
-        {{super()}}
-      {% endif %}
-    {% endblock %}
 {% endblock %}
 
 {% block metadata_fields %}
