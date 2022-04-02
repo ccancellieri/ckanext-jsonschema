@@ -79,14 +79,15 @@ def interpolate_fields(model, template, view_type):
         polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
         
         _template = env.get_template(polished_template)
-        template = json.loads(_template.render(model))
+        rendered = _template.render(model)
+        template = json.loads(rendered)
 
     except TemplateSyntaxError as e:
         message = 'Unable to interpolate field on line \'{}\' Error:\'{}\' Value:\'{}\''\
             .format(str(e.lineno),str(e.message), e.source)
         raise ValidationError({'message': message}, error_summary = message)
     except Exception as e:
-        message = 'Exception: \'{}\''.format(str(e))
+        message = 'Exception: \'{}\' Rendered: \'{}\''.format(str(e), rendered)
         raise ValidationError({'message': message}, error_summary = message)
 
     #return dictize_pkg(template)
