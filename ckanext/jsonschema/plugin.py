@@ -5,6 +5,7 @@ import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.blueprints as _b
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.view_tools as _vt
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.logic.action.action as action
@@ -87,6 +88,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_resource_body': lambda r, template = {} : _t.as_dict(_t.safe_helper(_t.get_resource_body, r, template)),
             'jsonschema_get_resource_type': lambda r, default_type = None : _t.safe_helper(_t.get_resource_type, r, default_type),
             'jsonschema_get_resource_opt': lambda r : _t.as_dict(_t.safe_helper(_t.get_resource_opt, r, _c.SCHEMA_OPT)),
+
+            # view helpers
+            'jsonschema_get_view_body': lambda r, template = {} : _t.as_dict(_t.safe_helper(_vt.get_view_body, r, template)),
+            'jsonschema_get_view_type': lambda r, default_type = None : _t.safe_helper(_vt.get_view_type, r, default_type),
+            'jsonschema_get_view_opt': lambda r : _t.as_dict(_t.safe_helper(_vt.get_view_opt, r, _c.SCHEMA_OPT)),
 
             # DEFAULTS
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),

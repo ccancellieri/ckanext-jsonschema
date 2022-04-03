@@ -19,9 +19,12 @@ ValidationError = logic.ValidationError
 
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.view_tools as _vt
 import ckanext.jsonschema.validators as _v
 # import ckanext.jsonschema.utils as _u
 import logging
+import traceback
+
 log = logging.getLogger(__name__)
 
 from jinja2 import Template,Markup
@@ -169,3 +172,70 @@ jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), v
 
 #from ckanext.jsonschema.logic.get import get_licenses_enum
 #jsonschema.add_url_rule('/{}/core/schema/licenses.json'.format(_c.TYPE), view_func=get_licenses_enum, methods=[u'GET'])
+
+
+############ VIEW
+
+
+
+def get_view_body(package_id, resource_id, view_id):
+    
+    
+    try:
+        resolve = request.args.get('resolve', 'false')
+        wrap = request.args.get('wrap', 'false')
+        view = _g.get_view(view_id)
+
+        view_body = _vt.get_view_body(view)
+        view_type = view.get('view_type')
+
+        if not view_body:
+            raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
+
+        if wrap.lower() == 'true':
+            view_body = _vt.wrap_view(view, view_body)
+
+        if resolve.lower() == 'true':
+            package_id = toolkit.get_or_bust(view,'package_id')
+            resource_id = toolkit.get_or_bust(view,'resource_id')
+            model = _vt._get_model(package_id, resource_id)
+            view_body = _vt.interpolate_fields(model, view_body, view_type)
+        
+        return Response(stream_with_context(json.dumps(view_body)), mimetype='application/json')
+    except ValidationError as e:
+        traceback.print_exc()
+        abort(400, e.error_dict.get('message'))
+    except Exception as e:
+        traceback.print_exc()
+        abort(400, str(e))
+    
+
+def get_view_type(package_id, resource_id, view_id):
+ 
+    view = _g.get_view(view_id)
+
+    return Response(stream_with_context(json.dumps(_vt.get_view_type(view))), mimetype='application/json')
+
+
+def get_view_opt(package_id, resource_id, view_id):
+
+    view = _g.get_view(view_id)
+
+    return Response(stream_with_context(json.dumps(_vt.get_view_opt(view))), mimetype='application/json')
+
+jsonschema.add_url_rule('/{}/body/<package_id>/<resource_id>/<view_id>'.format(_c.TYPE), view_func=get_view_body, endpoint='get_view_body', methods=[u'GET'])
+jsonschema.add_url_rule('/{}/type/<package_id>/<resource_id>/<view_id>'.format(_c.TYPE), view_func=get_view_type, methods=[u'GET'])
+jsonschema.add_url_rule('/{}/opt/<package_id>/<resource_id>/<view_id>'.format(_c.TYPE), view_func=get_view_opt, methods=[u'GET'])
+
+
+def get_model(package_id, resource_id):
+
+    # TODO
+    # This doesn't work
+    # Define what has to be in the model    
+    content = _vt._get_model(package_id, resource_id)
+
+
+    return Response(stream_with_context(json.dumps(content)), mimetype='application/json')
+jsonschema.add_url_rule('/{}/model/<package_id>/<resource_id>'.format(_c.TYPE), view_func=get_model, endpoint='model', methods=[u'GET'])
+
