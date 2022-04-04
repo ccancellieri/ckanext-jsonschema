@@ -24,90 +24,17 @@
 
   {% block basic_fields %}
     {{super()}}
-    {% block scripts %}
-      {# which is the jsonschema type in this context/environment #}
-      {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
-
-        <script src="https://unpkg.com/vanilla-picker@2"></script>
-
-        <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
-        <!-- Markdown -->
-        <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-
-        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ace.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-markdown.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-javascript.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-json.js"></script>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-css.js"></script> -->
-        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ext-beautify.js"></script>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <!-- autocomplete -->
-        <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
-
-        <!-- Date picker -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-      {% endif %}
-    {% endblock %}  
   {% endblock %}
 
   {% block metadata_fields %}
-    {% set schema_type = h.jsonschema_get_dataset_type(data) %}
-    {% if jsonschema and h.jsonschema_is_supported_jsonschema_field(schema_type, 'body') %}
+    {% set jsonschema_type = h.jsonschema_get_dataset_type(data) %}
+    {% if jsonschema and h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
 
-      {% set TYPE_KEY = h.jsonschema_get_type_key() %}
-      {% set BODY_KEY = h.jsonschema_get_body_key() %}
-      {% set OPT_KEY = h.jsonschema_get_opt_key() %}
-      
-      {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
+    {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_dataset_opt(data)) %}
 
-      
-      {% set schema = h.jsonschema_get_schema(schema_type) %}
-      
-      <div class="input-group">
-        <input id="field-extras-0-key" name="extras__0__key" value="{{BODY_KEY}}" type="hidden" />
-        <input id="field-extras-0-value" name="extras__0__value" value="{{body}}" type="hidden" class="form-control"/>
-      
-        <input id="field-extras-1-key" name="extras__1__key" value="{{TYPE_KEY}}" type="hidden" />
-        <input id="field-extras-1-value" name="extras__1__value" value="{{schema_type}}" type="hidden" class="form-control"/>
-      
-        <input id="field-extras-2-key" name="extras__2__key" value="{{OPT_KEY}}" type="hidden" />
-        <input id="field-extras-2-value" name="extras__2__value" value="{{opt}}" type="hidden" class="form-control"/>
-      </div>
+      {% include 'snippets/jsonschema_form.html' %}
 
-      <div id="jsonschema-config-form" data-module="jsonschema"
-        data-module-opt="{{ opt }}"
-        data-module-schema="{{ schema }}"
-        data-module-body="{{ body }}"
-        data-module-type="{{ schema_type }}"
-        data-module-ckan-url="{{ h.url_for('/',_external=True) }}"
-        data-module-use-template = false
-      />
-
-      <!--  -->
-      <div id="editor">
-        <p>
-            <div style="display: inline-block;">
-                <button class="btn btn-primary" type="button" id="editor-editor" onclick="jsonschema.getEditorAce();">Editor</button>
-                <button class="btn btn-primary" type="button" id="editor-howto" onclick="jsonschema.getEditor();">HowTo</button>
-                <button class="btn btn-primary" type="button" id="editor-toggle" onclick="jsonschema.editorToggle();"></button>
-            </div>
-        </p>
-        <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
-        <div id="editor-jsonschema-config">
-            {% resource 'ckanext-jsonschema/main' %}
-        </div>
-        <p>
-            <div style="border-bottom: 1px solid gray;">
-                Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
-            </div>
-        </p>
-      </div>
+    {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}
     {% endif %}
-    {% snippet 'package/snippets/package_metadata_fields.html', package_type=schema_type, data=data, errors=errors %}
   {% endblock %}

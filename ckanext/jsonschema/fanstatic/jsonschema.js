@@ -78,8 +78,8 @@ ckan.module('jsonschema', function (jQuery, _) {
                 // prepare info to serialize
                 let value=this.editor.getValue();
                 this.jsonschema_body=jsonschema.asObject(value);
-//TODO externalize id
-                let input=$('#field-extras-0-value')[0];
+                
+                let input=$('input[name="' + jsonschema.bodyKey + '"]')[0];
                 input.value=jsonschema.asString(value);
 
                 this.editorToggle(enable=false);
@@ -179,6 +179,10 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.jsonschema_body = self.options.body;
             jsonschema.jsonschema_opt = self.options.option;
             jsonschema.use_template = (self.options.useTemplate||"false").toLowerCase() == "true";
+            jsonschema.bodyKey = self.options.bodyKey
+            jsonschema.typeKey = self.options.typeKey
+            jsonschema.optKey = self.options.optKey
+            
             // jsonschema.jsonschema_schema = self.options.schema;
             
             // initialize editor

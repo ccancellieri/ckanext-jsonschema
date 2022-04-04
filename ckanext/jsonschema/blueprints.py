@@ -1,34 +1,34 @@
 
-from ckan.logic import schema
-from ckan.common import json
-from ckan.plugins.toolkit import get_action, request, h, get_or_bust
 import json
+
+import ckan.lib.helpers as h
+import ckan.logic as logic
+import ckan.plugins.toolkit as toolkit
+import ckanext.jsonschema.logic.get as _g
+from ckan.common import _, json, request
 
 # import ckan.common as converters
 # from paste.deploy.converters import asbool
 
-import ckan.lib.helpers as h
-import ckan.logic as logic
-from ckan.model.package import Package
-import ckan.plugins.toolkit as toolkit
-from ckan.common import _, request
 
 # Define some shortcuts
 NotFound = logic.NotFound
 ValidationError = logic.ValidationError
 
-import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.view_tools as _vt
-import ckanext.jsonschema.validators as _v
 # import ckanext.jsonschema.utils as _u
 import logging
 import traceback
 
+import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.validators as _v
+import ckanext.jsonschema.view_tools as _vt
+
 log = logging.getLogger(__name__)
 
-from jinja2 import Template,Markup
-from flask import Blueprint, abort, jsonify, send_file, Response, stream_with_context
+from flask import (Blueprint, Response, abort, jsonify, send_file,
+                   stream_with_context)
+from jinja2 import Markup, Template
 
 # TODO decorate jsonschema blueprint with tools.initialize
 jsonschema = Blueprint(_c.TYPE, __name__)

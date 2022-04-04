@@ -30,7 +30,7 @@ convert_from_extras = toolkit.get_converter('convert_from_extras')
 import logging
 
 from ckan.logic.schema import (default_create_package_schema,
-                               default_update_package_schema)
+                               default_update_package_schema, default_show_package_schema)
 
     # let's grab the default schema in our plugin
 
@@ -93,6 +93,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_view_body': lambda r, template = {} : _t.as_dict(_t.safe_helper(_vt.get_view_body, r, template)),
             'jsonschema_get_view_type': lambda r, default_type = None : _t.safe_helper(_vt.get_view_type, r, default_type),
             'jsonschema_get_view_opt': lambda r : _t.as_dict(_t.safe_helper(_vt.get_view_opt, r, _c.SCHEMA_OPT)),
+            'jsonschema_url_quote': _t.url_quote,
+            'jsonschema_is_jsonschema_view': _vt.is_jsonschema_view,
+            #'jsonschema_get_view_types': _vt.get_view_types,
+            'jsonschema_get_configured_jsonschema_types_for_plugin_view': _vt.get_configured_jsonschema_types_for_plugin_view,
+            'jsonschema_get_view_info': _vt.get_view_info,
 
             # DEFAULTS
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
@@ -108,11 +113,10 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             #jsonschema_get_runtime_opt': lambda x : json.dumps(_t.get_opt_of(x)),
             'jsonschema_get_label_from_registry': _t.get_label_from_registry,
 
-            # VIEW MANIPULATION
+            # FORM CONFIGURATION
             'jsonschema_is_supported_ckan_field': _t.is_supported_ckan_field,
             'jsonschema_is_supported_jsonschema_field': _t.is_supported_jsonschema_field,
 
-            'jsonschema_url_quote': _t.url_quote
         }
 
 
@@ -252,6 +256,16 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         return _modify_package_schema(schema)
 
+    def show_package_schema(self):
+
+        schema = default_show_package_schema()
+
+        schema[_c.SCHEMA_TYPE_KEY] = [convert_from_extras]
+        schema[_c.SCHEMA_BODY_KEY] = [convert_from_extras]
+        schema[_c.SCHEMA_OPT_KEY] = [convert_from_extras]
+
+        return schema
+
     # TODO presentation layer (solr also is related)
     # def show_package_schema(self):
     #     schema = default_show_package_schema()
@@ -270,16 +284,20 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 def _modify_package_schema(schema):
     # insert in front
 
+    schema[_c.SCHEMA_TYPE_KEY] = [convert_to_extras]
+    schema[_c.SCHEMA_BODY_KEY] = [convert_to_extras]
+    schema[_c.SCHEMA_OPT_KEY] = [convert_to_extras]
+
     before = schema.get('__before')
     if not before:
         before = []
         schema['__before'] = before
 
-    # TODO
-    # Remove resource_extractor. Should be done with actions chain handler (resource_create, resource_update)
+    #TODO
+    #Remove resource_extractor. Should be done with actions chain handler (resource_create, resource_update)
     before.insert(0, _v.resource_extractor)
     before.insert(0, _v.extractor)
     before.insert(0, _v.before_extractor)
-    # the following will be the first...
+    #the following will be the first...
     before.insert(0, _v.schema_check)
     return schema

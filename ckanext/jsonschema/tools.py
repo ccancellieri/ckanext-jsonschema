@@ -426,19 +426,20 @@ def _extract_from_resource(resource, domain):
         extras = resource
 
     if extras and domain:
-        return extras.get(domain)
+        # TODO: May fail fast
+        return extras.get(domain, {})
     
     raise Exception("Missing parameter resource or domain")
 
 def _extract_from_dataset(dataset, domain):
 
+    # TODO
+    return dataset.get(domain, {})
+
     if dataset and domain:
-        extras = dataset.get('extras')
-        if extras and isinstance(extras, list):
-            for e in extras:
-                if e['key'] == domain:
-                    return e['value']
-    
+        extras = dataset.get('__extras')
+        return extras.get(domain)
+        
     raise Exception("Missing parameter dataset or domain")
     
     
@@ -484,16 +485,20 @@ def update_extras_from_resource_context(resource, context):
 def update_extras_from_context(data, extras):
 
     # Checking extra data content for extration
-    for e in data.get('extras',[]):
-        key = e.get('key')
-        if not key:
-            raise Exception('Unable to resolve extras with an empty key')
-        if key == _c.SCHEMA_BODY_KEY:
-            e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-        elif key == _c.SCHEMA_TYPE_KEY:
-            e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
-        elif key == _c.SCHEMA_OPT_KEY:
-            e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
+    data[_c.SCHEMA_BODY_KEY] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+    data[_c.SCHEMA_TYPE_KEY] = extras.get(_c.SCHEMA_TYPE_KEY)
+    data[_c.SCHEMA_OPT_KEY] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
+
+    #for e in data.get('extras',[]):
+        # key = e.get('key')
+        # if not key:
+        #     raise Exception('Unable to resolve extras with an empty key')
+        # if key == _c.SCHEMA_BODY_KEY:
+        #     e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+        # elif key == _c.SCHEMA_TYPE_KEY:
+        #     e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
+        # elif key == _c.SCHEMA_OPT_KEY:
+        #     e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
 
 
 def update_extras(data, body, type, opt):
