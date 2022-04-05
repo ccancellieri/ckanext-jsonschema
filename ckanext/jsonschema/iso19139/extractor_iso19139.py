@@ -37,8 +37,8 @@ def _extract_iso(data, errors, context):
 
     # DATA translation
     # root_fields = FrozenOrderedBidict({
-    _body = _t.get_context_body(context)
-    opt = _t.get_context_opt(context)
+    _body = _t.get_package_body(data)
+    opt = _t.get_package_opt(data)
 
     _data = data
 
@@ -136,11 +136,9 @@ def _extract_iso(data, errors, context):
 
     # Update _data type
     _data.update({
-        'type': TYPE_ISO
+        'type': TYPE_ISO,
+        _c.SCHEMA_BODY_KEY: _iso_profile
     })
-
-    _t.set_context_body(context, _iso_profile)
-    _t.set_context_type(context, TYPE_ISO)
 
 
 def _from_nested_list_extend_array(source, source_array_path, get_tuple_as_array, dest, dest_tuple):

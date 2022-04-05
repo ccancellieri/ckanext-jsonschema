@@ -28,8 +28,8 @@ class StacExtractor():
 
     def _extract_json_name(self, data, errors, context):
         
-        body = _t.get_context_body(context)
-        _type = _t.get_context_type(context)
+        body = _t.get_package_body(data)
+        _type = _t.get_package_type(data)
 
         name = self._extract_id(_type, body)
         
@@ -59,7 +59,7 @@ class ItemExtractor(StacExtractor):
 
     def _extract_json_body(self, data, errors, context):
         
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(data)
 
         _dict = {}    
 
@@ -88,8 +88,8 @@ class ItemExtractor(StacExtractor):
         resource_extractor validator
         '''
 
-        body = _t.get_context_body(context)
-        opt = _t.get_context_opt(context)
+        body = _t.get_package_body(data)
+        opt = _t.get_package_opt(data)
 
         _assets = {}
         if 'assets' in body:
@@ -141,7 +141,7 @@ class ItemExtractor(StacExtractor):
         resource_extractor validator
         '''
 
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(data)
         
         _dict = {
             'name': body.get('title'),
@@ -159,7 +159,7 @@ class CatalogExtractor(StacExtractor):
 
     def _extract_json_body(self, data, errors, context):
         
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(data)
 
         _dict = {
             'title': body.get('title'),
@@ -174,7 +174,7 @@ class CollectionExtractor(StacExtractor):
 
     def _extract_json_body(self, data, errors, context):
         
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(data)
 
         _dict = {
             'title': body.get('title'),
@@ -197,7 +197,7 @@ class CollectionExtractor(StacExtractor):
 
     # def _extract_json_links(self, data, errors, context):
 
-    #     body = _t.get_context_body(context)
+    #     body = _t.get_package_body(data)
 
     #     links = body.get('links')
 

@@ -63,21 +63,24 @@ def schema_check(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, _type, opt = get_extras_from_data(_data)
+    body = _t.as_dict(_t.get_package_body(_data))
+    jsonschema_type = _t.get_package_type(_data)
+    opt = _t.as_dict(_t.get_package_opt(_data))
+
 
     ######################### TODO #########################
     if opt.get('validation') == False:
         return
 
-    if not _type:
+    if not jsonschema_type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
 
-    schema = _t.get_schema_of(_type)
+    schema = _t.get_schema_of(jsonschema_type)
 
     if not schema:
-        stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
+        stop_with_error('Unable to load a valid json-schema for type {}'.format(jsonschema_type), key, errors)
 
-    is_error = _t.draft_validation(_type, body, errors)
+    is_error = _t.draft_validation(jsonschema_type, body, errors)
 
     if is_error:
         raise StopOnError()
@@ -104,7 +107,7 @@ def view_schema_check(key, data, errors, context):
 def resource_extractor(key, data, errors, context):
     _data = df.unflatten(data)
 
-    dataset_type = _t.get_dataset_type(_data) # TODO should be jsonschema_type
+    dataset_type = _t.get_package_type(_data) # TODO should be jsonschema_type
     resources = _data.get('resources')
     if not resources:
         return
@@ -143,27 +146,21 @@ def before_extractor(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, _type, opt = get_extras_from_data(_data)
+    jsonschema_type = _t.get_package_type(_data)
+    opt = _t.as_dict(_t.get_package_opt(_data))
 
     ######################### TODO #########################
     opt.update({'validation': True})
-     
-    context.update({
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : _type,
-        _c.SCHEMA_OPT_KEY : opt
-    })
+  
 
-    if _type not in configuration.get_input_types():
+    if jsonschema_type not in configuration.get_input_types():
         return
     
-    plugin = configuration.get_plugin(_type)
+    plugin = configuration.get_plugin(jsonschema_type)
 
     try:
-        extractor = plugin.get_before_extractor(_type, context) 
+        extractor = plugin.get_before_extractor(jsonschema_type, context) 
         extractor(_data, errors, context)        
-
-        _t.update_extras_from_context(_data, context)
                 
         # update datamodel
         data.update(df.flatten_dict(_data))
@@ -180,30 +177,16 @@ def extractor(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, package_type, opt = get_extras_from_data(_data)
-
-    
-    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(_data)
+    package_type = _t.get_package_type(_data)
 
     if package_type not in configuration.get_supported_types():
         return
 
     plugin = configuration.get_plugin(package_type)
 
-    # _data.update({
-    #     _c.SCHEMA_BODY_KEY: body,
-    #     _c.SCHEMA_TYPE_KEY : package_type,
-    #     _c.SCHEMA_OPT_KEY : opt
-    # })
-
     try:
-        extractor = plugin.get_package_extractor(package_type, context)
+        extractor = plugin.get_package_extractor(package_type, _data, context)
         extractor(_data, errors, context)
-
-        #_t.enrich_package_data_with_jsonschema_extras(_data, jsonschema_extras)
-
-        # port back changes from body (and other extras) to the data model
-        _t.update_extras_from_context(_data, context)
 
         # update datamodel
         data.update(df.flatten_dict(_data))
@@ -221,31 +204,17 @@ def dataset_dump(dataset_id, format = None):
     if format == None:
         return _data
 
-    body, package_type, opt = get_extras_from_data(_data)
-
+    body = _t.as_dict(_t.get_package_body(_data))
+    jsonschema_type = _t.get_package_type(_data)
     
-    context = {
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : package_type,
-        _c.SCHEMA_OPT_KEY : opt,
-    }
+    context = {}
     errors = []
     
-    plugin = configuration.get_plugin(package_type)
-    dump_to_output = plugin.get_dump_to_output(package_type)
+    plugin = configuration.get_plugin(jsonschema_type)
+    dump_to_output = plugin.get_dump_to_output(jsonschema_type)
     body = dump_to_output(_data, errors, context, format)
 
     return body
-
-
-def get_extras_from_data(data):
-    
-    body = _t.as_dict(_t.get_dataset_body(data))
-    type = _t.get_dataset_type(data)
-    opt = _t.as_dict(_t.get_dataset_opt(data))
-
-    return body, type, opt
-
 
 def get_extras_from_resource(resource):
     
@@ -292,12 +261,10 @@ def _get_body(key, data, errors, context):
 def jsonschema_fields_to_json(key, data, errors, context):
     
     _data = df.unflatten(data)
-    
-    body, jsonschema_type, opt = get_extras_from_data(_data)
 
-    _data[_c.SCHEMA_BODY_KEY] = body
-    _data[_c.SCHEMA_TYPE_KEY] = jsonschema_type
-    _data[_c.SCHEMA_OPT_KEY] = opt
+    _data[_c.SCHEMA_BODY_KEY] = _t.as_dict(_t.get_package_body(_data))
+    _data[_c.SCHEMA_TYPE_KEY] = _t.get_package_type(_data)
+    _data[_c.SCHEMA_OPT_KEY] = _t.as_dict(_t.get_package_opt(_data))
 
     data.update(df.flatten_dict(_data))
 
@@ -305,10 +272,8 @@ def jsonschema_fields_to_string(key, data, errors, context):
     
     _data = df.unflatten(data)
 
-    body, jsonschema_type, opt = get_extras_from_data(_data)
-
-    _data[_c.SCHEMA_BODY_KEY] = json.dumps(body)
-    _data[_c.SCHEMA_TYPE_KEY] = jsonschema_type
-    _data[_c.SCHEMA_OPT_KEY] = json.dumps(opt)
+    _data[_c.SCHEMA_BODY_KEY] = json.dumps(_t.as_dict(_t.get_package_body(_data)))
+    _data[_c.SCHEMA_TYPE_KEY] = _t.get_package_type(_data)
+    _data[_c.SCHEMA_OPT_KEY] = json.dumps(_t.as_dict(_t.get_package_opt(_data)))
 
     data.update(df.flatten_dict(_data))

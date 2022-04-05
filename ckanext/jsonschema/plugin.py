@@ -83,9 +83,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             'jsonschema_as_json': lambda payload : _t.as_json(payload),
 
-            'jsonschema_get_dataset_body': lambda d : _t.as_dict(_t.safe_helper(_t.get_dataset_body, d)),
-            'jsonschema_get_dataset_type': _t.get_dataset_type,
-            'jsonschema_get_dataset_opt': lambda d : _t.as_dict(_t.safe_helper(_t.get_dataset_opt, d, _c.SCHEMA_OPT)),
+            'jsonschema_get_package_body': lambda d : _t.as_dict(_t.safe_helper(_t.get_package_body, d)),
+            'jsonschema_get_package_type': _t.get_package_type,
+            'jsonschema_get_package_opt': lambda d : _t.as_dict(_t.safe_helper(_t.get_package_opt, d, _c.SCHEMA_OPT)),
 
             #'jsonschema_get_resource': lambda r = None : _t.get(r),
             'jsonschema_get_resource_body': lambda r, template = {} : _t.as_dict(_t.safe_helper(_t.get_resource_body, r, template)),
@@ -270,7 +270,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         schema['resources'].update({
             _c.SCHEMA_BODY_KEY : [ ignore_missing, convert_to_json_if_string ],
             _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_json_if_string ]
-
         })
 
         return schema

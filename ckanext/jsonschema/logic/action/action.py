@@ -75,7 +75,7 @@ def extract_resource(resource, errors, extractor_context):
     body, resource_type, opt = _v.get_extras_from_resource(resource)
 
     package = toolkit.get_action('package_show')({}, {'id': resource.get('package_id')})
-    package_type = _t.get_dataset_type(package)
+    package_type = _t.get_package_type(package)
 
     if resource_type not in configuration.get_supported_resource_types(package_type):
         return          

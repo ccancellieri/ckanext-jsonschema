@@ -82,17 +82,16 @@ def importer(context, data_dict):
 
 
     # IMPORT - PREPROCESSING -
-    import_context = {
-        _c.SCHEMA_BODY_KEY: _t.as_dict(body),
-        _c.SCHEMA_TYPE_KEY : _type,
-        _c.SCHEMA_OPT_KEY : opt,
-    }
+    import_context = {}
 
     package_dict = {
         # IMPORTER_TYPE = 'iso19139'old
         'type': _type,
         'owner_org': data_dict.get('owner_org'),
-        'license_id': data_dict.get('license_id')
+        'license_id': data_dict.get('license_id'),
+        _c.SCHEMA_BODY_KEY: _t.as_dict(body),
+        _c.SCHEMA_TYPE_KEY : _type,
+        _c.SCHEMA_OPT_KEY : opt,
     }
 
     errors = []
@@ -102,11 +101,11 @@ def importer(context, data_dict):
     except PluginNotFoundException as e:
         return { "success": False, "msg": str(e)}
 
-    extractor = plugin.get_input_extractor(_type, import_context) 
+    extractor = plugin.get_input_extractor(_type, package_dict, import_context) 
     extractor(package_dict, errors, import_context)   
 
     opt['validation'] = False  
-    _t.update_extras_from_context(package_dict, import_context)
+    #_t.update_extras_from_context(package_dict, import_context)
 
 
     #TODO resources store back to the package_dict
@@ -152,8 +151,8 @@ def validate_metadata(context, data_dict):
     if package is None:
         raise NotFound("No package found with the specified uuid")
 
-    body = _t.get_dataset_body(package)
-    _type = _t.get_dataset_type(package)
+    body = _t.get_package_body(package)
+    _type = _t.get_package_type(package)
     
     errors = {}
     is_error = _t.draft_validation(_type, body, errors)
@@ -167,8 +166,8 @@ def clone_metadata(context, data_dict):
 
     pkg = _t.get(data_dict.get('id'))
 
-    _type = _t.get_dataset_type(pkg)
-    body = _t.get_dataset_body(pkg)
+    _type = _t.get_package_type(pkg)
+    body = _t.get_package_body(pkg)
 
 
     #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)

@@ -31,7 +31,7 @@ def _extract_from_iso(data, errors, context):
 def _extract_iso_data_identification(data, context):
     # _data = df.unflatten(data)
 
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
 
     data_identification = body.get('dataIdentification')
     if data_identification:
@@ -78,7 +78,7 @@ def _extract_iso_name(data, context):
 
     # /api/util/dataset/munge_title_to_name?title=police:%20spending%20figures%202009
 
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
     
     name = body.get('fileIdentifier')
 
@@ -114,7 +114,7 @@ def _extract_iso_name(data, context):
 
 def _extract_iso_online_resource(data, errors, context):
 
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
     
     # name = munge.munge_filename(body.get('name'),'')
     name = body.get('name','Online resource')
@@ -138,7 +138,7 @@ def _extract_iso_online_resource(data, errors, context):
 
 def _extract_iso_resource_responsible(data, errors, context):
 
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
 
     name = body.get('individualName', 'Contact')
     # as discussed on 06/12/2022
@@ -160,7 +160,7 @@ def _extract_iso_resource_responsible(data, errors, context):
 
 def _extract_iso_graphic_overview(data, errors, context):
 
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
 
     name = body.get('name', 'Graphic overview')
     
@@ -181,7 +181,7 @@ def _extract_iso_graphic_overview(data, errors, context):
 
 def render_notes(data, context):
     
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
 
     try:
         pkg = _t.get(body.get('fileIdentifier'))

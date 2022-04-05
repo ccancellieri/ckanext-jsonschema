@@ -1,7 +1,7 @@
 {% import 'macros/custom_form.html' as custom_form %}
 {% ckan_extends %}
 
-  {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
+  {% if h.jsonschema_get_package_type() in h.jsonschema_handled_dataset_types() %}
     {% set jsonschema = true %}
   {% endif %}
 
@@ -27,11 +27,11 @@
   {% endblock %}
 
   {% block metadata_fields %}
-    {% set jsonschema_type = h.jsonschema_get_dataset_type(data) %}
+    {% set jsonschema_type = h.jsonschema_get_package_type(data) %}
     {% if jsonschema and h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
 
-    {% set body = h.jsonschema_as_json(h.jsonschema_get_dataset_body(data)) %}
-      {% set opt = h.jsonschema_as_json(h.jsonschema_get_dataset_opt(data)) %}
+    {% set body = h.jsonschema_as_json(h.jsonschema_get_package_body(data)) %}
+      {% set opt = h.jsonschema_as_json(h.jsonschema_get_package_opt(data)) %}
 
       {% include 'snippets/jsonschema_form.html' %}
 

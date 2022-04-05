@@ -27,7 +27,7 @@ import ckan.logic as logic
     #   {% set schema = h.jsonschema_get_schema(schema_type) %}
 
     ### DATASET
-    # {% if h.jsonschema_get_dataset_type() in h.jsonschema_handled_dataset_types() %}
+    # {% if h.jsonschema_get_package_type() in h.jsonschema_handled_dataset_types() %}
 
     #   {% set extras = h.jsonschema_resolve_extras(data) %}
 

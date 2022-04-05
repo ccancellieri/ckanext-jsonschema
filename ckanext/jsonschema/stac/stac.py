@@ -80,9 +80,9 @@ class JsonSchemaStac(plugins.SingletonPlugin):
     def get_supported_resource_types(self):
         return supported_resource_types.keys()
     
-    def get_input_extractor(self, package_type, context):
+    def get_input_extractor(self, package_type, package_dict, context):
 
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(package_dict)
         stac_type = body.get('type')
 
         extractor_for_type = input_extractors.get(stac_type)
@@ -93,9 +93,9 @@ class JsonSchemaStac(plugins.SingletonPlugin):
             raise KeyError('Extractor not defined for package with type {}, resolved in {}'.format(package_type, stac_type))
                 
 
-    def get_package_extractor(self, package_type, context):
+    def get_package_extractor(self, package_type, package_dict, context):
         
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(package_dict)
         stac_type = body.get('type')
 
         extractor_for_type = supported_extractors.get(stac_type)
