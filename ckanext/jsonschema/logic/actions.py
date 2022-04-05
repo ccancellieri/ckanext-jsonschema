@@ -90,7 +90,6 @@ def importer(context, data_dict):
 
     package_dict = {
         # IMPORTER_TYPE = 'iso19139'old
-        'extras': _c.DEFAULT_EXTRAS, # initial extras
         'type': _type,
         'owner_org': data_dict.get('owner_org'),
         'license_id': data_dict.get('license_id')

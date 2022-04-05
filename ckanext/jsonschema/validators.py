@@ -190,11 +190,11 @@ def extractor(key, data, errors, context):
 
     plugin = configuration.get_plugin(package_type)
 
-    context.update({
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : package_type,
-        _c.SCHEMA_OPT_KEY : opt
-    })
+    # _data.update({
+    #     _c.SCHEMA_BODY_KEY: body,
+    #     _c.SCHEMA_TYPE_KEY : package_type,
+    #     _c.SCHEMA_OPT_KEY : opt
+    # })
 
     try:
         extractor = plugin.get_package_extractor(package_type, context)
@@ -287,3 +287,28 @@ def _get_body(key, data, errors, context):
         stop_with_error('Unable to load a valid json schema body', key, errors)
 
     return body
+
+
+def jsonschema_fields_to_json(key, data, errors, context):
+    
+    _data = df.unflatten(data)
+    
+    body, jsonschema_type, opt = get_extras_from_data(_data)
+
+    _data[_c.SCHEMA_BODY_KEY] = body
+    _data[_c.SCHEMA_TYPE_KEY] = jsonschema_type
+    _data[_c.SCHEMA_OPT_KEY] = opt
+
+    data.update(df.flatten_dict(_data))
+
+def jsonschema_fields_to_string(key, data, errors, context):
+    
+    _data = df.unflatten(data)
+
+    body, jsonschema_type, opt = get_extras_from_data(_data)
+
+    _data[_c.SCHEMA_BODY_KEY] = json.dumps(body)
+    _data[_c.SCHEMA_TYPE_KEY] = jsonschema_type
+    _data[_c.SCHEMA_OPT_KEY] = json.dumps(opt)
+
+    data.update(df.flatten_dict(_data))

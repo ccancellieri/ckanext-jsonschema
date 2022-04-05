@@ -7,7 +7,7 @@
 -->
 
 
-{% block jsonschema_scripts %}
+{% block jsonschema_scripts scoped %}
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
@@ -53,7 +53,7 @@
 {% endblock %}
 
 
-{% block jsonschema_form %}
+{% block jsonschema_form scoped %}
 
 {% set BODY_KEY = h.jsonschema_get_body_key() %}
 {% set TYPE_KEY = h.jsonschema_get_type_key() %}

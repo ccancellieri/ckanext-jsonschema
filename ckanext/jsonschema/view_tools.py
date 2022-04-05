@@ -47,10 +47,13 @@ def interpolate_fields(model, template, view_type):
         keep_trailing_newline=True
     )
 
+    try:
+        _enhance_model_with_data_helpers(model, template, view_type)
+    except Exception as e:
+        message = 'Exception: {}'.format(str(e))
+        raise ValidationError({'message': message}, error_summary = message)
     
     try:
-        
-        _enhance_model_with_data_helpers(model, template, view_type)
         
         # We can have
         # "{{array}}"  : {{array}}
@@ -68,14 +71,14 @@ def interpolate_fields(model, template, view_type):
         # "{{resource.id}}" -> "{{resource.id}}"
 
         # "{{.*()}}" -> {{}}
-
+        
         import re
 
         method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\.\_\-]*\)\}\})\"'
         output_regex = '\g<1>'
         _template = None
-        rendered = None
-
+        rendered = ''
+        
         polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
         
         _template = env.get_template(polished_template)

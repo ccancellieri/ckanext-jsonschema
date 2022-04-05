@@ -431,14 +431,10 @@ def _extract_from_resource(resource, domain):
     
     raise Exception("Missing parameter resource or domain")
 
-def _extract_from_dataset(dataset, domain):
-
-    # TODO
-    return dataset.get(domain, {})
+def _extract_from_dataset(dataset, domain, default_value = {}):
 
     if dataset and domain:
-        extras = dataset.get('__extras')
-        return extras.get(domain)
+        return dataset.get(domain, default_value)
         
     raise Exception("Missing parameter dataset or domain")
     
