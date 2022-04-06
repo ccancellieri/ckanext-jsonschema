@@ -141,7 +141,7 @@ class ItemExtractor(StacExtractor):
         resource_extractor validator
         '''
 
-        body = _t.get_package_body(data)
+        body = _t.as_dict(_t.get_resource_body(data))
         
         _dict = {
             'name': body.get('title'),

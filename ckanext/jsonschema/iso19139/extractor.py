@@ -114,7 +114,7 @@ def _extract_iso_name(data, context):
 
 def _extract_iso_online_resource(data, errors, context):
 
-    body = _t.get_package_body(data)
+    body = _t.as_dict(_t.get_resource_body(data))
     
     # name = munge.munge_filename(body.get('name'),'')
     name = body.get('name','Online resource')
@@ -138,7 +138,7 @@ def _extract_iso_online_resource(data, errors, context):
 
 def _extract_iso_resource_responsible(data, errors, context):
 
-    body = _t.get_package_body(data)
+    body = _t.as_dict(_t.get_resource_body(data))
 
     name = body.get('individualName', 'Contact')
     # as discussed on 06/12/2022
@@ -160,7 +160,7 @@ def _extract_iso_resource_responsible(data, errors, context):
 
 def _extract_iso_graphic_overview(data, errors, context):
 
-    body = _t.get_package_body(data)
+    body = _t.as_dict(_t.get_resource_body(data))
 
     name = body.get('name', 'Graphic overview')
     
