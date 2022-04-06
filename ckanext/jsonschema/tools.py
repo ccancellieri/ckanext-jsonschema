@@ -332,6 +332,9 @@ def get_package_body(package):
 def get_resource_body(resource):
     return _extract_from_resource(resource, _c.SCHEMA_BODY_KEY)
 
+def set_resource_body(resource, value):
+    _set_into_resource(resource, _c.SCHEMA_BODY_KEY, value)
+
 def get_type(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
 
@@ -340,7 +343,10 @@ def get_package_type(package = None):
     return _get_package_type(package) or _extract_from_package(package, _c.SCHEMA_TYPE_KEY)
 
 def get_resource_type(resource):
-    return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
+    return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY, default_value = None)
+
+def set_resource_type(resource, value):
+    _set_into_resource(resource, _c.SCHEMA_TYPE_KEY, value)
 
 def get_opt(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_OPT_KEY)
@@ -350,6 +356,9 @@ def get_package_opt(package):
 
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
+
+def set_resource_opt(resource, value):
+    _set_into_resource(resource, _c.SCHEMA_OPT_KEY, value)
 
 def get(dataset_id, resource_id = None, domain = None):
     
@@ -379,45 +388,8 @@ def get(dataset_id, resource_id = None, domain = None):
     # we wanted to extract something from the package
     return _extract_from_package(pkg, domain)
 
-# def get_from_package(pkg, resource_id):
-#     if not pkg:
-#         raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
-#     if resource_id:
-#         for resource in pkg.get('resources'):
-#             _resource_id = resource.get('id')
-#             if _resource_id == resource_id:
-#                 return _extract_from_resource(resource)
-#         raise Exception('Unable to find the requested resource {}'.format(resource_id))
-#     return _extract_from_package(pkg)
 
-####### Manipulate extraction context #######
-
-# def _extract_from_context(context, domain):
-
-#     if context and domain:
-#         return context.get(domain)
-    
-#     raise Exception("Missing parameter resource or domain")
-
-# def get_package_body(data):
-#     return _extract_from_context(context, _c.SCHEMA_BODY_KEY)
-
-# def get_package_type(data):
-#     return _extract_from_context(context, _c.SCHEMA_TYPE_KEY)
-
-# def get_package_opt(data):
-#     return _extract_from_context(context, _c.SCHEMA_OPT_KEY)
-
-# def set_context_body(context, body):
-#     context[_c.SCHEMA_BODY_KEY] = body
-
-# def set_context_type(context, _type):
-#     context[_c.SCHEMA_TYPE_KEY] = _type
-
-# def set_context_opt(context, opt):
-#     context[_c.SCHEMA_OPT_KEY] = opt
-
-def _extract_from_resource(resource, domain):
+def _extract_from_resource(resource, domain, default_value = {}):
 
     # Checking extra data content for extration
     extras = resource.get('__extras')
@@ -427,9 +399,25 @@ def _extract_from_resource(resource, domain):
 
     if extras and domain:
         # TODO: May fail fast
-        return extras.get(domain, {})
+        return extras.get(domain, default_value)
     
     raise Exception("Missing parameter resource or domain")
+
+def _set_into_resource(resource, domain, value):
+    
+    # Checking extra data content for extration
+    extras = resource.get('__extras')
+    if not extras:
+        # edit existing resource
+        extras = resource
+
+    if extras and domain:
+        # TODO: May fail fast
+        extras[domain] = value
+        return resource
+    
+    raise Exception("Missing parameter resource or domain")
+
 
 def _extract_from_package(dataset, domain, default_value = {}):
 

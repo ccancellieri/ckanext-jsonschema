@@ -147,7 +147,7 @@ def before_extractor(key, data, errors, context):
     _data = df.unflatten(data)
 
     jsonschema_type = _t.get_package_type(_data)
-    opt = _t.as_dict(_t.get_package_opt(_data))
+    opt = _t.get_package_opt(_data)
 
     ######################### TODO #########################
     opt.update({'validation': True})
@@ -258,6 +258,75 @@ def _get_body(key, data, errors, context):
     return body
 
 
+
+################# CKAN SCHEMA #####################
+
+
+from ckan.logic.converters import convert_to_json_if_string
+
+get_validator = toolkit.get_validator
+convert_to_extras = toolkit.get_converter('convert_to_extras')
+convert_from_extras = toolkit.get_converter('convert_from_extras')
+not_missing = get_validator('not_missing')
+not_empty = get_validator('not_empty')
+resource_id_exists = get_validator('resource_id_exists')
+package_id_exists = get_validator('package_id_exists')
+ignore_missing = get_validator('ignore_missing')
+empty = get_validator('empty')
+boolean_validator = get_validator('boolean_validator')
+int_validator = get_validator('int_validator')
+OneOf = get_validator('OneOf')
+isodate = get_validator('isodate')
+
+
+
+
+def modify_package_schema(schema):
+
+    schema[_c.SCHEMA_TYPE_KEY] = [convert_to_extras]
+    schema[_c.SCHEMA_BODY_KEY] = [convert_to_extras]
+    schema[_c.SCHEMA_OPT_KEY] = [convert_to_extras]
+
+    schema['resources'].update({
+        _c.SCHEMA_TYPE_KEY: [ignore_missing],
+        _c.SCHEMA_BODY_KEY : [ignore_missing],
+        _c.SCHEMA_OPT_KEY : [ignore_missing]
+    })
+
+    before = schema.get('__before')
+    if not before:
+        before = []
+        schema['__before'] = before
+
+    #TODO
+    #Remove resource_extractor. Should be done with actions chain handler (resource_create, resource_update)
+    
+    # insert in front
+    before.insert(0, jsonschema_fields_to_string)
+    before.insert(0, resource_extractor)
+    before.insert(0, extractor)
+    before.insert(0, before_extractor)
+    
+    #the following will be the first...
+    before.insert(0, schema_check)
+    before.insert(0, jsonschema_fields_to_json)
+
+    return schema
+
+def show_package_schema(schema):
+    
+    schema[_c.SCHEMA_TYPE_KEY] = [convert_from_extras]
+    schema[_c.SCHEMA_BODY_KEY] = [convert_from_extras, convert_to_json_if_string]
+    schema[_c.SCHEMA_OPT_KEY] = [convert_from_extras, convert_to_json_if_string]
+
+    schema['resources'].update({
+        _c.SCHEMA_BODY_KEY : [ignore_missing, convert_to_json_if_string],
+        _c.SCHEMA_OPT_KEY : [ignore_missing, convert_to_json_if_string]
+    })
+
+    return schema
+
+
 def jsonschema_fields_to_json(key, data, errors, context):
     
     _data = df.unflatten(data)
@@ -266,7 +335,11 @@ def jsonschema_fields_to_json(key, data, errors, context):
     _data[_c.SCHEMA_TYPE_KEY] = _t.get_package_type(_data)
     _data[_c.SCHEMA_OPT_KEY] = _t.as_dict(_t.get_package_opt(_data))
 
+    # for resource in _data.get('resources', []):
+    #     jsonschema_resource_fields_to_json(resource)
+    
     data.update(df.flatten_dict(_data))
+
 
 def jsonschema_fields_to_string(key, data, errors, context):
     
@@ -276,4 +349,36 @@ def jsonschema_fields_to_string(key, data, errors, context):
     _data[_c.SCHEMA_TYPE_KEY] = _t.get_package_type(_data)
     _data[_c.SCHEMA_OPT_KEY] = json.dumps(_t.as_dict(_t.get_package_opt(_data)))
 
+    # for resource in _data.get('resources', []):
+    #     jsonschema_resource_fields_to_string(resource)
+
     data.update(df.flatten_dict(_data))
+
+def jsonschema_resource_fields_to_json(resource):
+
+        jsonschema_type = _t.get_resource_type(resource)
+
+        if jsonschema_type:
+            
+            body = _t.as_dict(_t.get_resource_body(resource))
+            opt = _t.as_dict(_t.get_resource_opt(resource))
+
+            #_t.set_resource_type(resource, jsonschema_type)
+            _t.set_resource_body(resource, body)
+            _t.set_resource_opt(resource, opt)
+
+def jsonschema_resource_fields_to_string(resource):
+
+        jsonschema_type = _t.get_resource_type(resource)
+
+        if jsonschema_type:
+
+            body = _t.as_json(_t.get_resource_body(resource))
+            opt = _t.as_json(_t.get_resource_opt(resource))
+
+            #_t.set_resource_type(resource, jsonschema_type)
+            _t.set_resource_body(resource, body)
+            _t.set_resource_opt(resource, opt)
+
+
+############################################

@@ -9,7 +9,9 @@ import ckanext.jsonschema.logic.action.action as action
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.view_tools as _vt
-from ckan.logic.converters import convert_to_json_if_string
+from ckan.logic.schema import (default_create_package_schema,
+                               default_update_package_schema,
+                               default_show_package_schema)
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -30,9 +32,7 @@ convert_from_extras = toolkit.get_converter('convert_from_extras')
 
 import logging
 
-from ckan.logic.schema import (default_create_package_schema,
-                               default_show_package_schema,
-                               default_update_package_schema)
+from ckan.logic.schema import default_show_package_schema
 
     # let's grab the default schema in our plugin
 
@@ -247,32 +247,16 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     # Updating the CKAN schema
     def create_package_schema(self):
-
-        # schema = super(toolkit.DefaultDatasetForm, self).create_package_schema()
         schema = default_create_package_schema()
-
-        return _modify_package_schema(schema)
+        return _v.modify_package_schema(schema)
 
     def update_package_schema(self):
-
         schema = default_update_package_schema()
-
-        return _modify_package_schema(schema)
+        return _v.modify_package_schema(schema)
 
     def show_package_schema(self):
-
         schema = default_show_package_schema()
-
-        schema[_c.SCHEMA_TYPE_KEY] = [convert_from_extras]
-        schema[_c.SCHEMA_BODY_KEY] = [convert_from_extras, convert_to_json_if_string]
-        schema[_c.SCHEMA_OPT_KEY] = [convert_from_extras, convert_to_json_if_string]
-
-        schema['resources'].update({
-            _c.SCHEMA_BODY_KEY : [ ignore_missing, convert_to_json_if_string ],
-            _c.SCHEMA_OPT_KEY : [ ignore_missing, convert_to_json_if_string ]
-        })
-
-        return schema
+        return _v.show_package_schema(schema)
 
     # TODO presentation layer (solr also is related)
     # def show_package_schema(self):
@@ -289,28 +273,3 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #     return schema
         
 
-def _modify_package_schema(schema):
-    
-    schema[_c.SCHEMA_TYPE_KEY] = [convert_to_extras]
-    schema[_c.SCHEMA_BODY_KEY] = [convert_to_extras]
-    schema[_c.SCHEMA_OPT_KEY] = [convert_to_extras]
-
-    before = schema.get('__before')
-    if not before:
-        before = []
-        schema['__before'] = before
-
-    #TODO
-    #Remove resource_extractor. Should be done with actions chain handler (resource_create, resource_update)
-    
-    # insert in front
-    before.insert(0, _v.jsonschema_fields_to_string)
-    before.insert(0, _v.resource_extractor)
-    before.insert(0, _v.extractor)
-    before.insert(0, _v.before_extractor)
-    
-    #the following will be the first...
-    before.insert(0, _v.schema_check)
-    before.insert(0, _v.jsonschema_fields_to_json)
-
-    return schema
