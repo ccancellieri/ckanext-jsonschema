@@ -1,0 +1,173 @@
+{% set data = data or {} %}
+{% set errors = errors or {} %}
+
+{{ form.errors(error_summary) }}
+
+{% set jsonschema_type = h.jsonschema_get_view_type(resource_view) %}
+
+{% set use_template = False %}
+{% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
+
+{% if jsonschema_type_from_request %}
+    {% set jsonschema_type = jsonschema_type_from_request %}
+    {% set use_template = True %}
+{% endif %}
+
+{% block scripts %}
+{# which is the jsonschema type in this context/environment #}
+    
+    <script>
+        function select_jsonschema_type(jsonschema_type){
+            {% if resource_view.id %}
+            url = "{{h.url_for(controller='package', action='edit_view', id=package.id, resource_id=resource.id, view_id=resource_view.id, view_type=data.view_type)}}"
+            {% else %}
+            url = "{{h.url_for(controller='package', action='edit_view', id=package.id, resource_id=resource.id, view_type=data.view_type)}}"
+            {% endif %}
+
+            window.location.href = url + '&selected_jsonschema_type=' + jsonschema_type
+        }
+    </script>
+{% endblock %}
+
+
+{% set filtered_types = h.jsonschema_get_configured_jsonschema_types_for_plugin_view(data.view_type, resource) %}
+<!-- Adds the select for the jsonschema_type -->
+{% include 'snippets/jsonschema_type_select.html' %}
+
+{% set view_info = h.jsonschema_get_view_info(data.view_type, resource) %}
+
+{% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'title') %}
+    {{ form.input('title', id='field-title', label=_('Title'), placeholder=_('eg. My View'), value=data.title or view_info.default_title, error=errors.title, classes=['control-full', 'control-large'], is_required=true) }}
+{% endif %}
+
+{% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'description') %}
+    {{ form.markdown('description', id='field-description', label=_('Description'), placeholder=_('eg. Information about my view'), value=data.description, error=errors.description) }}
+{% endif %}
+
+{% block view_form_filters %}
+    {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'filters') %}
+        {% snippet 'package/snippets/view_form_filters.html', resource=resource, resource_view=resource_view %}
+    {% endif %}
+{% endblock %}
+
+{% block tools %}
+<p>
+
+    <div style="display: inline-block;">
+        <button class="btn btn-primary" type="button"  data-toggle="collapse" 
+            title="{{_('Shows a table with copy to clipboard buttons for a fast usage of available informations from the dataset and resources')}}"
+            data-target="#helperTable" >{{_('Tools')}}</button>
+        <a class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Click to open the model used by this configuration"
+            href="{{h.url_for('jsonschema.model', resource_id=resource.id, package_id=package.id, _external=True)}}" target="_blank">
+            Model
+        </a>
+        {% if resource_view.id %}
+        <a class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Click to open the link to this configuration"
+                href="{{h.url_for('jsonschema.get_view_body', package_id=package.id, resource_id=resource.id, view_id=resource_view.id, resolve=True, _external=True)}}" target="_blank">
+            Resulting endpoint
+        </a>
+        {% endif %}
+    </div>
+</p>
+<div id="helperTable" class="collapse">
+    <table class="table card card-body" style="width:100%">
+        <tr>
+            <b style="border-bottom: 1px solid gray;">Dataset:</b>
+        </tr>
+        <tr scope="row">
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">description</th>
+            <th scope="col">URL</th>
+        </tr>
+        <tr scope="row">
+            <td class="col">
+                <button class="btn btn-secondary" onclick="copy(this, event, '{{package.id}}')" data-toggle="tooltip" data-placement="bottom" title="{{package.id}}">
+                    <i class="fa fa-clipboard" aria-hidden="true"></i>
+                    <b id="package-id">Dataset ID</b></button>
+                </button>
+            </td>
+            <td class="col">
+                {% if package.name %}
+                    <button class="btn btn-secondary" onclick="copy(this, event, '{{package.name}}')" data-toggle="tooltip" data-placement="bottom" title="{{package.name}}">
+                        <span style="display:block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; width: 100px;"><i class="fa fa-clipboard" aria-hidden="true"></i> {{package.name}}</span>
+                    </button>
+                {% endif %}
+            </td>
+            <td class="col">
+                {% if package.notes %}
+                    <button class="btn btn-secondary" onclick="copy(this, event, '{{package.notes}}')" data-toggle="tooltip" data-placement="bottom" title="{{package.notes}}">
+                        <span style="display:block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; width: 100px;"><i class="fa fa-clipboard" aria-hidden="true"></i> {{package.notes}}</span>
+                    </button>
+                {% endif %}
+            </td>
+            <td class="col">
+                <button class="btn btn-secondary"
+                        onclick="copy(this, event, '{{package.url}}')"
+                        data-toggle="tooltip" data-placement="bottom" title="{{package.url}}">
+                    <i class="fa fa-clipboard" aria-hidden="true"></i> URL
+                </button>
+            </td>
+        </tr>
+    </table>
+    <table class="table" style="width:100%">
+        <tr>
+            <b style="border-bottom: 1px solid gray;">Resources:</b>
+        </tr>
+        <tr scope="row">
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">description</th>
+            <th scope="col">URL</th>
+        </tr>
+        {% for r in package.resources %}
+            <tr scope="row">
+                <td class="col">
+                    <button class="btn btn-secondary" onclick="copy(this, event, '{{r.id}}')" data-toggle="tooltip" data-placement="bottom" title="{{r.id}}">
+                            <i class="fa fa-clipboard" aria-hidden="true"></i>
+                        {% if resource.id == r.id %}
+                            <b id="resource-id">This resource ID</b>
+                        {% else %}
+                            <span>Resource ID</span>
+                        {% endif %}
+                    </button>
+                </td>
+                <td class="col">
+                    {% if r.name %}
+                        <button class="btn btn-secondary" onclick="copy(this, event, '{{r.name}}')" data-toggle="tooltip" data-placement="bottom" title="{{r.name}}">
+                            <span style="display:block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; width: 100px;"><i class="fa fa-clipboard" aria-hidden="true"></i> {{r.name}}</span>
+                        </button>
+                    {% endif %}
+                </td>
+                <td class="col">
+                    {% if r.description %}
+                        <button class="btn btn-secondary" onclick="copy(this, event, '{{r.description}}')" data-toggle="tooltip" data-placement="bottom" title="{{r.description}}">
+                            <span style="display:block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; width: 100px;"><i class="fa fa-clipboard" aria-hidden="true"></i> {{r.description}}</span>
+                        </button>
+                    {% endif %}
+                </td>
+                <td class="col">
+                    {% if r.url %}
+                        <button class="btn btn-secondary" onclick="copy(this, event, '{{r.url}}')" data-toggle="tooltip" data-placement="bottom" title="{{r.url}}">
+                            <i class="fa fa-clipboard" aria-hidden="true"></i> URL
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
+
+
+
+{# form template is defined in ResouceView extention point #}
+
+{% if form_template %}
+
+    {% set body = h.jsonschema_as_json(h.jsonschema_get_view_body(resource_view)) %}
+    {% set opt = h.jsonschema_as_json(h.jsonschema_get_view_opt(resource_view)) %}
+
+    {% include form_template %}
+    
+{% endif %}

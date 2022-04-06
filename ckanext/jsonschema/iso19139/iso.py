@@ -62,7 +62,7 @@ supported_resource_types = {
 
 
 def clone(package_dict, errors, context):
-        body = _t.get_context_body(context)
+        body = _t.get_package_body(package_dict)
 
         # reset the ID so that it is assigned by extract_from_json
         body['fileIdentifier'] = ''
@@ -82,7 +82,7 @@ clonable_resources_types = {
 def dump_to_output(data, errors, context, output_format):
     import ckan.lib.base as base
 
-    body = _t.get_context_body(context)
+    body = _t.get_package_body(data)
     pkg = _t.get(body.get('fileIdentifier'))
     
     # TODO why not use data as model is get_pkg a good model??
@@ -147,7 +147,7 @@ class JsonschemaIso(p.SingletonPlugin):
         return clonable_resources_types.keys()
 
     # TODO
-    def get_input_extractor(self, package_type, context):
+    def get_input_extractor(self, package_type, package_dict, context):
         
         extractor_for_type = input_types.get(package_type)
         
@@ -157,7 +157,7 @@ class JsonschemaIso(p.SingletonPlugin):
             raise KeyError('Input extractor not defined for package with type {}'.format(package_type))
 
 
-    def get_package_extractor(self, package_type, context):
+    def get_package_extractor(self, package_type, package_dict, context):
         
         extractor_for_type = supported_types.get(package_type)
 
@@ -190,8 +190,8 @@ class JsonschemaIso(p.SingletonPlugin):
     # IBinder
     def extract_id(self, data, errors, context):
         
-        dataset_type = _t.get_context_type(context)
-        body = _t.get_context_body(context)
+        dataset_type = _t.get_package_type(data)
+        body = _t.get_package_body(data)
 
         if dataset_type == TYPE_ISO:
             return extractor._extract_id(body)

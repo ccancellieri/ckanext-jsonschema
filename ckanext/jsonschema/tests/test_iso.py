@@ -79,7 +79,6 @@ class TestIso(object):
 
         package_dict = {
             # IMPORTER_TYPE = 'iso19139'old
-            'extras': _c.DEFAULT_EXTRAS, # initial extras
             'type': _type,
             'owner_org': organization.get('id'),
             'license_id': 'notspecified'

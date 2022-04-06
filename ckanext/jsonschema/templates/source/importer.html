@@ -18,7 +18,7 @@
         <label for="field-{{TYPE_KEY}}">{{_('Source type is')}}</label>
         <select id="field-{{TYPE_KEY}}" name="{{TYPE_KEY}}">
             {% for dataset_type in dataset_types %}
-                <option value="{{ dataset_type }}">{{ dataset_type }}</option>
+                <option value="{{ dataset_type }}">{{ h.jsonschema_get_label_from_registry(dataset_type) }}</option>
             {% endfor %}
         </select>
     </p>

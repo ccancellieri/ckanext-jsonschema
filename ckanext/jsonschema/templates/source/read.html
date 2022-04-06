@@ -54,11 +54,11 @@
   {% endfor %}
 
 
-{% set body = h.jsonschema_get_dataset_body(pkg) %}
+{% set body = h.jsonschema_get_package_body(pkg) %}
 
-{% set schema_type = h.jsonschema_get_dataset_type(pkg) %}
+{% set schema_type = h.jsonschema_get_package_type(pkg) %}
   
-{% set opt = h.jsonschema_get_dataset_opt(pkg) %}
+{% set opt = h.jsonschema_get_package_opt(pkg) %}
 
 <p>
   
@@ -126,7 +126,7 @@
       <tbody>
           <tr>
             <th scope="row" class="dataset-label">{{ _('Source') }}</th>
-            {% set opt = h.jsonschema_get_dataset_opt(pkg) %}
+            {% set opt = h.jsonschema_get_package_opt(pkg) %}
             {% if opt.source_url and h.is_url(opt.source_url) %}
               <td class="dataset-details" property="foaf:homepage">
                 <a href="{{opt.source_url}}" target="_blank">Source URL</a>

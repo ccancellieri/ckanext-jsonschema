@@ -96,20 +96,3 @@ WILDCARD_JSONSCHEMA_FIELDS = 'supported_all_jsonschema_fields'
 
 
 # ---- END REGISTRY ---- #
-
-
-DEFAULT_EXTRAS = [
-   {
-      "key": SCHEMA_BODY_KEY,
-      "value": SCHEMA_OPT
-   },
-   {
-      "key": SCHEMA_OPT_KEY,
-      "value": SCHEMA_OPT
-   },
-   {
-      "key": SCHEMA_TYPE_KEY,
-      "value": ""
-   }
-]
-

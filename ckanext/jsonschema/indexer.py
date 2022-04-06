@@ -186,6 +186,27 @@ def configure_fields(core_name, jsonschema_type):
     # see https://solr.apache.org/guide/6_6/schema-api.html#SchemaAPI-EXAMPLES
     # http://localhost:8983/solr/gettingstarted/schema
 
+def index():
+    pass
+
+    # from search/index.py/CkanLibSearch/index_package
+    #  # send to solr:
+    #     try:
+    #         conn = make_connection()
+    #         commit = not defer_commit
+    #         if not asbool(config.get('ckan.search.solr_commit', 'true')):
+    #             commit = False
+    #         conn.add(docs=[pkg_dict], commit=commit)
+    #     except pysolr.SolrError as e:
+    #         msg = 'Solr returned an error: {0}'.format(
+    #             e[:1000] # limit huge responses
+    #         )
+    #         raise SearchIndexError(msg)
+    #     except socket.error as e:
+    #         err = 'Could not connect to Solr using {0}: {1}'.format(conn.url, str(e))
+    #         log.error(err)
+    #         raise SearchIndexError(err)
+
     
 
 def search(core_name):
@@ -219,3 +240,17 @@ def indexer_post(url, payload={}):
         log.error('Errors: {}'.format(content['errors']))
 
     return response
+
+
+def delete_package(self, pkg_dict):
+    pass
+
+    # conn = make_connection()
+    # query = "+%s:%s AND +(id:\"%s\" OR name:\"%s\") AND +site_id:\"%s\"" % \
+    #         (TYPE_FIELD, PACKAGE_TYPE, pkg_dict.get('id'), pkg_dict.get('id'), config.get('ckan.site_id'))
+    # try:
+    #     commit = asbool(config.get('ckan.search.solr_commit', 'true'))
+    #     conn.delete(q=query, commit=commit)
+    # except Exception as e:
+    #     log.exception(e)
+    #     raise SearchIndexError(e)

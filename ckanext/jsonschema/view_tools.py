@@ -8,10 +8,9 @@ import os
 
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.interfaces as _i
-import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
 
-from ckan.plugins.toolkit import get_or_bust, h
+from ckan.plugins.toolkit import h
 
 log = logging.getLogger(__name__)
 
@@ -48,10 +47,13 @@ def interpolate_fields(model, template, view_type):
         keep_trailing_newline=True
     )
 
+    try:
+        _enhance_model_with_data_helpers(model, template, view_type)
+    except Exception as e:
+        message = 'Exception: {}'.format(str(e))
+        raise ValidationError({'message': message}, error_summary = message)
     
     try:
-        
-        _enhance_model_with_data_helpers(model, template, view_type)
         
         # We can have
         # "{{array}}"  : {{array}}
@@ -69,14 +71,14 @@ def interpolate_fields(model, template, view_type):
         # "{{resource.id}}" -> "{{resource.id}}"
 
         # "{{.*()}}" -> {{}}
-
+        
         import re
 
         method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\.\_\-]*\)\}\})\"'
         output_regex = '\g<1>'
         _template = None
-        rendered = None
-
+        rendered = ''
+        
         polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
         
         _template = env.get_template(polished_template)
@@ -352,3 +354,33 @@ def _copy_to_jsonschema(source_base, destination, files):
         
         # check if overwrites
         os.popen('cp {} {}'.format(complete_absolute_plugin_path, complete_absolute_jsonschema_path)) 
+
+
+
+def get_view_types():
+
+    view_types = []
+
+    for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS:
+        name = plugin.info().get('name')
+        if name not in view_types:
+            view_types.append(name)
+
+    return view_types
+
+def get_configured_jsonschema_types_for_plugin_view(view_type, resource):
+    '''
+    Returns a list of jsonschema type available for the views of a specific JSONSCHEMA_IVIEW plugin
+    The view is retrieved by matching on the view_type and the plugin.info.name
+    '''
+
+    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
+    config = plugin.config
+    return get_view_jsonshema_types(config, resource)
+
+def get_view_info(view_type, resource):
+    
+    for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS:
+        info = plugin.info()
+        if plugin.info().get('name') == view_type:
+            return info

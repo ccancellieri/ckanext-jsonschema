@@ -326,30 +326,39 @@ def safe_helper(helper, data, default_return = {}):
     except:
         return default_return
 
-def get_dataset_body(dataset):
-    return _extract_from_dataset(dataset, _c.SCHEMA_BODY_KEY)
+def get_package_body(package):
+    return _extract_from_package(package, _c.SCHEMA_BODY_KEY)
 
 def get_resource_body(resource):
     return _extract_from_resource(resource, _c.SCHEMA_BODY_KEY)
 
+def set_resource_body(resource, value):
+    _set_into_resource(resource, _c.SCHEMA_BODY_KEY, value)
+
 def get_type(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_TYPE_KEY)
 
-# TODO check also validators.get_dataset_type
-def get_dataset_type(dataset = None):
-    return _get_dataset_type(dataset) or _extract_from_dataset(dataset, _c.SCHEMA_TYPE_KEY)
+# TODO check also validators.get_package_type
+def get_package_type(package = None):
+    return _get_package_type(package) or _extract_from_package(package, _c.SCHEMA_TYPE_KEY)
 
 def get_resource_type(resource):
-    return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY)
+    return _extract_from_resource(resource, _c.SCHEMA_TYPE_KEY, default_value = None)
+
+def set_resource_type(resource, value):
+    _set_into_resource(resource, _c.SCHEMA_TYPE_KEY, value)
 
 def get_opt(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_OPT_KEY)
 
-def get_dataset_opt(dataset):
-    return _extract_from_dataset(dataset, _c.SCHEMA_OPT_KEY)
+def get_package_opt(package):
+    return _extract_from_package(package, _c.SCHEMA_OPT_KEY)
 
 def get_resource_opt(resource):
     return _extract_from_resource(resource, _c.SCHEMA_OPT_KEY)
+
+def set_resource_opt(resource, value):
+    _set_into_resource(resource, _c.SCHEMA_OPT_KEY, value)
 
 def get(dataset_id, resource_id = None, domain = None):
     
@@ -377,47 +386,10 @@ def get(dataset_id, resource_id = None, domain = None):
         raise Exception('Unable to find the requested resource {}'.format(resource_id))
 
     # we wanted to extract something from the package
-    return _extract_from_dataset(pkg, domain)
+    return _extract_from_package(pkg, domain)
 
-# def get_from_package(pkg, resource_id):
-#     if not pkg:
-#         raise Exception('Unable to find the requested dataset {}'.format(dataset_id))
-#     if resource_id:
-#         for resource in pkg.get('resources'):
-#             _resource_id = resource.get('id')
-#             if _resource_id == resource_id:
-#                 return _extract_from_resource(resource)
-#         raise Exception('Unable to find the requested resource {}'.format(resource_id))
-#     return _extract_from_dataset(pkg)
 
-####### Manipulate extraction context #######
-
-def _extract_from_context(context, domain):
-
-    if context and domain:
-        return context.get(domain)
-    
-    raise Exception("Missing parameter resource or domain")
-
-def get_context_body(context):
-    return _extract_from_context(context, _c.SCHEMA_BODY_KEY)
-
-def get_context_type(context):
-    return _extract_from_context(context, _c.SCHEMA_TYPE_KEY)
-
-def get_context_opt(context):
-    return _extract_from_context(context, _c.SCHEMA_OPT_KEY)
-
-def set_context_body(context, body):
-    context[_c.SCHEMA_BODY_KEY] = body
-
-def set_context_type(context, _type):
-    context[_c.SCHEMA_TYPE_KEY] = _type
-
-def set_context_opt(context, opt):
-    context[_c.SCHEMA_OPT_KEY] = opt
-
-def _extract_from_resource(resource, domain):
+def _extract_from_resource(resource, domain, default_value = {}):
 
     # Checking extra data content for extration
     extras = resource.get('__extras')
@@ -426,25 +398,38 @@ def _extract_from_resource(resource, domain):
         extras = resource
 
     if extras and domain:
-        return extras.get(domain)
+        # TODO: May fail fast
+        return extras.get(domain, default_value)
     
     raise Exception("Missing parameter resource or domain")
 
-def _extract_from_dataset(dataset, domain):
+def _set_into_resource(resource, domain, value):
+    
+    # Checking extra data content for extration
+    extras = resource.get('__extras')
+    if not extras:
+        # edit existing resource
+        extras = resource
+
+    if extras and domain:
+        # TODO: May fail fast
+        extras[domain] = value
+        return resource
+    
+    raise Exception("Missing parameter resource or domain")
+
+
+def _extract_from_package(dataset, domain, default_value = {}):
 
     if dataset and domain:
-        extras = dataset.get('extras')
-        if extras and isinstance(extras, list):
-            for e in extras:
-                if e['key'] == domain:
-                    return e['value']
-    
+        return dataset.get(domain, default_value)
+        
     raise Exception("Missing parameter dataset or domain")
     
     
 # TODO CKAN contribution
-# TODO check also tools.get_dataset_type
-def _get_dataset_type(data = None):
+# TODO check also tools.get_package_type
+def _get_package_type(data = None):
     
     _type = data and data.get('type')
     if _type:
@@ -457,57 +442,19 @@ def _get_dataset_type(data = None):
     _type = path.split('/')[1]
     return _type
 
-def update_extras_from_resource_context(resource, context):
-    extras = resource.get('__extras')
-    if not extras: 
-        extras = {} #TODO this assumes the object comes from database
-        resource['__extras'] = extras
-    
-    extras[_c.SCHEMA_BODY_KEY]=json.dumps(get_context_body(context))
-    extras[_c.SCHEMA_TYPE_KEY]=get_context_type(context) # it is already a string
-    extras[_c.SCHEMA_OPT_KEY]=json.dumps(get_context_opt(context))
 
-# def update_extras_from_resource_context(data, extras):
-
+# def update_extras(data, body, type, opt):
 #     # Checking extra data content for extration
-#     for extra in data.get('__extras', []):
+#     for e in data.get('extras',[]):
+#         key = e.get('key')
+#         if not key:
+#             raise Exception('Unable to resolve extras with an empty key')
 #         if key == _c.SCHEMA_BODY_KEY:
-#             data['__extras'][key] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+#             e['value'] = json.dumps(body)
 #         elif key == _c.SCHEMA_TYPE_KEY:
-#             data['__extras'][key] = extras.get(_c.SCHEMA_TYPE_KEY)
-#         elif key == _c.SCHEMA_VERSION_KEY:
-#             data['__extras'][key] = extras.get(_c.SCHEMA_VERSION_KEY)
+#             e['value'] = type
 #         elif key == _c.SCHEMA_OPT_KEY:
-#             data['__extras'][key] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
-
-
-def update_extras_from_context(data, extras):
-
-    # Checking extra data content for extration
-    for e in data.get('extras',[]):
-        key = e.get('key')
-        if not key:
-            raise Exception('Unable to resolve extras with an empty key')
-        if key == _c.SCHEMA_BODY_KEY:
-            e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-        elif key == _c.SCHEMA_TYPE_KEY:
-            e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
-        elif key == _c.SCHEMA_OPT_KEY:
-            e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
-
-
-def update_extras(data, body, type, opt):
-    # Checking extra data content for extration
-    for e in data.get('extras',[]):
-        key = e.get('key')
-        if not key:
-            raise Exception('Unable to resolve extras with an empty key')
-        if key == _c.SCHEMA_BODY_KEY:
-            e['value'] = json.dumps(body)
-        elif key == _c.SCHEMA_TYPE_KEY:
-            e['value'] = type
-        elif key == _c.SCHEMA_OPT_KEY:
-            e['value'] = json.dumps(opt)
+#             e['value'] = json.dumps(opt)
 
 def as_dict(field):
 

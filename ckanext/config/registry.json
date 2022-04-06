@@ -41,7 +41,6 @@
         "label": "Graphic Overview",
         "schema": "iso/graphic-overview.json",
         "template": "iso/graphic-overview.json",
-        "supported_all_ckan_fields": true,
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"],
         "supported_ckan_fields": ["url", "format"]

@@ -1,0 +1,102 @@
+<!-- 
+    Parent must define:
+    - opt
+    - body
+    - jsonschema_type
+    - use_template
+-->
+
+
+{% block jsonschema_scripts scoped %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
+
+<script src="https://unpkg.com/vanilla-picker@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+<!-- Markdown -->
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ace.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-sql.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-javascript.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-json.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-css.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ext-beautify.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- autocomplete -->
+<script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
+
+<!-- Date picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script type="text/javascript">
+    function copy(self, event, text) {
+        event.preventDefault();
+        var tmp = document.createElement("textarea");
+        tmp.value = text;
+        tmp.style.height = "0";
+        tmp.style.overflow = "hidden";
+        tmp.style.position = "fixed";
+        document.body.appendChild(tmp);
+        tmp.focus();
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+    }
+ </script>
+
+{% endblock %}
+
+
+{% block jsonschema_form scoped %}
+
+{% set BODY_KEY = h.jsonschema_get_body_key() %}
+{% set TYPE_KEY = h.jsonschema_get_type_key() %}
+{% set OPT_KEY = h.jsonschema_get_opt_key() %}
+{% if use_template is undefined %}
+    {% set use_template = False %}
+{% endif %}
+
+<div id="jsonschema-config-form" data-module="jsonschema"
+    data-module-option = "{{ opt }}"
+    data-module-body = "{{ body }}"
+    data-module-type = "{{ jsonschema_type }}"
+    data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"
+    data-module-use-template = {{use_template}}
+    data-module-body-key = {{BODY_KEY}}
+    data-module-type-key = {{TYPE_KEY}}
+    data-module-opt-key = {{OPT_KEY}}
+    />
+
+<div id="editor">
+    <p>
+        <div style="display: inline-block;">
+            <button class="btn btn-primary" type="button" id="editor-editor" onclick="jsonschema.getEditorAce();">Editor</button>
+            <button class="btn btn-primary" type="button" id="editor-howto" onclick="jsonschema.getEditor();">HowTo</button>
+            <button class="btn btn-primary" type="button" id="editor-toggle" onclick="jsonschema.editorToggle();"></button>
+        </div>
+    </p>
+    <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
+    <div id="editor-jsonschema-config">
+        {% resource 'jsonschema_editor/main' %}
+    </div>
+    <p>
+        <div style="border-bottom: 1px solid gray;">
+            Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
+        </div>
+    </p>
+</div>
+    
+<div class="input-group">
+    <input name="{{BODY_KEY}}" value="{{ body }}" type="hidden" class="form-control"/>
+    <input name="{{TYPE_KEY}}" value="{{ jsonschema_type }}" type="hidden" class="form-control"/>
+    <input name="{{OPT_KEY}}" value="{{ opt }}" type="hidden" class="form-control"/>
+</div>
+
+
+{% endblock %}

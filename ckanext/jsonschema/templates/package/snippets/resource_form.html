@@ -1,4 +1,3 @@
-{% import 'macros/custom_form.html' as custom_form %}
 {% ckan_extends %}
   
 {% if dataset_type %}
@@ -16,71 +15,42 @@
   {% endif %}
 {% endblock %}
 
+
 {% block errors %}
   {% if jsonschema %}
+    {% import 'macros/custom_form.html' as custom_form %}
     {{ custom_form.custom_errors(error_summary) }}
   {% else %}
     {{ form.errors(error_summary) }}
   {% endif %}
 {% endblock %}
 
-{% if jsonschema %}
-  {% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
-  {% if jsonschema_type_from_request %}
-    {% set schema_type = jsonschema_type_from_request %}
-    {% set use_template = True %}
-  {% else %}
-    {% set use_template = False %}
-    {% set schema_type = h.jsonschema_get_resource_type(data) %}
-    {% if not schema_type %}
-      {% set schema_type = 'dataset-resource' %}
-    {% endif %}
-  {% endif %}
+
+{% set jsonschema_type = h.jsonschema_get_resource_type(data) %}
+
+{% if not jsonschema_type %}
+  {% set jsonschema_type = 'dataset-resource' %}
 {% endif %}
 
-{% block basic_fields %}
-  <p>
-    <label for="select-resource-type">{{_('Resource type')}}</label>
-    <!-- 
-      This select doesn't have a name attribute (name="{{TYPE_KEY}}") so that it's value is not sent when submitting the form
-      This is used only to select the needed resource type; if it is a jsonschema type resource, the type is
-      inlcuded in the form below
-    -->
-    <select id="select-resource-type" onChange="javascript:select_jsonschema_type(value)">
-      {% for resource_type in resource_types %}
-        {% if resource_type == schema_type %}
-          <option value="{{ resource_type }}" selected>{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>
-        {% else %}
-          <option value="{{ resource_type }}" >{{ h.jsonschema_get_label_from_registry(resource_type) }}</option>
-        {% endif %}
-      {% endfor %}
-    </select>
-  </p>
+{% set use_template = False %}
+{% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
 
+{% if jsonschema_type_from_request %}
+  {% set jsonschema_type = jsonschema_type_from_request %}
+  {% set use_template = True %}
+{% endif %}
+
+
+{% block basic_fields %}
+
+  {% set filtered_types = resource_types %}
+  <!-- Adds the select for the jsonschema_type -->
+  {% include 'snippets/jsonschema_type_select.html' %}
 
   {% block scripts %}
       {# which is the jsonschema type in this context/environment #}
       {% if jsonschema %}
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-          <link rel="stylesheet" href="https://unpkg.com/@trevoreyre/autocomplete-js/dist/style.css"/>
 
-          <script src="https://unpkg.com/vanilla-picker@2"></script>
-
-          <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
-          <!-- Markdown -->
-          <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-
-          <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ace.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-markdown.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-javascript.js"></script>
-          <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-json.js"></script>
-          <!-- <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/mode-css.js"></script> -->
-          <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.2/src-min/ext-beautify.js"></script>
-
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.1.0/ajv7.min.js" integrity="sha512-iG/rBFw+Q1mlDQt15pw86zil1/1JeeNoJ1Grux8zZgvIBLDDnRLdA8UaIosHohzrqBEXA2+hIQV7DXnYGYGX/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-          <!-- autocomplete -->
-          <script src="https://unpkg.com/@trevoreyre/autocomplete-js"></script>
-    
           <script>
             function select_jsonschema_type(jsonschema_type){
               {% if c.action == 'new_resource' %}
@@ -96,85 +66,51 @@
       {% endif %}
   {% endblock %}
 
-    {% block basic_fields_name %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'name') %}
-        {{super()}}
-      {% endif %}   
-    {% endblock %}
+  {% block basic_fields_name %}
+    {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'name') %}
+      {{super()}}
+    {% endif %}   
+  {% endblock %}
 
-    {% block basic_fields_description %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'description') %}
-        {{super()}}
-      {% endif %}
-    {% endblock %}
-
-    {% block basic_fields_format %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'format') %}
-        {{super()}}
-      {% endif %}
-    {% endblock %}
-
-    {% block basic_fields_url %}
-      {% if h.jsonschema_is_supported_ckan_field(schema_type, 'url') %}
-        {{super()}}
-      {% endif %}
-    {% endblock %}
-
-
-    {% if jsonschema is defined %}
-      {% if h.jsonschema_is_supported_jsonschema_field(schema_type, 'body') %}
-        
-        {% set TYPE_KEY = h.jsonschema_get_type_key() %}
-        {% set BODY_KEY = h.jsonschema_get_body_key() %}
-        {% set OPT_KEY = h.jsonschema_get_opt_key() %}
-
-        {% set template = h.jsonschema_get_template(schema_type) %}
-        {% set body = h.jsonschema_as_json(h.jsonschema_get_resource_body(data, template)) %}
-        {% set opt = h.jsonschema_as_json(h.jsonschema_get_resource_opt(data)) %}
-
-        {% set schema = h.jsonschema_get_schema(schema_type) %}
-        
-        <div class="input-group">
-          <input id="field-extras-0-value" name="{{BODY_KEY}}" value="{{body}}" type="hidden" class="form-control"/>          
-          <input id="field-extras-1-value" name="{{TYPE_KEY}}" value={{schema_type}} type="hidden" class="form-control"/>
-          <input id="field-extras-2-value" name="{{OPT_KEY}}" value="{{opt}}" type="hidden" class="form-control"/>
-        </div>
-
-        <div id="jsonschema-config-form" data-module="jsonschema"
-          data-module-opt = "{{ opt }}"
-          data-module-schema = "{{ schema }}"
-          data-module-body = "{{ body }}"
-          data-module-type = "{{ schema_type }}"
-          data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"
-          data-module-use-template = {{use_template}}
-        />
-        
-        <div id="editor">
-          <p>
-              <div style="display: inline-block;">
-                  <button class="btn btn-primary" type="button" id="editor-editor" onclick="jsonschema.getEditorAce();">Editor</button>
-                  <button class="btn btn-primary" type="button" id="editor-howto" onclick="jsonschema.getEditor();">HowTo</button>
-                  <button class="btn btn-primary" type="button" id="editor-toggle" onclick="jsonschema.editorToggle();"></button>
-              </div>
-          </p>
-          <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
-          <div id="editor-jsonschema-config">
-              {% resource 'ckanext-jsonschema/main' %}
-          </div>
-          <p>
-            <div style="border-bottom: 1px solid gray;">
-                Status: <b style="display: inline;" id="editor-status-holder"></b>    Validation: <div style="display: inline;" id="editor-error-holder"></div>
-            </div>
-          </p>
-        </div>
-
-        {% endif %}
+  {% block basic_fields_description %}
+    {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'description') %}
+      {{super()}}
     {% endif %}
+  {% endblock %}
+
+  {% block basic_fields_format %}
+    {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'format') %}
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
+  {% block basic_fields_url %}
+    {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'url') %}
+      {{super()}}
+    {% endif %}
+  {% endblock %}
+
+
+  {% if jsonschema is defined %}
+    {% if h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
+      
+      {% set template = h.jsonschema_get_template(jsonschema_type) %}
+      {% set body = h.jsonschema_as_json(h.jsonschema_get_resource_body(data, template)) %}
+      {% set opt = h.jsonschema_as_json(h.jsonschema_get_resource_opt(data)) %}
+
+      <!-- Needed to pass through the variables... -->
+      {% set use_template = use_template %}
+      <!-- set jsonschema_type = jsonschema_type  -->
+
+      {% include 'snippets/jsonschema_form.html' %}
+      
+    {% endif %}
+  {% endif %}
 {% endblock %}
 
 {% block metadata_fields %}
   
-  {% if h.jsonschema_is_supported_ckan_field(schema_type, 'metadata_fields') %}
+  {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'metadata_fields') %}
     {% if include_metadata %}
       {{super()}}
     {% endif %}

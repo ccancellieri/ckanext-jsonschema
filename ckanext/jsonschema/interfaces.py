@@ -70,18 +70,6 @@ class IBinder(Interface):
         return lambda data, errors, context : None
         
 
-    def get_package_extractor(self, package_type, context):
-        '''
-        Gets the extractor for the specified package type 
-        The extractor will create the data model from the incoming body in context
-
-        The context is passed because some plugins (e.g. STAC) need to inspect the body to decide the extractor
-        Could be removed?
-        '''
-
-        raise NotImplementedError('get_package_extractor not implemented')
-
-
     def get_resource_extractor(self, package_type, resource_type):
         '''
         Gets the extractor for the specified resource type 
@@ -136,19 +124,25 @@ class IBinder(Interface):
         
         return []
         
-    def get_input_extractor(self, package_type, context):
+    def get_input_extractor(self, package_type, package_dict, context):
         ''' 
         Returns input extractor function for the package type
         '''
         
         return None
+    
 
-    def get_package_extractor(self, package_type, context):
+    def get_package_extractor(self, package_type, package_dict, context):
         ''' 
-        Returns extractor function for the package type
+        Gets the extractor for the specified package type 
+        The extractor will create the data model from the incoming body in context
+
+        The package_dict is passed because some plugins (e.g. STAC) need to inspect the body to decide the extractor
+        Could be removed?
         '''
-        
-        return None
+
+        raise NotImplementedError('get_package_extractor not implemented')
+
 
     def get_resource_extractor(self, package_type, resource_type, context):
         ''' 

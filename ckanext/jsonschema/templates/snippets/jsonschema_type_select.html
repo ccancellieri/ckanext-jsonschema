@@ -1,0 +1,23 @@
+<p>
+    <!-- 
+
+      Expects to be defined:
+      - jsonschema_type
+      - filtered_types: the list of options to render
+      - javascript:select_jsonschema_type: js function called on the onChange to redirect with updated jsonschema_type
+
+      This select doesn't have a name attribute (name="{{TYPE_KEY}}") so that it's value is not sent when submitting the form
+      This is used only to select the needed resource type; if it is a jsonschema type resource, the type is
+      inlcuded in the form below
+    -->   
+    <label for="select-jsonschema-type">{{_('Schema type')}}</label>
+    <select id="select-jsonschema-type" onChange="javascript:select_jsonschema_type(value)">
+        {% for filtered_type in filtered_types %}
+            {% if filtered_type == jsonschema_type %}
+                <option value="{{ filtered_type }}" selected>{{ h.jsonschema_get_label_from_registry(filtered_type) }}</option>
+            {% else %}
+                <option value="{{ filtered_type }}" >{{ h.jsonschema_get_label_from_registry(filtered_type) }}</option>
+            {% endif %}
+        {% endfor %}   
+    </select>
+</p>
