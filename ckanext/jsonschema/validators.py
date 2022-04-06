@@ -104,42 +104,56 @@ def view_schema_check(key, data, errors, context):
     if is_error:
         raise StopOnError()
 
-def resource_extractor(key, data, errors, context):
+def resources_extractor(key, data, errors, context):
+    
     _data = df.unflatten(data)
 
-    dataset_type = _t.get_package_type(_data) # TODO should be jsonschema_type
+    package_type = _t.get_package_type(_data)
     resources = _data.get('resources')
+
     if not resources:
         return
     
-    for resource in resources:
-        
-        body, resource_type, opt = get_extras_from_resource(resource)
+    try:
+        for resource in resources:   
+            resource_extractor(resource, package_type, errors, context)
+        data.update(df.flatten_dict(_data))
 
-        # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
-        #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
+    except df.StopOnError:
+        raise
+    except Exception as e:
+        stop_with_error(str(e),key,errors)
 
-        if resource_type not in configuration.get_supported_resource_types(dataset_type):
-            return          
 
-        plugin = configuration.get_plugin(dataset_type, resource_type)
-        
-        context.update({
-            _c.SCHEMA_BODY_KEY: body,
-            _c.SCHEMA_TYPE_KEY : resource_type,
-            _c.SCHEMA_OPT_KEY : opt,
-        })
 
-        try:
-            extractor = plugin.get_resource_extractor(dataset_type, resource_type, context)
-            extractor(resource, errors, context)
-            _t.update_extras_from_resource_context(resource, context)
-            data.update(df.flatten_dict(_data))
+def resource_extractor(resource, package_type, errors, context):
 
-        except df.StopOnError:
-            raise
-        except Exception as e:
-            stop_with_error(str(e),key,errors)
+    body = _t.as_dict(_t.get_resource_body(resource))
+    resource_type = _t.get_resource_type(resource)
+    opt = _t.as_dict(_t.get_resource_opt(resource))
+
+    # TODO This needs to account for the two different forms that resources can have: with __extras or flatten
+    #jsonschema_extras = remove_jsonschema_extras_from_resource_data(resource)
+
+    if resource_type not in configuration.get_supported_resource_types(package_type):
+        return          
+
+    plugin = configuration.get_plugin(package_type, resource_type)
+    
+    resource.update({
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY :  resource_type,
+        _c.SCHEMA_OPT_KEY :  opt,
+    })
+
+    extractor = plugin.get_resource_extractor(package_type, resource_type, context)
+    extractor(resource, errors, context)
+
+    resource.update({
+        _c.SCHEMA_BODY_KEY: _t.as_json(_t.get_resource_body(resource)),
+        _c.SCHEMA_TYPE_KEY :  _t.get_resource_type(resource),
+        _c.SCHEMA_OPT_KEY : _t.as_json(_t.get_resource_opt(resource))
+    })
 
 
 def before_extractor(key, data, errors, context):
@@ -215,14 +229,6 @@ def dataset_dump(dataset_id, format = None):
     body = dump_to_output(_data, errors, context, format)
 
     return body
-
-def get_extras_from_resource(resource):
-    
-    body = _t.as_dict(_t.get_resource_body(resource))
-    type = _t.get_resource_type(resource)
-    opt = _t.as_dict(_t.get_resource_opt(resource))
-
-    return body, type, opt
 
 
 def get_extras_from_view(view):
@@ -303,7 +309,7 @@ def modify_package_schema(schema):
     
     # insert in front
     before.insert(0, jsonschema_fields_to_string)
-    before.insert(0, resource_extractor)
+    before.insert(0, resources_extractor)
     before.insert(0, extractor)
     before.insert(0, before_extractor)
     

@@ -15,8 +15,6 @@ NotAuthorized = logic.NotAuthorized
 ValidationError = logic.ValidationError
 
 import ckan.lib.navl.dictization_functions as df
-import ckanext.jsonschema.configuration as configuration
-import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 from ckan.plugins import toolkit
@@ -27,7 +25,16 @@ StopOnError = df.StopOnError
 
 @plugins.toolkit.chained_action
 def resource_create(next_auth, context, data_dict):
+    # We would like to do this, but...
+    # Resources are different from packages. If we do this, jsonschema fields are flattened and clash with validatorsù
+    # The input field [(u'resources', 4, u'jsonschema_body', 0, u'type'), ...] was not expected.
+
+    # _v.jsonschema_resource_fields_to_json(data_dict)
+    # result = validate_resource(next_auth, context, data_dict)
+    # _v.jsonschema_resource_fields_to_string(data_dict)
+    # return result
     return validate_resource(next_auth, context, data_dict)
+
 
 
 @plugins.toolkit.chained_action
@@ -35,12 +42,16 @@ def resource_update(next_auth, context, data_dict):
     return validate_resource(next_auth, context, data_dict)
 
 
+
 def validate_resource(next_auth, context, data_dict):
 
     errors = {}
     key = ''
 
-    body, _type, opt = _v.get_extras_from_resource(data_dict)
+    body = _t.as_dict(_t.get_resource_body(data_dict))
+    _type = _t.get_resource_type(data_dict)
+    opt = _t.as_dict(_t.get_resource_opt(data_dict))
+
     if not _type:
         # not a jsonschema resource, skip validation and extraction
         return next_auth(context, data_dict)
@@ -65,36 +76,9 @@ def validate_resource(next_auth, context, data_dict):
 
     extractor_context = {}
 
-    extract_resource(data_dict, errors, extractor_context)
-
-    return next_auth(context, data_dict)
-
-
-def extract_resource(resource, errors, extractor_context):
-    
-    body, resource_type, opt = _v.get_extras_from_resource(resource)
-
-    package = toolkit.get_action('package_show')({}, {'id': resource.get('package_id')})
+    package = toolkit.get_action('package_show')({}, {'id': data_dict.get('package_id')})
     package_type = _t.get_package_type(package)
 
-    if resource_type not in configuration.get_supported_resource_types(package_type):
-        return          
+    _v.resource_extractor(data_dict, package_type, errors, extractor_context)
 
-    plugin = configuration.get_plugin(package_type, resource_type)
-    
-    extractor_context.update({
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : resource_type,
-        _c.SCHEMA_OPT_KEY : opt,
-    })
-
-    try:
-        extractor = plugin.get_resource_extractor(package_type, resource_type, extractor_context)
-        extractor(resource, errors, extractor_context)
-        #_t.update_extras_from_resource_context(resource, context)
-        #data.update(df.flatten_dict(_data))
-
-    except df.StopOnError:
-        raise
-    except Exception as e:
-        raise ValidationError(df.unflatten(errors))
+    return next_auth(context, data_dict)

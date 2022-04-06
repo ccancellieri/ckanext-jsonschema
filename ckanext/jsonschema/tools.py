@@ -442,64 +442,19 @@ def _get_package_type(data = None):
     _type = path.split('/')[1]
     return _type
 
-def update_extras_from_resource_context(resource, context):
-    extras = resource.get('__extras')
-    if not extras: 
-        extras = {} #TODO this assumes the object comes from database
-        resource['__extras'] = extras
-    
-    #extras[_c.SCHEMA_BODY_KEY]=json.dumps(get_resource_body(resource))
-    #extras[_c.SCHEMA_TYPE_KEY]=get_resource_type(resource) # it is already a string
-    #extras[_c.SCHEMA_OPT_KEY]=json.dumps(get_resource_opt(resource))
-    extras[_c.SCHEMA_BODY_KEY]=get_resource_body(resource)
-    extras[_c.SCHEMA_TYPE_KEY]=get_resource_type(resource) # it is already a string
-    extras[_c.SCHEMA_OPT_KEY]=get_resource_opt(resource)
 
-# def update_extras_from_resource_context(data, extras):
-
+# def update_extras(data, body, type, opt):
 #     # Checking extra data content for extration
-#     for extra in data.get('__extras', []):
+#     for e in data.get('extras',[]):
+#         key = e.get('key')
+#         if not key:
+#             raise Exception('Unable to resolve extras with an empty key')
 #         if key == _c.SCHEMA_BODY_KEY:
-#             data['__extras'][key] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
+#             e['value'] = json.dumps(body)
 #         elif key == _c.SCHEMA_TYPE_KEY:
-#             data['__extras'][key] = extras.get(_c.SCHEMA_TYPE_KEY)
-#         elif key == _c.SCHEMA_VERSION_KEY:
-#             data['__extras'][key] = extras.get(_c.SCHEMA_VERSION_KEY)
+#             e['value'] = type
 #         elif key == _c.SCHEMA_OPT_KEY:
-#             data['__extras'][key] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
-
-
-# def update_extras_from_context(data, extras):
-
-#     # Checking extra data content for extration
-#     data[_c.SCHEMA_BODY_KEY] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-#     data[_c.SCHEMA_TYPE_KEY] = extras.get(_c.SCHEMA_TYPE_KEY)
-#     data[_c.SCHEMA_OPT_KEY] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
-
-    #for e in data.get('extras',[]):
-        # key = e.get('key')
-        # if not key:
-        #     raise Exception('Unable to resolve extras with an empty key')
-        # if key == _c.SCHEMA_BODY_KEY:
-        #     e['value'] = json.dumps(extras.get(_c.SCHEMA_BODY_KEY))
-        # elif key == _c.SCHEMA_TYPE_KEY:
-        #     e['value'] = extras.get(_c.SCHEMA_TYPE_KEY)
-        # elif key == _c.SCHEMA_OPT_KEY:
-        #     e['value'] = json.dumps(extras.get(_c.SCHEMA_OPT_KEY))
-
-
-def update_extras(data, body, type, opt):
-    # Checking extra data content for extration
-    for e in data.get('extras',[]):
-        key = e.get('key')
-        if not key:
-            raise Exception('Unable to resolve extras with an empty key')
-        if key == _c.SCHEMA_BODY_KEY:
-            e['value'] = json.dumps(body)
-        elif key == _c.SCHEMA_TYPE_KEY:
-            e['value'] = type
-        elif key == _c.SCHEMA_OPT_KEY:
-            e['value'] = json.dumps(opt)
+#             e['value'] = json.dumps(opt)
 
 def as_dict(field):
 
