@@ -4,8 +4,7 @@
     "citation",
     "abstract",
     "topicCategory",
-    "resourceMaintenance",
-    "resourceConstraints"
+    "resourceMaintenance"
   ],
   "properties": {
     "citation": {

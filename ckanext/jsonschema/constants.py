@@ -96,3 +96,5 @@ WILDCARD_JSONSCHEMA_FIELDS = 'supported_all_jsonschema_fields'
 
 
 # ---- END REGISTRY ---- #
+
+DEFAULT_LICENSE=config.get('ckanext.jsonschema.license.default', 'notspecified')

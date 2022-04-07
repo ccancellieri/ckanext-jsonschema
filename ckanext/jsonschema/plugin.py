@@ -45,7 +45,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IDatasetForm)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IValidators)
-    plugins.implements(plugins.IPackageController, inherit=True)
+    #plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IActions)
 
@@ -106,6 +106,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
             'jsonschema_get_template': lambda x : json.dumps(_t.get_template_of(x)),
             'jsonschema_get_opt': lambda : _c.SCHEMA_OPT,
+            'jsonschema_get_default_license': lambda : _c.DEFAULT_LICENSE,
 
             'jsonschema_handled_resource_types': configuration.get_supported_resource_types,
             'jsonschema_handled_dataset_types': configuration.get_supported_types,
@@ -141,8 +142,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         #     'url':d.url
         # }
 
-    def before_index(self, pkg_dict):
-        return pkg_dict
+    # def before_index(self, pkg_dict):
+    #     return pkg_dict
             
 
     # def before_view(self, pkg_dict):

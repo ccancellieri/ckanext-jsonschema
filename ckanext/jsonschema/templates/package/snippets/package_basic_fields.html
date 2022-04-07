@@ -38,7 +38,35 @@
 
 {% block package_basic_fields_license %}
   {% if h.jsonschema_is_supported_ckan_field(package_type, 'license_id') %}
-    {{super()}}
+    <div class="form-group">
+      {% set error = errors.license_id %}
+      <label class="control-label" for="field-license">{{ _("License") }}</label>
+      <div class="controls">
+        <div class="row">
+          <div class="col-md-6">
+            <select id="field-license" name="license_id" data-module="autocomplete">
+              {% set existing_license_id = data.get('license_id') %}
+              {% if not existing_license_id %}
+                {% set existing_license_id = h.jsonschema_get_default_license() %}
+              {% endif %}
+              {% for license_id, license_desc in h.license_options(existing_license_id) %}
+              <option value="{{ license_id }}" {% if existing_license_id == license_id %}selected="selected"{% endif %}>{{ license_desc }}</option>
+              {% endfor %}
+            </select>
+            {% if error %}<span class="error-block">{{ error }}</span>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <span class="info-block info-inline">
+              <i class="fa fa-info-circle"></i>
+              {% trans %}
+              License definitions and additional information can be found
+              at <a href="http://opendefinition.org/licenses/">opendefinition.org</a>
+              {% endtrans %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   {% endif %}
 {% endblock %}
 

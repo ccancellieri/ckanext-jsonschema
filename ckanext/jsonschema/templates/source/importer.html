@@ -42,7 +42,7 @@
     
         
     {% block package_basic_fields_license %}
-    {% set existing_license_id = 'CC-BY-NC-SA-3.0-IGO' %}
+    {% set existing_license_id = h.jsonschema_get_default_license() %}
     <div class="form-group">
         <label class="control-label" for="field-license">{{ _("License") }}</label>
         <div class="controls">
