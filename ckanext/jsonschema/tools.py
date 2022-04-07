@@ -48,7 +48,7 @@ def reload():
         _c.JSON_SCHEMA_KEY: read_all_schema(),
         _c.JSON_TEMPLATE_KEY: read_all_template(),
         _c.JS_MODULE_KEY: read_all_module(),
-        _c.JSON_REGISTRY_KEY: read_config()
+        _c.JSON_REGISTRY_KEY: read_registry()
     })
 
     jsonschema_plugins = _i.get_all_jsonschema_plugins()
@@ -71,7 +71,7 @@ def read_all_schema():
 def read_all_config():
     return utils._read_all_json(_c.PATH_CONFIG)
 
-def read_config():
+def read_registry():
     return utils._json_load(_c.PATH_CONFIG, _c.FILENAME_REGISTRY)
     
 def add_schemas_to_catalog(path):
@@ -242,9 +242,17 @@ def as_datetime(dict, path, strptime_format='%Y-%m-%d'):
     # on_dup = OnDup(key=RAISE, val=DROP_OLD, kv=RAISE)
     # on_dup = OVERWRITE
 
+########################  REGISTRY ############################## 
+
 def get_from_registry(_type):
     registry = configuration.get_registry()
     return registry.get(_type)
+
+def add_to_registry(path, filename_registry):
+    registry = configuration.get_registry()
+    plugin_registry = utils._json_load(path, filename_registry)
+    registry.update(plugin_registry)
+
 
 def get_label_from_registry(_type):
     registry_entry = get_from_registry(_type)
@@ -316,6 +324,9 @@ def get_module_for(_type):
         filename = _type
 
     return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(filename)
+
+
+###################################################### 
 
 def get_body(dataset_id, resource_id = None):
     return get(dataset_id, resource_id, _c.SCHEMA_BODY_KEY)

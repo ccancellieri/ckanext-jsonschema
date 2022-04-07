@@ -74,17 +74,7 @@
         "supported_jsonschema_fields": ["body", "opt"],
         "supported_ckan_fields": ["url", "format"]
     },
-    
-
-    "dashboard-data-sources": {
-        "label": "Data Sources",
-        "schema": "jsonschema_dashboard/data-sources.json",
-        "template": "jsonschema_dashboard/data-sources.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["name"]
-    },    
- 
+     
     
     "stac": {
         "label": "Stac",
@@ -99,91 +89,5 @@
         "plugin_name": "jsonschema_stac",
         "supported_all_jsonschema_fields": true,
         "supported_ckan_fields": ["url", "format"]
-    },
-
-
-    "jsonschema_dashboard": {
-        "label": "Dashboard",
-        "schema": "jsonschema_dashboard/dashboard.json",
-        "template": "jsonschema_dashboard/dashboard.json",
-        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_groupcard": {
-        "label": "Group Card",
-        "schema": "jsonschema_dashboard/GroupCard.json",
-        "template": "jsonschema_dashboard/GroupCard.json",
-        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_scorecard": {
-        "label": "Score Card",
-        "schema": "jsonschema_dashboard/ScoreCard.json",
-        "template": "jsonschema_dashboard/ScoreCard.json",
-        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_expansible_scorecard": {
-        "label": "Expansible Score Card",
-        "schema": "jsonschema_dashboard/ExpansibleScoreCard.json",
-        "template": "jsonschema_dashboard/ExpansibleScoreCard.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_withchildren_scorecard": {
-        "label": "Score Card With Children",
-        "schema": "jsonschema_dashboard/WithChildrenScoreCard.json",
-        "template": "jsonschema_dashboard/WithChildrenScoreCard.json",
-        "module": "jsonschema_dashboard/jsonschema_dashboard.js",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_image_card": {
-        "label": "Image Card",
-        "schema": "jsonschema_dashboard/ImageCard.json",
-        "template": "jsonschema_dashboard/ImageCard.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_map_card": {
-        "label": "Map Card",
-        "schema": "jsonschema_dashboard/MapCard.json",
-        "template": "jsonschema_dashboard/MapCard.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_tableau_viz_card": {
-        "label": "Tableau Viz Card",
-        "schema": "jsonschema_dashboard/TableauVizCard.json",
-        "template": "jsonschema_dashboard/TableauVizCard.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_iframe_card": {
-        "label": "IFrame Card",
-        "schema": "jsonschema_dashboard/IFrameCard.json",
-        "template": "jsonschema_dashboard/IFrameCard.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
-    },
-    "jsonschema_dashboard_table_card": {
-        "label": "Table Card",
-        "schema": "jsonschema_dashboard/TableCard.json",
-        "template": "jsonschema_dashboard/TableCard.json",
-        "plugin_name": "jsonschema_dashboard",
-        "supported_all_jsonschema_fields": true,
-        "supported_ckan_fields": ["title"]
     }
 }
