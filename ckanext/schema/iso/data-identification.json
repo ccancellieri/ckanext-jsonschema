@@ -266,16 +266,7 @@
       "propertyOrder": 60,
       "title": "Resource Constraints",
       "type":"object",
-      "required": [
-        "license_id"
-      ],
       "properties":{
-        "license_id": {
-          "propertyOrder": 1,
-          "title": "License",
-          "type": "string",
-          "$ref": "../core/licenses.json"
-        },
         "legalConstraints":{
           "title": "Legal constraints",
           "type": "object",

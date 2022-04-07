@@ -13,7 +13,7 @@
         "template": "iso/iso.json",
         "module": "iso/iso.js",
         "supported_jsonschema_fields": ["body", "opt"],
-        "supported_ckan_fields": ["owner_org"]
+        "supported_ckan_fields": ["license_id", "owner_org"]
     },
     "iso19139": {
         "label": "Iso19139",
