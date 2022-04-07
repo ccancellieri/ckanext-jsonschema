@@ -30,9 +30,10 @@
     {% set jsonschema_type = h.jsonschema_get_package_type(data) %}
     {% if jsonschema and h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
 
-    {% set body = h.jsonschema_as_json(h.jsonschema_get_package_body(data)) %}
+      {% set body = h.jsonschema_as_json(h.jsonschema_get_package_body(data)) %}
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_package_opt(data)) %}
-
+      {% set element = h.jsonschema_as_json(data) %}
+      
       {% include 'snippets/jsonschema_form.html' %}
 
     {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}

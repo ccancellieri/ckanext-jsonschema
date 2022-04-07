@@ -4,6 +4,7 @@
     - body
     - jsonschema_type
     - use_template
+    - element: the full resource or view to be passed to the frontend (e.g. to retrieve the id)
 -->
 
 
@@ -71,6 +72,7 @@
     data-module-body-key = {{BODY_KEY}}
     data-module-type-key = {{TYPE_KEY}}
     data-module-opt-key = {{OPT_KEY}}
+    data-module-element = "{{element}}"
     />
 
 <div id="editor">

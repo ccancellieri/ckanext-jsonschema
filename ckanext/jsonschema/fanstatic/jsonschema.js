@@ -182,6 +182,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.bodyKey = self.options.bodyKey
             jsonschema.typeKey = self.options.typeKey
             jsonschema.optKey = self.options.optKey
+            jsonschema.element = self.options.element //this will be the full current package/resource/view
             
             // jsonschema.jsonschema_schema = self.options.schema;
             
