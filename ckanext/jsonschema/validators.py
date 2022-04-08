@@ -1,5 +1,5 @@
 import logging
-import os
+import traceback
 
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
@@ -140,20 +140,19 @@ def resource_extractor(resource, package_type, errors, context):
 
     plugin = configuration.get_plugin(package_type, resource_type)
     
-    resource.update({
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY :  resource_type,
-        _c.SCHEMA_OPT_KEY :  opt,
-    })
+    _t.set_resource_body(resource, body)
+    _t.set_resource_type(resource, resource_type)
+    _t.set_resource_opt(resource, opt)
+
 
     extractor = plugin.get_resource_extractor(package_type, resource_type, context)
     extractor(resource, errors, context)
 
-    resource.update({
-        _c.SCHEMA_BODY_KEY: _t.as_json(_t.get_resource_body(resource)),
-        _c.SCHEMA_TYPE_KEY :  _t.get_resource_type(resource),
-        _c.SCHEMA_OPT_KEY : _t.as_json(_t.get_resource_opt(resource))
-    })
+
+    _t.set_resource_body(resource, _t.as_json(_t.get_resource_body(resource)))
+    _t.set_resource_type(resource, _t.get_resource_type(resource))
+    _t.set_resource_opt(resource, _t.as_json(_t.get_resource_opt(resource)))
+
 
 
 def before_extractor(key, data, errors, context):
@@ -182,7 +181,6 @@ def before_extractor(key, data, errors, context):
     except df.StopOnError:
         raise
     except Exception as e:
-        import traceback
         traceback.print_exc()
         stop_with_error(str(e),key,errors)
 
@@ -278,6 +276,8 @@ not_empty = get_validator('not_empty')
 resource_id_exists = get_validator('resource_id_exists')
 package_id_exists = get_validator('package_id_exists')
 ignore_missing = get_validator('ignore_missing')
+ignore = get_validator('ignore')
+json_object = get_validator('json_object')
 empty = get_validator('empty')
 boolean_validator = get_validator('boolean_validator')
 int_validator = get_validator('int_validator')
@@ -293,10 +293,18 @@ def modify_package_schema(schema):
     schema[_c.SCHEMA_BODY_KEY] = [convert_to_extras]
     schema[_c.SCHEMA_OPT_KEY] = [convert_to_extras]
 
+    # REF TO ISSUE: https://github.com/ckan/ckan/issues/4989
+    # Arrays get flattened and make the jsonschema_body to be put in junk (see also issue)
+    # Given a body composed of an array, like [{'connector': ...}], it is wrongly flattened as follow
+    # ('resource', 0, 'jsonoschema_body', 0, 'connector',)
+    # instead of limiting the scope to the schema
+    # ('resource', 0, 'jsonoschema_body',)
+    # So we need to enforce the jsonschema_body and the jsonschema_opt to be an object.
+
     schema['resources'].update({
-        _c.SCHEMA_TYPE_KEY: [ignore_missing],
-        _c.SCHEMA_BODY_KEY : [ignore_missing],
-        _c.SCHEMA_OPT_KEY : [ignore_missing]
+        _c.SCHEMA_TYPE_KEY: [ignore],
+        _c.SCHEMA_BODY_KEY : [ignore],
+        _c.SCHEMA_OPT_KEY : [ignore]
     })
 
     before = schema.get('__before')
@@ -315,6 +323,7 @@ def modify_package_schema(schema):
     
     #the following will be the first...
     before.insert(0, schema_check)
+    before.insert(0, jsonschema_fields_should_be_objects) #https://github.com/ckan/ckan/issues/4989
     before.insert(0, jsonschema_fields_to_json)
 
     return schema
@@ -332,7 +341,6 @@ def show_package_schema(schema):
 
     return schema
 
-
 def jsonschema_fields_to_json(key, data, errors, context):
     
     _data = df.unflatten(data)
@@ -345,7 +353,6 @@ def jsonschema_fields_to_json(key, data, errors, context):
     #     jsonschema_resource_fields_to_json(resource)
     
     data.update(df.flatten_dict(_data))
-
 
 def jsonschema_fields_to_string(key, data, errors, context):
     
@@ -386,5 +393,52 @@ def jsonschema_resource_fields_to_string(resource):
             _t.set_resource_body(resource, body)
             _t.set_resource_opt(resource, opt)
 
+def jsonschema_fields_should_be_objects(key, data, errors, context):
+    '''
+    This function checks that jsonschema_body and jsonschema_opt are present and are objects both in the package and in every resource
+    If the check fails, it returns a validation error
+    '''
 
+    unflattened_data = df.unflatten(data)
+
+    package_body = _t.get_package_body(unflattened_data)
+    package_opt = _t.get_package_opt(unflattened_data)
+
+
+    try:
+        json_object(package_body)
+        json_object(package_opt)
+    except (ValueError, TypeError):
+        traceback.print_exc()
+        message = 'Package body and opt should be an object. Are you using an array as body? It should always be an object'
+        stop_with_error(str(_(message)),key,errors)
+    
+    else:
+
+        for resource in unflattened_data.get('resources'):
+
+            resource_body = _t.get_resource_body(resource)
+            resource_opt = _t.get_resource_opt(resource)
+            resource_position = resource.get('position') or 'unknown'
+            resource_name = resource.get('name') or 'unnamed'
+
+            try:
+                # When creating a new resource, the body and the opts come as strings instead of dicts,
+                # so we first need to load them
+                if isinstance (resource_body, str):
+                    resource_body = json.loads(resource_body)
+                if isinstance (resource_opt, str):
+                    resource_opt = json.loads(resource_opt)
+
+
+                json_object(resource_body)
+                json_object(resource_opt)
+
+            except (ValueError, TypeError):
+                traceback.print_exc()
+
+                message = 'Resource body and opt should be an object. Please check resource n.{} named: "{}"'.format(resource_position, resource_name)
+                message += '   Are you using an array as body? It should always be an object'
+                stop_with_error(str(_(message)), key, errors)
+                
 ############################################
