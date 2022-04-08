@@ -94,7 +94,7 @@ ckan.module('jsonschema', function (jQuery, _) {
 
                 this.saveToContext();
 
-                // opt
+                // OPT
                 let input=$('input[name="' + jsonschema.optKey + '"]')[0];
                 input.value=jsonschema.asString(this.jsonschema_opt);
                 // BODY
@@ -222,9 +222,9 @@ ckan.module('jsonschema', function (jQuery, _) {
                     console.warn('No template found for type: ' + template);
                 }
                 if (work_over_body){
-                    jsonschema.jsonschema_body = fetched_template;
+                    jsonschema.jsonschema_body = jsonschema.jsonschema_body || fetched_template;
                 } else {
-                    jsonschema.jsonschema_opt = fetched_template;
+                    jsonschema.jsonschema_opt = jsonschema.jsonschema_opt || fetched_template;
                 }
             }
             if (use_editor){
