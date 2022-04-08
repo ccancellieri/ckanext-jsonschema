@@ -72,25 +72,37 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
             return "";
         },
+        saveToContext: function (work_over_body = jsonschema.work_over_body){
+            // prepare info to serialize
+            let value = jsonschema.editor.getValue();
+            if (work_over_body){
+                jsonschema.jsonschema_body = jsonschema.asObject(value);
+            } else {
+                jsonschema.jsonschema_opt = jsonschema.asObject(value);
+            }
+        },
+        getValue: function (work_over_body = jsonschema.work_over_body){
+            if (work_over_body){
+                value = jsonschema.jsonschema_body;
+            } else {
+                value = jsonschema.jsonschema_opt;
+            }
+            return jsonschema.asObject(value);
+        },
         onSubmit: function (event) {
                 if (!this.editor) return;
 
-                // prepare info to serialize
-                let value=this.editor.getValue();
-                this.jsonschema_body=jsonschema.asObject(value);
-                
-                let input=$('input[name="' + jsonschema.bodyKey + '"]')[0];
-                input.value=jsonschema.asString(value);
+                this.saveToContext();
+
+                // opt
+                let input=$('input[name="' + jsonschema.optKey + '"]')[0];
+                input.value=jsonschema.asString(this.jsonschema_opt);
+                // BODY
+                input=$('input[name="' + jsonschema.bodyKey + '"]')[0];
+                input.value=jsonschema.asString(this.jsonschema_body);
 
                 this.editorToggle(enable=false);
         },
-
-        ckan_url: undefined,
-        jsonschema_schema: undefined,
-        jsonschema_body: undefined,
-        jsonschema_opt: undefined,
-
-        editor: undefined,
         dynamic_module: async function (url){
 
             if (!url){
@@ -108,37 +120,6 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
             return module;
         },
-        reload: async function (jsonschema_type, editor = true, use_template = false) {
-
-            jsonschema.jsonschema_type = jsonschema_type;
-
-            registry_entry = await jsonschema.fetch('jsonschema/registry/' + jsonschema_type)
-
-            schema = registry_entry.schema
-            resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1)
-            jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url)
-
-            jsonschema.jsonschema_schema = await jsonschema.fetch('jsonschema/schema/' + schema)
-            
-            jsonschema.module = await jsonschema.dynamic_module(registry_entry.module);
-            
-            if (use_template){
-                // TODO alert...+
-                template = registry_entry.template
-                if (template){
-                    jsonschema.jsonschema_body = await jsonschema.fetch('jsonschema/template/' + template)
-                } else {
-                    jsonschema.jsonschema_body = {}
-                    console.warn('No template found for type: ' + template)
-                }
-            }
-
-            if (editor){
-                jsonschema.getEditor(use_template);
-            } else {
-                jsonschema.getEditorAce(use_template);
-            }        
-        },
         fetch: function (path) {
             var url = new URL(encodeURI(path),jsonschema.ckan_url);
             if (url.length < 2) {
@@ -155,6 +136,11 @@ ckan.module('jsonschema', function (jQuery, _) {
                     return "";
                 });
         },
+        ckan_url: undefined,
+        jsonschema_schema: undefined,
+        jsonschema_body: undefined,
+        jsonschema_opt: undefined,
+        editor: undefined,
         initialize: function () {
             var self = this;
 
@@ -179,22 +165,77 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.jsonschema_body = self.options.body;
             jsonschema.jsonschema_opt = self.options.option;
             jsonschema.use_template = (self.options.useTemplate||"false").toLowerCase() == "true";
-            jsonschema.bodyKey = self.options.bodyKey
-            jsonschema.typeKey = self.options.typeKey
-            jsonschema.optKey = self.options.optKey
-            jsonschema.element = self.options.element //this will be the full current package/resource/view
-            
-            // jsonschema.jsonschema_schema = self.options.schema;
+            jsonschema.bodyKey = self.options.bodyKey;
+            jsonschema.typeKey = self.options.typeKey;
+            jsonschema.optKey = self.options.optKey;
+            jsonschema.element = self.options.element; //this will be the full current package/resource/view
+
+            jsonschema.work_over_body = true;
+            jsonschema.use_editor = true;
             
             // initialize editor
-            // editor=false // TODO remove only 2 DEBUG
-            editor = true;
-            jsonschema.reload(jsonschema.jsonschema_type, editor = editor, use_template = jsonschema.use_template);
+            
+            jsonschema.reload(jsonschema.jsonschema_type, 
+                use_editor = jsonschema.use_editor,
+                use_template = jsonschema.use_template,
+                work_over_body = jsonschema.work_over_body);
         },
-        getEditorAce: function (use_template = false){
+        reload: async function (jsonschema_type,
+            use_editor = jsonschema.use_editor,
+            use_template = jsonschema.use_template,
+            work_over_body = jsonschema.work_over_body,
+            was_working_over_body = jsonschema.work_over_body
+            ) {
+
+            jsonschema.jsonschema_type = jsonschema_type;
+
+            registry_entry = await jsonschema.fetch('jsonschema/registry/' + jsonschema_type);
+
+            if (work_over_body){
+                schema = registry_entry.schema;
+                template = registry_entry.template;
+            } else {
+                schema = registry_entry.opt_schema;
+                template = registry_entry.opt_template;
+            }
+
+            if (!schema){
+                jsonschema.jsonschema_schema = {
+                    "type": "object"
+                };
+            } else {
+                // TODO: why we need this?
+                resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1);
+
+                jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url);
+
+                jsonschema.jsonschema_schema = await jsonschema.fetch('jsonschema/schema/' + schema);
+            }
+            
+            jsonschema.module = await jsonschema.dynamic_module(registry_entry.module);
+            
+            if (use_template){
+                if (template){
+                    fetched_template = await jsonschema.fetch('jsonschema/template/' + template);
+                } else {
+                    fetched_template = {};
+                    console.warn('No template found for type: ' + template);
+                }
+                if (work_over_body){
+                    jsonschema.jsonschema_body = fetched_template;
+                } else {
+                    jsonschema.jsonschema_opt = fetched_template;
+                }
+            }
+            if (use_editor){
+                jsonschema.getEditor(work_over_body, was_working_over_body);
+            } else {
+                jsonschema.getEditorAce(work_over_body, was_working_over_body);
+            }        
+        },
+        getEditorAce: function (work_over_body = jsonschema.work_over_body, was_working_over_body = jsonschema.work_over_body){
             this.isHowto=false
             
-            //let schema = jsonschema.jsonschema_schema;
             let schema={
                 "type": "string",
                 "format": "json",
@@ -212,24 +253,11 @@ ckan.module('jsonschema', function (jQuery, _) {
                  }
             }
 
-            let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
-                if (!use_template){
-                    value = this.editor.getValue();
-                }
+                this.saveToContext(was_working_over_body);
                 this.editor.destroy();
             }
-            value = jsonschema.asString(value || jsonschema.jsonschema_body);
             
-            
-            //old_body=jsonschema.asString(body);
-            
-            // ##################################################
-            let opt = jsonschema.jsonschema_opt;
-            // TODO 
-            // ##################################################
-
-
             // Initialize the editor
             this.editor = new JSONEditor(document.getElementById('editor-jsonschema-config'),{
                 // Enable fetching schemas via ajax
@@ -241,7 +269,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 schema: schema,
 
                 // Seed the form with a starting value
-                startval: value,
+                startval: jsonschema.getValue(work_over_body),
 
                 // urn_resolver: (urn, callback) => {
                 //         loadSchema(urn)
@@ -330,24 +358,15 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
 
         },
-        getEditor: function (use_template = false){
+        getEditor: function (work_over_body = jsonschema.work_over_body, was_working_over_body = jsonschema.work_over_body){
             this.isHowto=true
 
             let schema = jsonschema.jsonschema_schema;
 
-            let value;
             if (this.editor && this.editor instanceof window.JSONEditor){
-                if (!use_template){
-                    value = this.editor.getValue();
-                }
+                this.saveToContext(was_working_over_body);
                 this.editor.destroy();
             }
-            value = jsonschema.asObject(value || jsonschema.jsonschema_body);
-            
-            // ##################################################
-            let opt = jsonschema.jsonschema_opt; 
-            // ##################################################
-
             
             // Initialize the editor
             this.editor = new JSONEditor(document.getElementById('editor-jsonschema-config'),{
@@ -360,7 +379,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 schema: schema,
 
                 // Seed the form with a starting value
-                startval: value,
+                startval: jsonschema.getValue(work_over_body),
 
                 // https://github.com/json-editor/json-editor#css-integration
                 // barebones, html (the default), bootstrap4, spectre, tailwind
@@ -440,37 +459,65 @@ ckan.module('jsonschema', function (jQuery, _) {
 
             });
             // TODO call validation when instantiate -> refactor to function
-      },
-      editorToggle: function (enable=false) {
+        },
+        editorOptToggle: function () {
+            if(!this.editor) return;
+
+            jsonschema.saveToContext(jsonschema.work_over_body);
+
+            $('#editor-opt-toggle').html("Loading ...");
+
+            next = !jsonschema.work_over_body;
+
+            jsonschema.reload(jsonschema.jsonschema_type, 
+                use_editor = jsonschema.isHowto,
+                use_template = jsonschema.use_template,
+                work_over_body = next,
+                was_work_over_body = jsonschema.work_over_body
+                ).then(
+                    (res)=>{
+                        $('#editor-opt-toggle').html(next?"Options":"Body");
+                        jsonschema.work_over_body = next;
+                    }
+                ).catch(
+                    (err)=>{
+                        alert('Unable to switch, please contact service desk: ' + err);
+                        console.error(err.stack);
+                        $('#editor-opt-toggle').html(jsonschema.work_over_body?"Options":"Body");
+                    }
+                )
+        },
+        editorToggle: function (enable=false) {
             if(!this.editor) return;
             if(enable===true || !this.editor.isEnabled()) {
-              this.editor.enable(true);
-              $('#editor-toggle').html("Lock");
+                this.editor.enable(true);
+                $('#editor-toggle').html("Lock");
 
-              let status = $('#editor-status-holder');
-              status.css("color","green");
-              status.html("unlocked");
+                let status = $('#editor-status-holder');
+                status.css("color","green");
+                status.html("unlocked");
             }
             else {
-              this.editor.disable(false);
-              $('#editor-toggle').html("Unlock");
+                this.editor.disable(false);
+                $('#editor-toggle').html("Unlock");
 
-              let status = $('#editor-status-holder');
-              status.css("color","red");
-              status.html("locked");
+                let status = $('#editor-status-holder');
+                status.css("color","red");
+                status.html("locked");
             }
-      },
-      editorReady: function () {
+        },
+        editorReady: function () {
             jsonschema.editor && jsonschema.editor.ready && jsonschema.editor.validate();
             this.editorToggle(true);
-      },
-      editorOnChange: function (i) {
+        },
+        editorOnChange: function (i) {
             let errors=i.html;
             let lock=i.lock;
             var indicator = $('#editor-error-holder');
 
             // Not valid
             if(errors) {
+                $('#editor-opt-toggle').prop('disabled',true);
 
                 if (lock){
                     // prevent switch between editors (locks buttons)
@@ -504,6 +551,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 // un lock the toggles
                 $('#editor-howto').prop('disabled',false);
                 $('#editor-editor').prop('disabled',false);
+                $('#editor-opt-toggle').prop('disabled',false);
                 indicator.html("<b style='display: inline; color: green;'>valid</b>");
             }
         }

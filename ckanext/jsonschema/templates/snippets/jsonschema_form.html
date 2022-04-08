@@ -78,9 +78,10 @@
 <div id="editor">
     <p>
         <div style="display: inline-block;">
-            <button class="btn btn-primary" type="button" id="editor-editor" onclick="jsonschema.getEditorAce();">Editor</button>
-            <button class="btn btn-primary" type="button" id="editor-howto" onclick="jsonschema.getEditor();">HowTo</button>
-            <button class="btn btn-primary" type="button" id="editor-toggle" onclick="jsonschema.editorToggle();"></button>
+            <button class="btn btn-primary" type="button" id="editor-editor" onclick="jsonschema.getEditorAce();">{{_('Editor')}}</button>
+            <button class="btn btn-primary" type="button" id="editor-howto" onclick="jsonschema.getEditor();">{{_('HowTo')}}</button>
+            <button class="btn btn-primary" type="button" id="editor-opt-toggle" onclick="jsonschema.editorOptToggle();">{{_('Options')}}</button>
+            <button class="btn btn-primary" type="button" id="editor-toggle" onclick="jsonschema.editorToggle();">{{_('Loading ...')}} </button>
         </div>
     </p>
     <!-- <p style="border: 2px solid gray;" id="editor-jsonschema-config"> -->
