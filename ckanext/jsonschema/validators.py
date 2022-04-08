@@ -410,12 +410,12 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
         json_object(package_opt)
     except (ValueError, TypeError):
         traceback.print_exc()
-        message = 'Package body and opt should be an object. Are you using an array as body? It should always be an object'
+        message = 'Package body and opt should be an object. Array is not allowed to be used at root level.'
         stop_with_error(str(_(message)),key,errors)
     
     else:
 
-        for resource in unflattened_data.get('resources'):
+        for resource in unflattened_data.get('resources',[]):
 
             # skip this validation if it is not a jsonschema resource
             if not _t.get_resource_type(resource):
@@ -423,8 +423,6 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
 
             resource_body = _t.get_resource_body(resource)
             resource_opt = _t.get_resource_opt(resource)
-            resource_position = resource.get('position') or 'unknown'
-            resource_name = resource.get('name') or 'unnamed'
 
             try:
                 # When creating a new resource, the body and the opts come as strings instead of dicts,
@@ -434,15 +432,15 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
                 if isinstance (resource_opt, str):
                     resource_opt = json.loads(resource_opt)
 
-
                 json_object(resource_body)
                 json_object(resource_opt)
 
             except (ValueError, TypeError):
                 traceback.print_exc()
-
+                resource_position = resource.get('position') or 'unknown'
+                resource_name = resource.get('name') or 'unnamed'
                 message = 'Resource body and opt should be an object. Please check resource n.{} named: "{}"'.format(resource_position, resource_name)
-                message += '   Are you using an array as body? It should always be an object'
+                message += '   AArray is not allowed to be used at root level.'
                 stop_with_error(str(_(message)), key, errors)
                 
 ############################################
