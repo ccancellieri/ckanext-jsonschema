@@ -302,9 +302,9 @@ def modify_package_schema(schema):
     # So we need to enforce the jsonschema_body and the jsonschema_opt to be an object.
 
     schema['resources'].update({
-        _c.SCHEMA_TYPE_KEY: [ignore],
-        _c.SCHEMA_BODY_KEY : [ignore],
-        _c.SCHEMA_OPT_KEY : [ignore]
+        _c.SCHEMA_TYPE_KEY: [ignore_missing],
+        _c.SCHEMA_BODY_KEY : [ignore_missing],
+        _c.SCHEMA_OPT_KEY : [ignore_missing]
     })
 
     before = schema.get('__before')
@@ -416,6 +416,10 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
     else:
 
         for resource in unflattened_data.get('resources'):
+
+            # skip this validation if it is not a jsonschema resource
+            if not _t.get_resource_type(resource):
+                continue
 
             resource_body = _t.get_resource_body(resource)
             resource_opt = _t.get_resource_opt(resource)
