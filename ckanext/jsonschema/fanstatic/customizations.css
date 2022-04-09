@@ -3,6 +3,17 @@
   display: block;
 }
 
+/* #################### */
+div#editor-jsonschema-config {
+  background-color: #c4c4c4;
+}
+.well.well-sm div[data-schemapath^=root] {
+  background-color: #f6f6f6;
+}
+
+/* #################### */
+
+
 /* AJV editor... */
 #editor-jsonschema-config > div > div.form-group > div {
   height: 90vh;
