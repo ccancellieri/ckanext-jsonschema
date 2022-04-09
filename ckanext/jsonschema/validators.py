@@ -67,23 +67,65 @@ def schema_check(key, data, errors, context):
     jsonschema_type = _t.get_package_type(_data)
     opt = _t.as_dict(_t.get_package_opt(_data))
 
-
     ######################### TODO #########################
     if opt.get('validation') == False:
         return
+    ######################### #### #########################
 
+    item_validation(jsonschema_type, body, opt, key, errors, context)
+
+    # TODO check if the following commented snippet could be necessary during package_create
+    # hope we can leverage on resource_create chained action
+    #
+    # for resource in _data.get('resources',[]):
+    #     jsonschema_type = _t.get_resource_type(resource)
+
+    #     if not jsonschema_type:
+    #         continue;
+
+    #     body = _t.as_dict(_t.get_resource_body(resource))
+    #     opt = _t.as_dict(_t.get_resource_opt(resource))
+
+    #     ######################### TODO #########################
+    #     if opt.get('validation') == False:
+    #         return
+    #     ######################### #### #########################
+
+    #     item_validation(jsonschema_type, body, opt, key, errors, context)
+
+
+def item_validation(jsonschema_type, jsonschema_body, jsonschema_opt, key, errors, context):
     if not jsonschema_type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
 
-    schema = _t.get_schema_of(jsonschema_type)
+    registry_entry = _t.get_from_registry(jsonschema_type)
+    if not registry_entry:
+        stop_with_error('Unable to find a valid entry into the registry for type {}'.format(jsonschema_type), key, errors)
 
+    # BODY validation
+    filename = registry_entry.get(_c.JSON_SCHEMA_KEY)
+    if not filename:
+        stop_with_error('Unable to find a valid json-schema file for type {}'.format(jsonschema_type), key, errors)
+
+    schema = _t.get_schema_of(filename)
     if not schema:
         stop_with_error('Unable to load a valid json-schema for type {}'.format(jsonschema_type), key, errors)
 
-    is_error = _t.draft_validation(jsonschema_type, body, errors)
-
+    is_error = _t._draft_validation(filename, schema, jsonschema_body, errors)
+    
     if is_error:
         raise StopOnError()
+
+    # OPT validation (optional, enabled if present in registry)
+    filename = registry_entry.get(_c.JSON_OPT_SCHEMA_KEY)
+    if filename:
+        schema = _t.get_schema_of(filename)
+        if not schema:
+            stop_with_error('Unable to load a valid json-schema for type {}'.format(jsonschema_type), key, errors)
+        
+        is_error = _t._draft_validation(filename, schema, jsonschema_opt, errors)
+        if is_error:
+            raise StopOnError()
 
 def view_schema_check(key, data, errors, context):
 
@@ -148,12 +190,11 @@ def resource_extractor(resource, package_type, errors, context):
     extractor = plugin.get_resource_extractor(package_type, resource_type, context)
     extractor(resource, errors, context)
 
-
+    # we set objects back to the dict
+    # note: we do not reuse reference object, an extractor may have replaced some of them
     _t.set_resource_body(resource, _t.as_json(_t.get_resource_body(resource)))
     _t.set_resource_type(resource, _t.get_resource_type(resource))
     _t.set_resource_opt(resource, _t.as_json(_t.get_resource_opt(resource)))
-
-
 
 def before_extractor(key, data, errors, context):
 
@@ -284,9 +325,6 @@ int_validator = get_validator('int_validator')
 OneOf = get_validator('OneOf')
 isodate = get_validator('isodate')
 
-
-
-
 def modify_package_schema(schema):
 
     schema[_c.SCHEMA_TYPE_KEY] = [convert_to_extras]
@@ -320,10 +358,9 @@ def modify_package_schema(schema):
     before.insert(0, resources_extractor)
     before.insert(0, extractor)
     before.insert(0, before_extractor)
-    
-    #the following will be the first...
     before.insert(0, schema_check)
     before.insert(0, jsonschema_fields_should_be_objects) #https://github.com/ckan/ckan/issues/4989
+    #the following will be the first...
     before.insert(0, jsonschema_fields_to_json)
 
     return schema

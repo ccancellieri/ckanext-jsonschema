@@ -1,4 +1,4 @@
-// json preview module
+// part of jsonschema module
 ckan.module('jsonschema_tools', function (jQuery, _) {
     /* Check if string is valid UUID */
     isValidUUID = (str) => {
@@ -7,7 +7,7 @@ ckan.module('jsonschema_tools', function (jQuery, _) {
         return regexExp.test(str);
     };
 
-    loadSchema = function (uri) {
+    loadSchema = (base_url) => function (uri) {
         return new Promise((resolve, reject) => {
             function get(retry, uri){
                 //resolve(require('./id.json')); // replace with http request for example
@@ -41,11 +41,10 @@ ckan.module('jsonschema_tools', function (jQuery, _) {
                 return get(retry,uri);
             } else {
                 //reject(new Error(`could not locate ${uri}`));
-                return get(retry,new URL('jsonschema/schema/'+uri, jsonschema.ckan_url));
+                return get(retry,new URL(uri, base_url));
             }
         });
     };
-
     asObject = function (value) {
         try {
             if (value){
@@ -61,7 +60,7 @@ ckan.module('jsonschema_tools', function (jQuery, _) {
         return {};
     };
 
-    asString= function (value) {
+    asString = function (value) {
         if (value){
             if (typeof value == "string"){
                 return value;

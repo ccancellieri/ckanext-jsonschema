@@ -291,40 +291,30 @@ def is_supported_jsonschema_field(jsonschema_type, field):
     supported_jsonschema_fields = registry_entry.get(_c.SUPPORTED_JSONSCHEMA_FIELDS, [])
     return field in supported_jsonschema_fields
 
+
 def get_schema_of(_type):
 
+    return _find_in_registry_or_catalog(_type, _c.JSON_SCHEMA_KEY)
+
+def get_template_of(_type):
+
+    return _find_in_registry_or_catalog(_type, _c.JSON_TEMPLATE_KEY)
+
+def get_module_for(_type):
+
+    return _find_in_registry_or_catalog(_type, _c.JS_MODULE_KEY)
+
+def _find_in_registry_or_catalog(item, sub):
     try:
         registry = configuration.get_registry()
-        filename = registry.get(_type).get('schema')
+        filename = registry.get(item).get(sub)
     except:
         # the type could not be in the registry
         # it would be the case in nested references within schemas
         # in that case fetch the filename directly from the catalog
-        filename = _type
+        filename = item
 
-    
-    return _c.JSON_CATALOG[_c.JSON_SCHEMA_KEY].get(filename)
-    
-def get_template_of(_type):
-
-    try:
-        registry = configuration.get_registry()
-        filename = registry.get(_type).get('template')
-    except:
-        filename = _type
-
-    return _c.JSON_CATALOG[_c.JSON_TEMPLATE_KEY].get(filename, {})
-
-def get_module_for(_type):
-
-    try:
-        registry = configuration.get_registry()
-        filename = registry.get(_type).get('module')
-    except:
-        filename = _type
-
-    return _c.JSON_CATALOG[_c.JS_MODULE_KEY].get(filename)
-
+    return _c.JSON_CATALOG[sub].get(filename)
 
 ###################################################### 
 
@@ -537,70 +527,6 @@ def render_template(template_name, extra_vars):
         log.error('Exception: {}'.format(str(e)))
 
 
-
-### FRAMEWORK MANIPULATIONS ###
-# We would like to hide the extras from the package/resource when passing down to the plugins
-# The following methods are used to remove the extras and then to put those back in
-
-# def remove_jsonschema_extras_from_package_data(data):
-#     '''
-#     Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
-#     Returns the removed extras as a tuple (index, extra) so that they can be put back into data
-
-#     '''
-
-#     jsonschema_extras = []
-#     filtered_extras = []
-
-#     keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
-
-#     for idx, extra in enumerate(data.get('extras')):
-#         if extra.get('key') in keys:
-#             jsonschema_extras.append((idx, extra))
-#         else:
-#             filtered_extras.append(extra)
-
-#     data['extras'] = filtered_extras     
-    
-#     return jsonschema_extras
-
-# def remove_jsonschema_extras_from_resource_data(data):
-#     '''
-#     Clears data from jsonschema extras, so it seems like a clean CKAN package when passed into plugins
-#     Returns the removed extras as a tuple (index, extra) so that they can be put back into data
-#     '''
-
-#     jsonschema_extras = {}
-#     filtered_extras = {}
-
-#     keys = [_c.SCHEMA_BODY_KEY, _c.SCHEMA_TYPE_KEY, _c.SCHEMA_OPT_KEY, _c.SCHEMA_VERSION_KEY]
-
-#     for key in data.get('__extras'):
-
-#         value = data.get('__extras').get(key)
-
-#         if key in keys:
-#             jsonschema_extras[key] = value
-#         else:
-#             filtered_extras[key] = value
-
-#     data['__extras'] = filtered_extras     
-    
-#     return jsonschema_extras
-
-# def enrich_package_data_with_jsonschema_extras(data, extras):
-
-#     for jsonschema_extra in extras:
-#         position, element = jsonschema_extra
-#         data['extras'].insert(position, element)
-                
-
-# def enrich_resource_data_with_jsonschema_extras(data, extras):
-
-#     for key in extras:
-#         value = extras[key]
-#         data['__extras'][key] = value
-
 ###################################
 
 def dictize_pkg(pkg):
@@ -675,10 +601,18 @@ def draft_validation(jsonschema_type, body, errors):
 
     registry_entry = get_from_registry(jsonschema_type)
 
-    BASE_URI = os.path.dirname(registry_entry['schema'])
+    filename = registry_entry['schema']
+
     schema = get_schema_of(jsonschema_type)
 
-    
+    return _draft_validation(filename, schema, body, errors)
+
+
+def _draft_validation(jsonschema_file, schema, body, errors):
+    """Validates ..."""
+
+    BASE_URI = os.path.dirname(jsonschema_file)
+        
     _SCHEMA_RESOLVER = CustomRefResolver(
         base_uri=BASE_URI,
         referrer=None,

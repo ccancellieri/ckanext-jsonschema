@@ -1,93 +1,22 @@
 // json preview module
 ckan.module('jsonschema', function (jQuery, _) {
-    /* Check if string is valid UUID */
-    isValidUUID = (str) => {
-        // Regular expression to check if string is a valid UUID
-        const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
-        return regexExp.test(str);
-    };
-
-    loadSchema = function (uri) {
-        return new Promise((resolve, reject) => {
-            function get(retry, uri){
-                //resolve(require('./id.json')); // replace with http request for example
-                $.ajaxSetup({ timeout: 30000, cache: true });
-                $.get({
-                    cache: true,
-                    url: uri, 
-                    success: function(data) {
-                        //alert( "success: ");
-                        if (data !== null && typeof data !== "object") {
-                            data = JSON.parse(data)
-                        }
-                        resolve(data);
-                        return data;
-                        // _data=JSON.parse(data)
-                        // resolve(_data);
-                        // return _data;
-                    },
-                    fail:function() {
-                        //alert( "error" );
-                        if (retry>0){
-                            get(--retry, uri);
-                        } else {
-                            reject(new Error(`could not locate ${uri}`));
-                        }
-                    }
-                });
-            };
-            let retry=3;
-            if (uri.startsWith('http')) {
-                return get(retry,uri);
-            } else {
-                //reject(new Error(`could not locate ${uri}`));
-                return get(retry, new URL(uri, jsonschema.ajaxBase));
-            }
-        });
-    };
-
     jsonschema = {
-        
-        asObject: function (value) {
-            try {
-                if (value){
-                    if (typeof value == "string"){
-                        return JSON.parse(value);
-                    } else {
-                        return value;
-                    }
-                }
-            } catch (err) {
-                console.log(err.stack);
-            }
-            return {};
-        },
-        asString: function (value) {
-            if (value){
-                if (typeof value == "string"){
-                    return value;
-                } else {
-                    return JSON.stringify(value, null, '  ');
-                }
-            }
-            return "";
-        },
-        saveToContext: function (work_over_body = jsonschema.work_over_body){
+        saveToContext: function (workOnBody = jsonschema.workOnBody){
             // prepare info to serialize
             let value = jsonschema.editor.getValue();
-            if (work_over_body){
-                jsonschema.jsonschema_body = jsonschema.asObject(value);
+            if (workOnBody){
+                jsonschema.jsonschemaBody = asObject(value);
             } else {
-                jsonschema.jsonschema_opt = jsonschema.asObject(value);
+                jsonschema.jsonschemaOpt = asObject(value);
             }
         },
-        getValue: function (work_over_body = jsonschema.work_over_body){
-            if (work_over_body){
-                value = jsonschema.jsonschema_body;
+        getValue: function (workOnBody = jsonschema.workOnBody){
+            if (workOnBody){
+                value = jsonschema.jsonschemaBody;
             } else {
-                value = jsonschema.jsonschema_opt;
+                value = jsonschema.jsonschemaOpt;
             }
-            return jsonschema.asObject(value);
+            return asObject(value);
         },
         onSubmit: function (event) {
                 if (!this.editor) return;
@@ -96,14 +25,14 @@ ckan.module('jsonschema', function (jQuery, _) {
 
                 // OPT
                 let input=$('input[name="' + jsonschema.optKey + '"]')[0];
-                input.value=jsonschema.asString(this.jsonschema_opt);
+                input.value=asString(this.jsonschemaOpt);
                 // BODY
                 input=$('input[name="' + jsonschema.bodyKey + '"]')[0];
-                input.value=jsonschema.asString(this.jsonschema_body);
+                input.value=asString(this.jsonschemaBody);
 
                 this.editorToggle(enable=false);
         },
-        dynamic_module: async function (url){
+        dynamicModule: async function (url){
 
             if (!url){
                 return;
@@ -111,7 +40,7 @@ ckan.module('jsonschema', function (jQuery, _) {
 
             let module;
             try {
-                module = await import(jsonschema.ckan_url+'jsonschema/module/'+url);
+                module = await import(jsonschema.ckanUrl+'jsonschema/module/'+url);
                 if (module){
                     module.initialize();   
                 }
@@ -120,31 +49,34 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
             return module;
         },
-        fetch: function (path) {
-            var url = new URL(encodeURI(path),jsonschema.ckan_url);
+        fetch: async function (path, default_return = {}) {
+            var url = new URL(encodeURI(path),jsonschema.ckanUrl);
             if (url.length < 2) {
-                return [];
+                console.error('Bad url: '+url);
+                return default_return;
             }
             return fetch(url).then(function (request) {
                     if (request.status === 200) {
                         return request.json();
                     } else {
-                        return [""];
+                        console.error('Bad response HTTP code: '+request.status);
+                        return default_return;
                     }
                 }).catch(function (err) {
                     console.error(err);
-                    return "";
+                    return default_return;
                 });
         },
-        ckan_url: undefined,
+        ckanUrl: undefined,
         jsonschema_schema: undefined,
-        jsonschema_body: undefined,
-        jsonschema_opt: undefined,
+        jsonschemaBody: undefined,
+        jsonschemaOpt: undefined,
         editor: undefined,
-        initialize: function () {
+        registryEntry: undefined,
+        initialize: async function () {
             var self = this;
 
-            jsonschema.ckan_url = self.options.ckanUrl;
+            jsonschema.ckanUrl = self.options.ckanUrl;
             jsonschema.base_schema_path = 'jsonschema/schema/';
             jsonschema.reload=this.reload.bind(jsonschema);
             jsonschema.getEditor=this.getEditor.bind(jsonschema);
@@ -156,85 +88,93 @@ ckan.module('jsonschema', function (jQuery, _) {
             // form onSubmit binding to json-editor submit event
             $('.dataset-form').find('button[type=submit]').each(
                 function (){$(this).on('click', jsonschema.onSubmit.bind(jsonschema));});
-
-            // initialize previous value (from jinja2 dataset form)
-
-            //TODO if schema changes, use_template should be false (jsonschema_schema != options.schema)
             
+            //jsonschema_type
             jsonschema.jsonschema_type = self.options.type;
-            jsonschema.jsonschema_body = self.options.body;
-            jsonschema.jsonschema_opt = self.options.option;
-            jsonschema.use_template = (self.options.useTemplate||"false").toLowerCase() == "true";
+
+            // download registry entry for jsonschema_type
+            jsonschema.registryEntry = registryEntry = jsonschema.registryEntry ||
+                await jsonschema.fetch('jsonschema/registry/' + jsonschema.jsonschema_type);
+
+            // should we use the template instead of the passed body?
+            jsonschema.useTemplate = (self.options.useTemplate||"false").toLowerCase() == "true";
+            // TODO this should be provided by Jinja
+            if (jsonschema.useTemplate){
+                template = () => registryEntry.template ? 
+                    jsonschema.fetch('jsonschema/template/' + registryEntry.template) : {};
+
+                opt_template = () => registryEntry.opt_template ?
+                    jsonschema.fetch('jsonschema/template/' + registryEntry.opt_template) : {};
+                
+                const [body, opt] = await Promise.all([template, opt_template]).catch((err)=>console.error(err)); 
+
+                jsonschema.jsonschemaBody = body;
+                jsonschema.jsonschemaOpt = opt;
+
+            } else {
+
+                jsonschema.jsonschemaBody = self.options.body;
+                jsonschema.jsonschemaOpt = self.options.opt;
+
+            }
+
+            // keys to find <input/> fields
             jsonschema.bodyKey = self.options.bodyKey;
             jsonschema.typeKey = self.options.typeKey;
             jsonschema.optKey = self.options.optKey;
-            jsonschema.element = self.options.element; //this will be the full current package/resource/view
 
-            jsonschema.work_over_body = true;
-            jsonschema.use_editor = true;
-            
+            // The current package / resource / view
+            jsonschema.element = self.options.element; 
+
+            // are we working on the body? (or opt)
+            jsonschema.workOnBody = true;
+
+            // are we using the howTo editor (true) or the AJV (false)?
+            jsonschema.usingEditor = true;
+
+            // load module if present
+            jsonschema.module = await jsonschema.dynamicModule(registryEntry.module);
+                        
             // initialize editor
-            
-            jsonschema.reload(jsonschema.jsonschema_type, 
-                use_editor = jsonschema.use_editor,
-                use_template = jsonschema.use_template,
-                work_over_body = jsonschema.work_over_body);
+            jsonschema.reload(
+                usingEditor = jsonschema.usingEditor,
+                workOnBody = jsonschema.workOnBody,
+                wasWorkingOverBody = jsonschema.workOnBody);
         },
-        reload: async function (jsonschema_type,
-            use_editor = jsonschema.use_editor,
-            use_template = jsonschema.use_template,
-            work_over_body = jsonschema.work_over_body,
-            was_working_over_body = jsonschema.work_over_body
-            ) {
+        reload: async function (
+                usingEditor = jsonschema.usingEditor,
+                workOnBody = jsonschema.workOnBody,
+                wasWorkingOverBody = jsonschema.workOnBody) {
 
-            jsonschema.jsonschema_type = jsonschema_type;
+            registryEntry = jsonschema.registryEntry
 
-            registry_entry = await jsonschema.fetch('jsonschema/registry/' + jsonschema_type);
-
-            if (work_over_body){
-                schema = registry_entry.schema;
-                template = registry_entry.template;
+            if (workOnBody){
+                schema = registryEntry.schema;
+                template = registryEntry.template;
             } else {
-                schema = registry_entry.opt_schema;
-                template = registry_entry.opt_template;
+                schema = registryEntry.opt_schema;
+                template = registryEntry.opt_template;
             }
 
             if (!schema){
-                jsonschema.jsonschema_schema = {
-                    "type": "object"
-                };
+                jsonschema.jsonschema_schema = { "type": "object" };
             } else {
                 // TODO: why we need this?
-                resolution_scope = schema.substring(0, schema.lastIndexOf('/')+1);
+                resolution_scope = schema.substring(0, schema.lastIndexOf('/') + 1);
 
-                jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckan_url);
+                jsonschema.ajaxBase = new URL(jsonschema.base_schema_path + resolution_scope, jsonschema.ckanUrl);
 
-                jsonschema.jsonschema_schema = await jsonschema.fetch('jsonschema/schema/' + schema);
+                jsonschema.jsonschema_schema = await jsonschema.fetch(jsonschema.base_schema_path + schema);
             }
-            
-            jsonschema.module = await jsonschema.dynamic_module(registry_entry.module);
-            
-            if (use_template){
-                if (template){
-                    fetched_template = await jsonschema.fetch('jsonschema/template/' + template);
-                } else {
-                    fetched_template = {};
-                    console.warn('No template found for type: ' + template);
-                }
-                if (work_over_body){
-                    jsonschema.jsonschema_body = jsonschema.jsonschema_body || fetched_template;
-                } else {
-                    jsonschema.jsonschema_opt = jsonschema.jsonschema_opt || fetched_template;
-                }
-            }
-            if (use_editor){
-                jsonschema.getEditor(work_over_body, was_working_over_body);
+        
+            if (usingEditor){
+                jsonschema.getEditor(workOnBody, wasWorkingOverBody);
             } else {
-                jsonschema.getEditorAce(work_over_body, was_working_over_body);
-            }        
+                jsonschema.getEditorAce(workOnBody, wasWorkingOverBody);
+            }
         },
-        getEditorAce: function (work_over_body = jsonschema.work_over_body, was_working_over_body = jsonschema.work_over_body){
-            this.isHowto=false
+        getEditorAce: function (workOnBody = jsonschema.workOnBody, wasWorkingOverBody = jsonschema.workOnBody){
+            this.usingEditor=false
             
             let schema={
                 "type": "string",
@@ -254,7 +194,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
 
             if (this.editor && this.editor instanceof window.JSONEditor){
-                this.saveToContext(was_working_over_body);
+                this.saveToContext(wasWorkingOverBody);
                 this.editor.destroy();
             }
             
@@ -269,7 +209,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 schema: schema,
 
                 // Seed the form with a starting value
-                startval: jsonschema.getValue(work_over_body),
+                startval: jsonschema.getValue(workOnBody),
 
                 // urn_resolver: (urn, callback) => {
                 //         loadSchema(urn)
@@ -296,7 +236,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 validateFormats: false,
                 // validateFormats: false,
                 // formats: {'*': true, checkbox: true},
-                loadSchema:loadSchema,
+                loadSchema: loadSchema(jsonschema.ajaxBase), //from jsonschema_tools
                 //strict: false,
                 // // allErrors: true,
                 // validateSchema: false, 
@@ -358,13 +298,13 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
 
         },
-        getEditor: function (work_over_body = jsonschema.work_over_body, was_working_over_body = jsonschema.work_over_body){
-            this.isHowto=true
+        getEditor: function (workOnBody = jsonschema.workOnBody, wasWorkingOverBody = jsonschema.workOnBody){
+            this.usingEditor=true
 
             let schema = jsonschema.jsonschema_schema;
 
             if (this.editor && this.editor instanceof window.JSONEditor){
-                this.saveToContext(was_working_over_body);
+                this.saveToContext(wasWorkingOverBody);
                 this.editor.destroy();
             }
             
@@ -379,7 +319,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 schema: schema,
 
                 // Seed the form with a starting value
-                startval: jsonschema.getValue(work_over_body),
+                startval: jsonschema.getValue(workOnBody),
 
                 // https://github.com/json-editor/json-editor#css-integration
                 // barebones, html (the default), bootstrap4, spectre, tailwind
@@ -463,27 +403,30 @@ ckan.module('jsonschema', function (jQuery, _) {
         editorOptToggle: function () {
             if(!this.editor) return;
 
-            jsonschema.saveToContext(jsonschema.work_over_body);
+            jsonschema.saveToContext(jsonschema.workOnBody);
 
             $('#editor-opt-toggle').html("Loading ...");
 
-            next = !jsonschema.work_over_body;
+            next = !jsonschema.workOnBody;
 
-            jsonschema.reload(jsonschema.jsonschema_type, 
-                use_editor = jsonschema.isHowto,
-                use_template = jsonschema.use_template,
-                work_over_body = next,
-                was_work_over_body = jsonschema.work_over_body
+            // jsonschema.reload(registryEntry = jsonschema.registryEntry,
+            // usingEditor = jsonschema.usingEditor,
+            // workOnBody = jsonschema.workOnBody,
+            // wasWorkingOverBody = jsonschema.workOnBody
+            jsonschema.reload(
+                usingEditor = jsonschema.usingEditor,
+                workOnBody = next,
+                wasWorkingOverBody = jsonschema.workOnBody
                 ).then(
                     (res)=>{
                         $('#editor-opt-toggle').html(next?"Options":"Body");
-                        jsonschema.work_over_body = next;
+                        jsonschema.workOnBody = next;
                     }
                 ).catch(
                     (err)=>{
                         alert('Unable to switch, please contact service desk: ' + err);
                         console.error(err.stack);
-                        $('#editor-opt-toggle').html(jsonschema.work_over_body?"Options":"Body");
+                        $('#editor-opt-toggle').html(jsonschema.workOnBody?"Options":"Body");
                     }
                 )
         },
@@ -521,7 +464,7 @@ ckan.module('jsonschema', function (jQuery, _) {
 
                 if (lock){
                     // prevent switch between editors (locks buttons)
-                    if (this.isHowto){
+                    if (this.usingEditor){
                         $('#editor-editor').prop('disabled',true);
                     } else {
                         $('#editor-howto').prop('disabled',true);
@@ -531,7 +474,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                     indicator.css("color","red");
                 } else {
                     // lock inverted
-                    if (this.isHowto){
+                    if (this.usingEditor){
                         $('#editor-howto').prop('disabled',true);
                     } else {
                         $('#editor-editor').prop('disabled',true);

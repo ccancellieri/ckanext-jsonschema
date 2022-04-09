@@ -28,6 +28,8 @@ SCHEMA_TYPE_KEY='jsonschema_type'
 #  Will contain the schema and template defined with the type-mapping
 JSON_SCHEMA_KEY = 'schema'
 JSON_TEMPLATE_KEY = 'template'
+JSON_OPT_SCHEMA_KEY = 'opt_schema'
+JSON_OPT_TEMPLATE_KEY = 'opt_template'
 JSON_REGISTRY_KEY = 'registry'
 
 JSONSCHEMA_CONFIG = {}

@@ -64,16 +64,15 @@
 {% endif %}
 
 <div id="jsonschema-config-form" data-module="jsonschema"
-    data-module-option = "{{ opt }}"
+    data-module-opt = "{{ opt }}"
     data-module-body = "{{ body }}"
     data-module-type = "{{ jsonschema_type }}"
+    data-module-use-template = "{{use_template}}"
     data-module-ckan-url = "{{ h.url_for('/',_external=True) }}"
-    data-module-use-template = {{use_template}}
-    data-module-body-key = {{BODY_KEY}}
-    data-module-type-key = {{TYPE_KEY}}
-    data-module-opt-key = {{OPT_KEY}}
-    data-module-element = "{{element}}"
-    />
+    data-module-body-key = "{{BODY_KEY}}"
+    data-module-type-key = "{{TYPE_KEY}}"
+    data-module-opt-key = "{{OPT_KEY}}"
+    data-module-element = "{{element}}"/>
 
 <div id="editor">
     <p>

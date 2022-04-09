@@ -35,50 +35,51 @@ def resource_create(next_auth, context, data_dict):
     # return result
     return validate_resource(next_auth, context, data_dict)
 
-
-
 @plugins.toolkit.chained_action
 def resource_update(next_auth, context, data_dict):
     return validate_resource(next_auth, context, data_dict)
-
-
 
 def validate_resource(next_auth, context, data_dict):
 
     errors = {}
     key = ''
 
-    body = _t.as_dict(_t.get_resource_body(data_dict))
     _type = _t.get_resource_type(data_dict)
-    opt = _t.as_dict(_t.get_resource_opt(data_dict))
 
     if not _type:
         # not a jsonschema resource, skip validation and extraction
         return next_auth(context, data_dict)
 
-
-    ######################### TODO #########################
-    if opt.get('validation') == False:
-        return
-
-    if not _type:
-        _v.stop_with_error('Unable to load a valid json schema type', key, errors)
-
-    schema = _t.get_schema_of(_type)
-
-    if not schema:
-        _v.stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
-
-    is_error = _t.draft_validation(_type, body, errors)
-
-    if is_error:
-        raise ValidationError(df.unflatten(errors))
-
-    extractor_context = {}
+    body = _t.as_dict(_t.get_resource_body(data_dict))
+    opt = _t.as_dict(_t.get_resource_opt(data_dict))
 
     package = toolkit.get_action('package_show')({}, {'id': data_dict.get('package_id')})
     package_type = _t.get_package_type(package)
 
-    _v.resource_extractor(data_dict, package_type, errors, extractor_context)
+    ######################### TODO #########################
+    
+    if opt.get('validation') == False:
+        return
+
+    if package_type and _t.get_package_opt(package) == False:
+        return
+    ######################### #### #########################
+
+    _v.item_validation(_type, body, opt, key, errors, context)
+
+    # if not _type:
+    #     _v.stop_with_error('Unable to load a valid json schema type', key, errors)
+
+    # schema = _t.get_schema_of(_type)
+
+    # if not schema:
+    #     _v.stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
+
+    # is_error = _t.draft_validation(_type, body, errors)
+
+    # if is_error:
+    #     raise ValidationError(df.unflatten(errors)) # ??? unflatten ???
+
+    _v.resource_extractor(data_dict, package_type, errors, {})
 
     return next_auth(context, data_dict)

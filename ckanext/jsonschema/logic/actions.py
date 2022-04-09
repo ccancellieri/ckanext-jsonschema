@@ -103,7 +103,7 @@ def importer(context, data_dict):
 
     extractor = plugin.get_input_extractor(_type, package_dict, import_context) 
     extractor(package_dict, errors, import_context)   
-
+    # TODO ######################
     opt['validation'] = False  
     #_t.update_extras_from_context(package_dict, import_context)
 
