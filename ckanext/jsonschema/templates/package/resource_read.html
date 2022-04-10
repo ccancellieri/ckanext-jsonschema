@@ -2,6 +2,7 @@
 
 {% import 'source/macros.html' as reader %}
 
+<!-- TODO: USE EXISTING HELPER OR DEFINE SOME -->
 {% if dataset_type %}
     {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
     {% if resource_types and resource_types | length > 0 %}
@@ -17,6 +18,7 @@
       <section class="module">
         {% block resource_additional_information_inner %}
         {% endblock %}
+        <!-- TODO: USE EXISTING HELPER OR DEFINE SOME -->
         {% if jsonschema is defined %}
   
           {% set body = h.jsonschema_get_resource_body(res) %}
@@ -24,7 +26,8 @@
           {% set schema_type = h.jsonschema_get_resource_type(res) %}
 
           {% set opt = h.jsonschema_get_resource_opt(res) %}
-
+          <!-- TODO: BLOCK REUSE 4 PACKAGE templates/source/read.html -->
+          <!-- REGISTRY TYPE BASED GUARD supported_jsonschema_fields -->
           <p>
             <div>
               <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
@@ -35,7 +38,8 @@
               <div class="col">
                 <div class="row">
                   <div class="" id="body">
-                    <div class="card card-body">          
+                    <div class="card card-body">
+                      <!-- REGISTRY TYPE BASED GUARD supported_jsonschema_fields -->
                     {% if body %}
                     <p>
                       <h3>Metadata:</h3>
@@ -48,6 +52,7 @@
                 <div class="row">
                   <div class="collapse" id="opt">
                     <div class="card card-body">
+                      <!-- TODO REGISTRY TYPE BASED GUARD supported_jsonschema_fields -->
                       {% if opt %}
                       <p>
                         <h3>Options:</h3>
@@ -60,6 +65,7 @@
                 <div class="row">
                   <div class="collapse" id="type">
                     <div class="card card-body">
+                      <!-- TODO REGISTRY TYPE BASED GUARD -->
                       {% if schema_type %}
                       <p>
                         <h3>Type:</h3>
