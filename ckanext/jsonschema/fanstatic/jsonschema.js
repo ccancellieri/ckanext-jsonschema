@@ -100,16 +100,16 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.useTemplate = (self.options.useTemplate||"false").toLowerCase() == "true";
             // TODO this should be provided by Jinja
             if (jsonschema.useTemplate){
-                template = () => registryEntry.template ? 
-                    jsonschema.fetch('jsonschema/template/' + registryEntry.template) : {};
+                template = registryEntry.template ? 
+                    jsonschema.fetch('jsonschema/template/' + registryEntry.template) : self.options.body;
 
-                opt_template = () => registryEntry.opt_template ?
-                    jsonschema.fetch('jsonschema/template/' + registryEntry.opt_template) : {};
+                opt_template = registryEntry.opt_template ?
+                    jsonschema.fetch('jsonschema/template/' + registryEntry.opt_template) : self.options.opt;
                 
                 const [body, opt] = await Promise.all([template, opt_template]).catch((err)=>console.error(err)); 
 
-                jsonschema.jsonschemaBody = body;
-                jsonschema.jsonschemaOpt = opt;
+                jsonschema.jsonschemaBody = body||{};
+                jsonschema.jsonschemaOpt = opt||{};
 
             } else {
 

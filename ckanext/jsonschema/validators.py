@@ -114,7 +114,7 @@ def item_validation(jsonschema_type, jsonschema_body, jsonschema_opt, key, error
     is_error = _t._draft_validation(filename, schema, jsonschema_body, errors)
     
     if is_error:
-        raise StopOnError()
+        stop_with_error('Unable to continue validation error found in Body for format {}'.format(jsonschema_type), key, errors)
 
     # OPT validation (optional, enabled if present in registry)
     filename = registry_entry.get(_c.JSON_OPT_SCHEMA_KEY)
@@ -125,26 +125,26 @@ def item_validation(jsonschema_type, jsonschema_body, jsonschema_opt, key, error
         
         is_error = _t._draft_validation(filename, schema, jsonschema_opt, errors)
         if is_error:
-            raise StopOnError()
+            stop_with_error('Unable to continue validation error found in Options for format {}'.format(jsonschema_type), key, errors)
 
 def view_schema_check(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, _type, opt = get_extras_from_view(_data)
+    body, jsonschema_type, opt = get_extras_from_view(_data)
     
-    if not _type:
+    if not jsonschema_type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
 
-    schema = _t.get_schema_of(_type)
+    schema = _t.get_schema_of(jsonschema_type)
 
     if not schema:
-        stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
+        stop_with_error('Unable to load a valid json-schema for type {}'.format(jsonschema_type), key, errors)
 
-    is_error = _t.draft_validation(_type, body, errors)
+    is_error = _t.draft_validation(jsonschema_type, body, errors)
 
     if is_error:
-        raise StopOnError()
+        stop_with_error('Unable to continue validation error found in View for format {}'.format(jsonschema_type), key, errors)
 
 def resources_extractor(key, data, errors, context):
     
