@@ -101,6 +101,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             #'jsonschema_get_view_types': _vt.get_view_types,
             'jsonschema_get_configured_jsonschema_types_for_plugin_view': _vt.get_configured_jsonschema_types_for_plugin_view,
             'jsonschema_get_view_info': _vt.get_view_info,
+            'jsonschema_get_rendered_resource_view': _vt.rendered_resource_view,
 
             # DEFAULTS
             'jsonschema_get_schema': lambda x : json.dumps(_t.get_schema_of(x)),
@@ -223,13 +224,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # # TODO: https://github.com/ckan/ckan/issues/6518 (related but available on 2.9.x)
     def read_template(self):
         return 'source/read.html'
-    # def read_template(self):
-        # for plugin in _v.JSONSCHEMA_PLUGINS:
-        #     try:
-        #         plugin.read_template()
-        #         return
-        #     except Exception as e:
-        #         log.error('Error resolving dataset types:\n{}'.format(str(e)))
 
     # def edit_template(self):
     #     return 'package/edit.html'
@@ -261,44 +255,3 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def show_package_schema(self):
         schema = default_show_package_schema()
         return _v.show_package_schema(schema)
-
-    # TODO presentation layer (solr also is related)
-    # def show_package_schema(self):
-    #     schema = default_show_package_schema()
-
-    #     # TODO why?!?!? this has been fixed in scheming 
-    #     # but core now is broken... :(
-    #     for field in schema['resources'].keys():
-    #         if isodate in schema['resources'][field]:
-    #             schema['resources'][field].remove(isodate)
-
-    #     # schema.get('__before').append(_v.resource_serializer)
-    #     schema.get('__after', []).append(_v.serializer)
-    #     return schema
-        
-
-
-
-# TODO def render_resource_view(resource, view):
-# IMPLEMENT EXTENSION POINT FOR PACKAGE AND RESOURCE VIEW RENDER BY PLUGIN
-# F.E.: iso.package_view, ...
-# here is an approach from ckan
-# @core_helper
-# def rendered_resource_view(resource_view, resource, package, embed=False):
-#     '''
-#     Returns a rendered resource view snippet.
-#     '''
-#     view_plugin = plugin.get_view_plugin(resource_view['view_type'])
-#     context = {}
-#     data_dict = {'resource_view': resource_view,
-#                  'resource': resource,
-#                  'package': package}
-#     vars = view_plugin.setup_template_variables(context, data_dict) or {}
-#     template = view_plugin.view_template(context, data_dict)
-#     data_dict.update(vars)
-
-#     if not resource_view_is_iframed(resource_view) and embed:
-#         template = "package/snippets/resource_view_embed.html"
-
-#     import ckan.lib.base as base
-#     return literal(base.render(template, extra_vars=data_dict))

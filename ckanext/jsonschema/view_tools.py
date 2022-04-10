@@ -264,6 +264,43 @@ def is_jsonschema_view(view_type):
 
     return False
         
+
+def get_jsonschema_view_plugin(view_type):
+
+    for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS:
+        info = plugin.info()
+
+        if info['name'] == view_type:
+            return plugin
+
+    return None
+
+def rendered_resource_view(resource_view, resource, package):
+    '''
+    Returns a rendered resource view snippet.
+    '''
+    view_type = resource_view['view_type']
+
+    # the two plugins may match
+    # import ckan.lib.datapreview as datapreview
+    # view_plugin = datapreview.get_view_plugin(view_type)
+    view_plugin = get_jsonschema_view_plugin(view_type)
+    
+    if not view_plugin:
+        return 'No plugin found for view_type: {}'.format(view_type)
+    
+    context = {}
+    data_dict = {'resource_view': resource_view,
+                 'resource': resource,
+                 'package': package}
+    vars = view_plugin.setup_template_variables(context, data_dict) or {}
+    template = view_plugin.view_template(context, data_dict)
+    data_dict.update(vars)
+    from webhelpers.html import literal
+    import ckan.lib.base as base
+    return literal(base.render(template, extra_vars=data_dict))
+
+
 def get_view_configuration(config, resource_format, resource_jsonschema_type=None):
     '''
     Returns the first (could be more than one) view configuration that matches the given resource 

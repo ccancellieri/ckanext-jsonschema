@@ -1,0 +1,11 @@
+{% ckan_extends %}
+
+{% block resource_view %}
+    {% if not h.jsonschema_is_jsonschema_view(resource_view.view_type) %}
+        {{super()}}
+    {% else %}
+        {% block jsonchema_view_body %}
+            {{ h.jsonschema_get_rendered_resource_view(resource_view, resource, package) }}
+        {% endblock %}
+    {% endif %}
+{% endblock %}
