@@ -277,3 +277,28 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #     return schema
         
 
+
+
+# TODO def render_resource_view(resource, view):
+# IMPLEMENT EXTENSION POINT FOR PACKAGE AND RESOURCE VIEW RENDER BY PLUGIN
+# F.E.: iso.package_view, ...
+# here is an approach from ckan
+# @core_helper
+# def rendered_resource_view(resource_view, resource, package, embed=False):
+#     '''
+#     Returns a rendered resource view snippet.
+#     '''
+#     view_plugin = plugin.get_view_plugin(resource_view['view_type'])
+#     context = {}
+#     data_dict = {'resource_view': resource_view,
+#                  'resource': resource,
+#                  'package': package}
+#     vars = view_plugin.setup_template_variables(context, data_dict) or {}
+#     template = view_plugin.view_template(context, data_dict)
+#     data_dict.update(vars)
+
+#     if not resource_view_is_iframed(resource_view) and embed:
+#         template = "package/snippets/resource_view_embed.html"
+
+#     import ckan.lib.base as base
+#     return literal(base.render(template, extra_vars=data_dict))
