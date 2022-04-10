@@ -4,12 +4,13 @@
 }
 
 /* #################### */
-div#editor-jsonschema-config {
-  background-color: #c4c4c4;
-}
-.well.well-sm div[data-schemapath^=root] {
+/* div#editor-jsonschema-config {
   background-color: #f6f6f6;
-}
+} */
+
+/* .well.well-sm div[data-schemapath^=root] {
+  background-color: #f6f6f6;
+} */
 
 /* #################### */
 
@@ -21,10 +22,6 @@ div#editor-jsonschema-config {
 /*
  Save space and higlight borders
 */
-
-div#terriajs-group {
-  padding: 5px;
-}
 
 .je-header{
   margin: 5px;
@@ -38,9 +35,7 @@ div#terriajs-group {
   margin: 5px;
   /*border-color: #000000; /*#0c6cac;*/
 }
-.well {    
-  background-color: #FFFFFF;
-}
+
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
   background-color: #eaf0f2;
   opacity: 1;
@@ -54,11 +49,7 @@ div#terriajs-group {
   margin-bottom: 5px;
 }
 
-/* terriajs-view  table does not respect width
-  overriding 
-  style="width: auto; max-width: none;"
-
-#editor-terriajs-config .table {
-  width: 100% !important;
-  max-width: 100% !important;
-}*/
+ /* main.css override */
+ #editor-jsonschema-config > div > div.well.well-sm {
+  padding: 15px;
+}

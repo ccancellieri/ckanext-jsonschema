@@ -57,6 +57,7 @@ supported_resource_types = {
     TYPE_ISO_RESOURCE_RESOURCE_CONTACT: extractor._extract_iso_resource_responsible,
     TYPE_ISO_RESOURCE_MAINTAINER: extractor._extract_iso_resource_responsible,
     TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible,
+    # TODO move the following to the default implementation
     'dataset-resource': lambda data, errors, context: None
 }
 
