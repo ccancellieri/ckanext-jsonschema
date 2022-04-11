@@ -219,14 +219,14 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # return jsonschema
 
     # def new_template(self):
-    #     return 'package/new.html'
+    #     return 'package/snippets/package_form.html'
 
     # # TODO: https://github.com/ckan/ckan/issues/6518 (related but available on 2.9.x)
     def read_template(self):
         return 'source/read.html'
 
     # def edit_template(self):
-    #     return 'package/edit.html'
+    #     return 'package/snippets/package_form.html'
 
     # def search_template(self):
     #     return 'package/search.html'

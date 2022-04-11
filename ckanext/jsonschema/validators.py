@@ -125,7 +125,7 @@ def item_validation(jsonschema_type, jsonschema_body, jsonschema_opt, key, error
         
         is_error = _t._draft_validation(filename, schema, jsonschema_opt, errors)
         if is_error:
-            stop_with_error('Unable to continue validation error found in Options for format {}'.format(jsonschema_type), key, errors)
+            stop_with_error('Unable to continue validation error found in <b>Options</b> for format {}'.format(jsonschema_type), key, errors)
 
 def view_schema_check(key, data, errors, context):
 

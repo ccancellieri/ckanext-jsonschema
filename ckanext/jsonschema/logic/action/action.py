@@ -60,26 +60,15 @@ def validate_resource(next_auth, context, data_dict):
     
     if opt.get('validation') == False:
         return
-
-    if package_type and _t.get_package_opt(package) == False:
-        return
     ######################### #### #########################
 
-    _v.item_validation(_type, body, opt, key, errors, context)
+    try:
+        
+        _v.item_validation(_type, body, opt, key, errors, context)
 
-    # if not _type:
-    #     _v.stop_with_error('Unable to load a valid json schema type', key, errors)
+        _v.resource_extractor(data_dict, package_type, errors, context)
 
-    # schema = _t.get_schema_of(_type)
-
-    # if not schema:
-    #     _v.stop_with_error('Unable to load a valid json-schema for type {}'.format(_type), key, errors)
-
-    # is_error = _t.draft_validation(_type, body, errors)
-
-    # if is_error:
-    #     raise ValidationError(df.unflatten(errors)) # ??? unflatten ???
-
-    _v.resource_extractor(data_dict, package_type, errors, {})
+    except df.StopOnError:
+        raise ValidationError(df.unflatten(errors))
 
     return next_auth(context, data_dict)
