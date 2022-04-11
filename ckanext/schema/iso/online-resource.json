@@ -9,8 +9,7 @@
     "name":{
       "propertyOrder": 10,
       "type":"string",
-      "title": "Name",
-      "pattern": "[a-zA-Z0-9]{2}"
+      "title": "Name"
      },
     "description":{
       "propertyOrder": 30,

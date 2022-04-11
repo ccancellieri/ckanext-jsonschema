@@ -100,7 +100,7 @@
 
       <!-- Needed to pass through the variables... -->
       {% set use_template = use_template %}
-      {% set element = h.jsonschema_as_json(resource) %}
+      {% set data_dict = h.jsonschema_as_json(resource) %}
       <!-- set jsonschema_type = jsonschema_type  -->
 
       {% include 'snippets/jsonschema_form.html' %}

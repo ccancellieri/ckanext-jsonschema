@@ -124,7 +124,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             jsonschema.optKey = self.options.optKey;
 
             // The current package / resource / view
-            jsonschema.element = self.options.element; 
+            jsonschema.dataDict = self.options.dataDict; 
 
             // are we working on the body? (or opt)
             jsonschema.workOnBody = true;

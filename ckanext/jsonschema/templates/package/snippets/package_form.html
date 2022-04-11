@@ -32,7 +32,7 @@
 
       {% set body = h.jsonschema_as_json(h.jsonschema_get_package_body(data)) %}
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_package_opt(data)) %}
-      {% set element = h.jsonschema_as_json(data) %}
+      {% set data_dict = h.jsonschema_as_json(data) %}
       
       {% include 'snippets/jsonschema_form.html' %}
 
