@@ -1,10 +1,10 @@
 
 import json
 
-import ckan.lib.helpers as h
 import ckan.logic as logic
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.logic.get as _g
+import ckanext.jsonschema.interfaces as _i
 from ckan.common import _, json, request
 
 # import ckan.common as converters
@@ -179,8 +179,11 @@ jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), v
 
 
 def get_view_body(package_id, resource_id, view_id):
-    
-    
+
+    #from flask import redirect, url_for
+    #return redirect(url_for('/'))
+
+
     try:
         resolve = request.args.get('resolve', 'false')
         wrap = request.args.get('wrap', 'false')
@@ -188,18 +191,16 @@ def get_view_body(package_id, resource_id, view_id):
 
         view_body = _vt.get_view_body(view)
         view_type = view.get('view_type')
+        plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
 
         if not view_body:
             raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
 
-        if wrap.lower() == 'true':
-            view_body = _vt.wrap_view(view, view_body)
-
         if resolve.lower() == 'true':
-            package_id = toolkit.get_or_bust(view,'package_id')
-            resource_id = toolkit.get_or_bust(view,'resource_id')
-            model = _vt._get_model(package_id, resource_id)
-            view_body = _vt.interpolate_fields(model, view_body, view_type)
+            view_body = plugin.resolve(view_body, view)
+
+        if wrap.lower() == 'true':
+            view_body = plugin.wrap_view(view_type, view_body)
         
         return Response(stream_with_context(json.dumps(view_body)), mimetype='application/json')
     except ValidationError as e:

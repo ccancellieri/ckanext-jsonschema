@@ -30,7 +30,7 @@ def _extract_from_view(view, domain):
     
     raise Exception("Missing parameter resource or domain")
 
-def interpolate_fields(model, template, view_type):
+def interpolate_fields(model, template):
 
     def functionLoader(_template):
         return _template
@@ -46,12 +46,6 @@ def interpolate_fields(model, template, view_type):
         trim_blocks=False,
         keep_trailing_newline=True
     )
-
-    try:
-        _enhance_model_with_data_helpers(model, template, view_type)
-    except Exception as e:
-        message = 'Exception: {}'.format(str(e))
-        raise ValidationError({'message': message}, error_summary = message)
     
     try:
         
@@ -79,13 +73,20 @@ def interpolate_fields(model, template, view_type):
         _template = None
         rendered = ''
         
-        polished_template = re.sub(method_recognize_regex, output_regex, json.dumps(template))
+        ## TEMPLATE SETUP
+        polished_template = json.dumps(template)
+        
+        # json.dumps double escapes strings (if there was a \n in template, becomes \\n) and this breaks jinja
+        # with the decode the double escape is reverted
+        polished_template = polished_template.decode("unicode-escape")
+        polished_template = re.sub(method_recognize_regex, output_regex, polished_template)
         
         _template = env.get_template(polished_template)
         
         rendered = _template.render(model)
 
-        template = json.loads(rendered)
+        # We use strict false so that control characters such as \n don't break json.loads
+        template = json.loads(rendered, strict=False)
 
     except TemplateSyntaxError as e:
         message = 'Unable to interpolate field on line \'{}\' Error:\'{}\' Value:\'{}\''\
@@ -155,21 +156,6 @@ def _get_model(package_id, resource_id):
 
     return _dict 
 
-def _enhance_model_with_data_helpers(model, template, view_type):
-    '''
-    This methods adds data helpers from plugins to the model provided to the template renderer
-    Plugins implementing the IJsonschemaView interface can define the method get_data_helpers which returns a list of function
-    The function are injected with their name in the environment of jinja
-    '''
-
-    resource = model['resource']
-    
-    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
-    data_helpers = plugin.get_data_helpers(view_type, template, resource)
-
-    # TODO CHECK FOR CONFLICTS
-    model.update(data_helpers)
-
 def get_resource_content(resource):
     '''
     Plugin that implement IJsonschemaView should call this to get the resource content depending on the type of the resource
@@ -216,14 +202,6 @@ def load_resource_content_from_url(resource):
 
     return resource_content
 
-def wrap_view(view, content):
-
-    view_type = view.get("view_type") 
-
-    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
-    content = plugin.wrap_view(view_type, content)
-    return content
-
 #### VIEW CONFIGURATION #####
 
 VIEWS_KEY = 'views'
@@ -255,14 +233,7 @@ def get_view_jsonshema_types(config, resource):
     return view_types
 
 def is_jsonschema_view(view_type):
-
-    for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS:
-        info = plugin.info()
-
-        if info['name'] == view_type:
-            return True
-
-    return False
+    return get_jsonschema_view_plugin(view_type) != None
         
 
 def get_jsonschema_view_plugin(view_type):
@@ -306,6 +277,8 @@ def get_view_configuration(config, resource_format, resource_jsonschema_type=Non
     Returns the first (could be more than one) view configuration that matches the given resource 
     '''
     
+    resource_format = resource_format.lower()
+
     for view in get_views(config):
 
         format_matches = view.get(_c.RESOURCE_FORMAT) == resource_format or view.get(_c.WILDCARD_FORMAT, False) == True

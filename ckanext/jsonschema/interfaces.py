@@ -11,17 +11,16 @@ class IJsonschemaView(Interface):
         
         pass
 
-    def interpolate_data(self, resource):
+    def get_data_helpers(self, view_type, template, resource):
         '''
-        Uses the body of the resource to resolve links to external data and construct an object which contains those
-        External data could be csvs, smart-csvs, BigQuery references...
-
+        Returns a list of functions that use the body of the resource to resolve links to external data and construct an object which contains those
+        External data could be csvs, smart-csvs, BigQuery references
         '''
-
-        return resource
         
-    def get_data_helpers(self):
-        return []
+        return {}
+
+    def resolve(self, template):
+        return template
 
     def wrap_view(self, view, content):
         return content

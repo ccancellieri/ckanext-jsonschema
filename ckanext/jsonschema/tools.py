@@ -293,16 +293,14 @@ def is_supported_jsonschema_field(jsonschema_type, field):
 
 
 def get_schema_of(_type):
-
     return _find_in_registry_or_catalog(_type, _c.JSON_SCHEMA_KEY)
 
 def get_template_of(_type):
-
     return _find_in_registry_or_catalog(_type, _c.JSON_TEMPLATE_KEY)
 
 def get_module_for(_type):
-
     return _find_in_registry_or_catalog(_type, _c.JS_MODULE_KEY)
+
 
 def _find_in_registry_or_catalog(item, sub):
     try:
