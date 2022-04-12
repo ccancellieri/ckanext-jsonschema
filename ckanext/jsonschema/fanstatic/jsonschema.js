@@ -16,7 +16,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             } else {
                 value = jsonschema.jsonschemaOpt;
             }
-            return JSON.stringify(value, null, 2);
+            return asObject(value);
         },
         onSubmit: function (event) {
                 if (!this.editor) return;
@@ -179,7 +179,6 @@ ckan.module('jsonschema', function (jQuery, _) {
             let schema={
                 "type": "string",
                 "format": "json",
-                "title": "Body",
                 "options": {
                       "ace": {
                         //"theme": "ace/theme/tailwind",
@@ -209,7 +208,7 @@ ckan.module('jsonschema', function (jQuery, _) {
                 schema: schema,
 
                 // Seed the form with a starting value
-                startval: jsonschema.getValue(workOnBody),
+                startval: JSON.stringify(jsonschema.getValue(workOnBody), null, 2),
 
                 // urn_resolver: (urn, callback) => {
                 //         loadSchema(urn)
