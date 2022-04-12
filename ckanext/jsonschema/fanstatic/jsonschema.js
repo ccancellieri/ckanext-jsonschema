@@ -16,7 +16,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             } else {
                 value = jsonschema.jsonschemaOpt;
             }
-            return asObject(value);
+            return JSON.stringify(value, null, 2);
         },
         onSubmit: function (event) {
                 if (!this.editor) return;

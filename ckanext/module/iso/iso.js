@@ -22,7 +22,7 @@ export const initialize = () => {
                     return "Please set a view id";
                 }
                 
-                var url = new URL('jsonschema/describe?view_id='+e.id, jsonschema.ckan_url);
+                var url = new URL('jsonschema/describe?view_id='+e.id, jsonschema.ckanUrl);
                 var request = new XMLHttpRequest();
                 request.open('GET', url, false);  // `false` makes the request synchronous
                 request.send(null);
@@ -49,7 +49,7 @@ export const initialize = () => {
                 }
                 let _url = 'api/3/action/tag_autocomplete?query='+encodeURI(input)
 
-                let url = new URL(_url, jsonschema.ckan_url);
+                let url = new URL(_url, jsonschema.ckanUrl);
 
                 return window.JSONEditor.defaults.callbacks.autocomplete.jsonschema_fetch(jseditor_editor, url);
             },
@@ -67,7 +67,7 @@ export const initialize = () => {
                     _url = _url +'&vocabulary_id=' + encodeURI(vocab_name)
                 }
 
-                let url = new URL(_url, jsonschema.ckan_url);
+                let url = new URL(_url, jsonschema.ckanUrl);
 
                 return window.JSONEditor.defaults.callbacks.autocomplete.jsonschema_fetch(jseditor_editor, url);
             },
