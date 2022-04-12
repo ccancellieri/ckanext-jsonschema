@@ -28,7 +28,6 @@ log = logging.getLogger(__name__)
 
 from flask import (Blueprint, Response, abort, jsonify, send_file,
                    stream_with_context)
-from jinja2 import Markup, Template
 
 # TODO decorate jsonschema blueprint with tools.initialize
 jsonschema = Blueprint(_c.TYPE, __name__)
@@ -196,11 +195,12 @@ def get_view_body(package_id, resource_id, view_id):
         if not view_body:
             raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
 
+        if wrap.lower() == 'true':
+            view_body = plugin.wrap_view(view_body, view)
+
         if resolve.lower() == 'true':
             view_body = plugin.resolve(view_body, view)
 
-        if wrap.lower() == 'true':
-            view_body = plugin.wrap_view(view_type, view_body)
         
         return Response(stream_with_context(json.dumps(view_body)), mimetype='application/json')
     except ValidationError as e:

@@ -11,19 +11,11 @@ class IJsonschemaView(Interface):
         
         pass
 
-    def get_data_helpers(self, view_type, template, resource):
-        '''
-        Returns a list of functions that use the body of the resource to resolve links to external data and construct an object which contains those
-        External data could be csvs, smart-csvs, BigQuery references
-        '''
-        
-        return {}
-
     def resolve(self, template):
         return template
 
-    def wrap_view(self, view, content):
-        return content
+    def wrap_view(self, view_body, view):
+        return view_body
 
 class IBinder(Interface):
 
