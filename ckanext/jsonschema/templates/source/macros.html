@@ -1,6 +1,7 @@
 
 {% macro render_json_body(json) -%}
 
+<!--TODO: Check for data-sources plain object-->
 {% if json is string %}
   {{ json }}
 {% elif json is mapping %}

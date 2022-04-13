@@ -74,11 +74,12 @@ def interpolate_fields(model, template):
         rendered = ''
         
         ## TEMPLATE SETUP
-        polished_template = json.dumps(template)
         
         # json.dumps double escapes strings (if there was a \n in template, becomes \\n) and this breaks jinja
         # with the decode the double escape is reverted
-        polished_template = polished_template.decode("unicode-escape")
+        polished_template = json.dumps(template).decode("unicode-escape")
+
+        # apply the regex to find custom jinja functions and remove quotes
         polished_template = re.sub(method_recognize_regex, output_regex, polished_template)
         
         _template = env.get_template(polished_template)
@@ -98,30 +99,6 @@ def interpolate_fields(model, template):
 
     #return dictize_pkg(template)
     return template
-
-def render_template(template_name, extra_vars):
-
-    import os
-
-    import jinja2
-
-    # setup for render
-    templates_path = os.path.join(_c.PATH_ROOT, "jsonschema/templates")
-    templateLoader = jinja2.FileSystemLoader(searchpath=templates_path)
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    template = templateEnv.get_template(template_name)
-    
-    # add helpers
-    from ckan.plugins import get_plugin
-    h = get_plugin(_c.TYPE).get_helpers()
-    extra_vars['h'] = h
-
-    try:
-        return template.render(extra_vars)
-    except jinja2.TemplateSyntaxError as e:
-        log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
-    except Exception as e:
-        log.error('Exception: {}'.format(str(e)))
 
 def _get_model(package_id, resource_id):
     '''
@@ -154,7 +131,14 @@ def _get_model(package_id, resource_id):
         #'data': {} #TODO
         }
 
-    return _dict 
+
+    # In interpolate_fields, when jinja tries to render the model, if the model contains invalid characters (eg degrees symbol) 
+    # it crashes due to encoding issues:
+    #       'ascii' codec can't decode byte 0xc2 in position 599: ordinal not in range(128)' 
+    # So we re-encode the model for special characters
+    model = json.loads(json.dumps(_dict).encode('utf-8'))
+
+    return model 
 
 def get_resource_content(resource):
     '''

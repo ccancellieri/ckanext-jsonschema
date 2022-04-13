@@ -430,7 +430,13 @@ def _extract_from_package(dataset, domain, default_value = {}):
 # TODO check also tools.get_package_type
 def _get_package_type(data = None):
     
+    
     _type = data and data.get('type')
+
+    # TODO
+    # if not _type and toolkit.c.pkg_dict:
+    #   _type = toolkit.c.pkg_dict.get('type')
+
     if _type:
         return _type
 
@@ -500,29 +506,32 @@ def as_json(value):
 #             except:
 #                 fd[key] =  value
 
-def render_template(template_name, extra_vars):
+# def render_template(template_name, extra_vars):
 
-    import os
+#     import os
 
-    import jinja2
+#     import jinja2
 
-    # setup for render
-    templates_path = os.path.join(_c.PATH_ROOT, "jsonschema/templates")
-    templateLoader = jinja2.FileSystemLoader(searchpath=templates_path)
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    template = templateEnv.get_template(template_name)
+#     # setup for render
+#     templates_paths = [
+#         os.path.join(_c.PATH_ROOT, "jsonschema/templates"),
+#         os.path.join(_c.PATH_ROOT, "jsonschema/iso19139/templates"), #TODO should get from plugins
+#     ]
+#     templateLoader = jinja2.FileSystemLoader(searchpath=templates_paths)
+#     templateEnv = jinja2.Environment(loader=templateLoader)
+#     template = templateEnv.get_template(template_name)
     
-    # add helpers
-    from ckan.plugins import get_plugin
-    h = get_plugin(_c.TYPE).get_helpers()
-    extra_vars['h'] = h
+#     # add helpers
+#     from ckan.plugins import get_plugin
+#     h = get_plugin(_c.TYPE).get_helpers()
+#     extra_vars['h'] = h
 
-    try:
-        return template.render(extra_vars)
-    except jinja2.TemplateSyntaxError as e:
-        log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
-    except Exception as e:
-        log.error('Exception: {}'.format(str(e)))
+#     try:
+#         return template.render(extra_vars)
+#     except jinja2.TemplateSyntaxError as e:
+#         log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
+#     except Exception as e:
+#         log.error('Exception: {}'.format(str(e)))
 
 
 ###################################
