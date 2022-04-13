@@ -1,0 +1,68 @@
+<!--
+    Must be defined:
+    - jsonschema_type
+    - body
+    - opt
+-->
+
+{% import 'source/macros.html' as reader %}
+  
+    <p>
+    </p>
+    <p>
+      <div>
+        <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
+          {% if h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#body" aria-expanded="false" aria-controls="body">Full Metadata</button>
+          {% endif %}
+          {% if h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'opt') %}
+             <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#opt" aria-expanded="false" aria-controls="opt">Options</button>
+          {% endif %}
+          {% if jsonschema_type %}
+             <!-- We don't have the helper here but we check if it is a jsonschema item checking if the type is defined -->
+             <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#type" aria-expanded="false" aria-controls="type">Type</button>
+          {% endif %}
+        </div>
+        {% if jsonschema_type %}
+        <div class="col">
+          <div class="row">
+            <div class="collapse multi-collapse" id="body">
+              <div class="card card-body">          
+              {% if body %}
+              <p>
+                <h3>Metadata:</h3>
+                {{ reader.render_json(body) }}
+              </p>
+              {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="collapse multi-collapse" id="opt">
+              <div class="card card-body">
+                {% if opt %}
+                <p>
+                  <h3>Options:</h3>
+                  {{ reader.render_json(opt) }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="collapse multi-collapse" id="type">
+              <div class="card card-body">
+                {% if jsonschema_type %}
+                <p>
+                  <h3>Type:</h3>
+                  {{ jsonschema_type }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </p>
+    

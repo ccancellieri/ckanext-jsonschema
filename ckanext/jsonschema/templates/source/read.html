@@ -2,10 +2,6 @@
 
 {% set pkg = c.pkg_dict %}
 
-{% import 'source/macros.html' as reader %}
-
-
-
 
 {% block primary_content_inner %}
   {{ super() }}
@@ -54,64 +50,13 @@
   {% endfor %}
 
 
-{% set body = h.jsonschema_get_package_body(pkg) %}
-
-{% set schema_type = h.jsonschema_get_package_type(pkg) %}
+  <!-- THIS RENDERS FULL METADATA/OPTIONS/TYPE BUTTONS -->  
+  {% set jsonschema_type = h.jsonschema_get_package_type(pkg) %}
+  {% set body = h.jsonschema_get_package_body(pkg) %}
+  {% set opt = h.jsonschema_get_package_opt(pkg) %}
   
-{% set opt = h.jsonschema_get_package_opt(pkg) %}
-
-<p>
-<!-- TODO: BLOCK REUSE 4 PACKAGE templates/package/resource_read.html -->
-<!-- REGISTRY TYPE BASED GUARD supported_jsonschema_fields-->
-</p>
-<p>
-  <div>
-    <div style="width:90%;display: flex;margin-left:auto;margin-right:auto;justify-content: space-evenly;">
-      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#body" aria-expanded="false" aria-controls="body">Full Metadata</button>
-      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#opt" aria-expanded="false" aria-controls="opt">Options</button>
-      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#type" aria-expanded="false" aria-controls="type">Type</button>
-    </div>
-    <div class="col">
-      <div class="row">
-        <div class="collapse multi-collapse" id="body">
-          <div class="card card-body">          
-          {% if body %}
-          <p>
-            <h3>Metadata:</h3>
-            {{ reader.render_json(body) }}
-          </p>
-          {% endif %}
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="collapse multi-collapse" id="opt">
-          <div class="card card-body">
-            {% if opt %}
-            <p>
-              <h3>Options:</h3>
-              {{ reader.render_json(opt) }}
-            </p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="collapse multi-collapse" id="type">
-          <div class="card card-body">
-            {% if schema_type %}
-            <p>
-              <h3>Type:</h3>
-              {{ schema_type }}
-            </p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</p>
-  
+  {% include 'source/jsonschema_buttons.html' %}
+  <!---->
 
   {% block package_additional_info %}
   

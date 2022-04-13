@@ -2,12 +2,12 @@
 {% ckan_extends %}
 
   {% if h.jsonschema_get_package_type() in h.jsonschema_handled_dataset_types() %}
-    {% set jsonschema = true %}
+    {% set is_jsonschema = true %}
   {% endif %}
 
 
   {% block stages %}
-    {% if jsonschema %}
+    {% if is_jsonschema %}
     <!-- Hide breadcrumb -->
     {% else %}     
       {{super()}}
@@ -15,7 +15,7 @@
   {% endblock %}
 
   {% block errors %}
-    {% if jsonschema %}
+    {% if is_jsonschema %}
       {{ custom_form.custom_errors(error_summary) }}
     {% else %}
       {{ form.errors(error_summary) }}
@@ -28,7 +28,7 @@
 
   {% block metadata_fields %}
     {% set jsonschema_type = h.jsonschema_get_package_type(data) %}
-    {% if jsonschema and h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
+    {% if is_jsonschema and h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
 
       {% set body = h.jsonschema_as_json(h.jsonschema_get_package_body(data)) %}
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_package_opt(data)) %}
@@ -36,6 +36,6 @@
       
       {% include 'snippets/jsonschema_form.html' %}
 
-    {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}
+      {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}
     {% endif %}
   {% endblock %}

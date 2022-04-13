@@ -60,8 +60,8 @@ class JsonSchemaStac(plugins.SingletonPlugin):
 
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
-        toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('fanstatic', 'stac')
+        #toolkit.add_public_directory(config_, 'public')
+        #toolkit.add_resource('fanstatic', 'stac')
 
     def package_types(self):
         # We want a generic type "stac" in the interface

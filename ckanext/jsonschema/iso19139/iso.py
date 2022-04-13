@@ -131,8 +131,9 @@ class JsonschemaIso(p.SingletonPlugin):
 
     # IConfigurer
     def update_config(self, config_):
-        pass
-        #TODO
+        toolkit.add_template_directory(config_, 'templates')
+        toolkit.add_public_directory(config_, 'public')
+        toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
 
     
     def get_input_types(self):

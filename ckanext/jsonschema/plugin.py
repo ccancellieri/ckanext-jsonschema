@@ -223,6 +223,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     # # TODO: https://github.com/ckan/ckan/issues/6518 (related but available on 2.9.x)
     def read_template(self):
+        #TODO
+        # If you want to render a specific view for a specific jsonschema type, use this method to return the template
+        # package_type = _t.get_package_type(toolkit.c.pkg_dict)
         return 'source/read.html'
 
     # def edit_template(self):

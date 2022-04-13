@@ -1,30 +1,4 @@
 {% ckan_extends %}
-  
-{% if dataset_type %}
-    {% set resource_types = h.jsonschema_handled_resource_types(dataset_type) %}
-    {% if resource_types and resource_types | length > 0 %}
-        {% set jsonschema = true %}
-    {% endif %}
-{% endif %}
-
-{% block stages %}
-  {% if jsonschema %}
-    <!-- Hide breadcrumb -->
-  {% else %}
-    {{super()}}
-  {% endif %}
-{% endblock %}
-
-
-{% block errors %}
-  {% if jsonschema %}
-    {% import 'macros/custom_form.html' as custom_form %}
-    {{ custom_form.custom_errors(error_summary) }}
-  {% else %}
-    {{ form.errors(error_summary) }}
-  {% endif %}
-{% endblock %}
-
 
 {% set jsonschema_type = h.jsonschema_get_resource_type(data) %}
 
@@ -40,16 +14,36 @@
   {% set use_template = True %}
 {% endif %}
 
+{% set is_jsonschema = jsonschema_type in h.jsonschema_handled_resource_types(dataset_type) %}
+
+
+{% block stages %}
+  {% if is_jsonschema %}
+    <!-- Hide breadcrumb -->
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+
+{% block errors %}
+  {% if is_jsonschema %}
+    {% import 'macros/custom_form.html' as custom_form %}
+    {{ custom_form.custom_errors(error_summary) }}
+  {% else %}
+    {{ form.errors(error_summary) }}
+  {% endif %}
+{% endblock %}
+
 
 {% block basic_fields %}
 
-  {% set filtered_types = resource_types %}
+  {% set filtered_types =  h.jsonschema_handled_resource_types(dataset_type) %}
   <!-- Adds the select for the jsonschema_type -->
   {% include 'snippets/jsonschema_type_select.html' %}
 
   {% block scripts %}
       {# which is the jsonschema type in this context/environment #}
-      {% if jsonschema %}
 
           <script>
             function select_jsonschema_type(jsonschema_type){
@@ -63,7 +57,6 @@
             }
           </script>
         
-      {% endif %}
   {% endblock %}
 
   {% block basic_fields_name %}
@@ -91,7 +84,7 @@
   {% endblock %}
 
 
-  {% if jsonschema is defined %}
+  {% if is_jsonschema %}
     {% if h.jsonschema_is_supported_jsonschema_field(jsonschema_type, 'body') %}
       
       {% set template = h.jsonschema_get_template(jsonschema_type) %}
