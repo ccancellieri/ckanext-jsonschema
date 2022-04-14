@@ -1,4 +1,3 @@
-{% import 'macros/custom_form.html' as custom_form %}
 {% ckan_extends %}
 
   {% if h.jsonschema_get_package_type() in h.jsonschema_handled_dataset_types() %}
@@ -16,6 +15,7 @@
 
   {% block errors %}
     {% if is_jsonschema %}
+      {% import 'macros/custom_form.html' as custom_form %}
       {{ custom_form.custom_errors(error_summary) }}
     {% else %}
       {{ form.errors(error_summary) }}

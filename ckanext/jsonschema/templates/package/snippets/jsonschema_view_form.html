@@ -1,7 +1,12 @@
 {% set data = data or {} %}
 {% set errors = errors or {} %}
 
-{{ form.errors(error_summary) }}
+{% if is_jsonschema %}
+    {% import 'macros/custom_form.html' as custom_form %}
+    {{ custom_form.custom_errors(error_summary) }}
+{% else %}
+    {{ form.errors(error_summary) }}
+{% endif %}
 
 {% set jsonschema_type = h.jsonschema_get_view_type(resource_view) %}
 
