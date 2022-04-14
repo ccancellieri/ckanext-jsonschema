@@ -202,19 +202,21 @@ def get_info(config):
     return config.get(INFO_KEY)
 
 def get_view_jsonshema_types(config, resource):
-    # Takes also the resource
-    # Could filter view types based on format or resource jsonschema type
+    # view_types = []
 
-    view_types = []
+    # views = get_views(config)
+    # for view in views:
+    #     view_jsonschema_types_list = view.get(_c.VIEW_JSONSCHEMA_TYPE)
+    #     for view_jsonschema_type in view_jsonschema_types_list: 
+    #         if view_jsonschema_type not in view_types:
+    #             view_types.append(view_jsonschema_type)
 
-    views = get_views(config)
-    for view in views:
-        view_jsonschema_types_list = view.get(_c.VIEW_JSONSCHEMA_TYPE)
-        for view_jsonschema_type in view_jsonschema_types_list: 
-            if view_jsonschema_type not in view_types:
-                view_types.append(view_jsonschema_type)
+    # return view_types
 
-    return view_types
+    resource_format = resource.get('format')
+    resource_jsonschema_type = _t.get_resource_type(resource)
+    view_configuration = get_view_configuration(config, resource_format, resource_jsonschema_type)
+    return view_configuration.get(_c.VIEW_JSONSCHEMA_TYPE)
 
 def is_jsonschema_view(view_type):
     return get_jsonschema_view_plugin(view_type) != None
