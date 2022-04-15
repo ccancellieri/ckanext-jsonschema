@@ -477,7 +477,7 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
                 resource_position = resource.get('position') or 'unknown'
                 resource_name = resource.get('name') or 'unnamed'
                 message = 'Resource body and opt should be an object. Please check resource n.{} named: "{}"'.format(resource_position, resource_name)
-                message += '   AArray is not allowed to be used at root level.'
+                message += '   Array is not allowed to be used at root level.'
                 stop_with_error(str(_(message)), key, errors)
                 
 ############################################

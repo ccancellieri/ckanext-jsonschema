@@ -141,10 +141,21 @@ def _extract_iso_resource_responsible(data, errors, context):
     body = _t.get_resource_body(data)
 
     name = body.get('individualName', 'Contact')
-    # as discussed on 06/12/2022
-    organisationName = body.get('organisationName', name) or \
-            _t.get_nested(body, ('onlineResource','name',))
+
+    # NAME IS ORGANIZATION NAME or INDIVIDUAL NAME or ONLINERESOURCE/NAME
+    # as discussed on 06/12/2021
+    organisationName = body.get('organisationName') 
     
+    if not organisationName:
+        organisationName = name
+
+    if not organisationName:
+        organisationName = _t.get_nested(body, ('contactInfo', 'onlineResource','name',))
+
+    if not organisationName:
+        _v.stop_with_error('Error in resource: one of "<b>Organization name</b>", "<b>Individual name</b>" and "<b>Contact Info -> Web Link -> Name</b>" may have a value', 'data identification', errors)
+
+
     role = body.get('role','')
     # if not role:
     #     _v.stop_with_error('Unable to obtain role', 'role', errors)
