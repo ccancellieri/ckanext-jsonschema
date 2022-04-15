@@ -23,6 +23,7 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.view_tools as _vt
+import ckanext.jsonschema.indexer as indexer
 
 log = logging.getLogger(__name__)
 
@@ -179,11 +180,6 @@ jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), v
 
 
 def get_view_body(package_id, resource_id, view_id):
-
-    #from flask import redirect, url_for
-    #return redirect(url_for('/'))
-
-
     try:
         resolve = request.args.get('resolve', 'false')
         wrap = request.args.get('wrap', 'false')
@@ -191,7 +187,7 @@ def get_view_body(package_id, resource_id, view_id):
 
         view_body = _vt.get_view_body(view)
         view_type = view.get('view_type')
-        plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
+        plugin = _vt.get_jsonschema_view_plugin(view_type)
 
         if not view_body:
             raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
@@ -241,3 +237,29 @@ def get_model(package_id, resource_id):
     return Response(stream_with_context(json.dumps(content)), mimetype='application/json')
 jsonschema.add_url_rule('/{}/model/<package_id>/<resource_id>'.format(_c.TYPE), view_func=get_model, endpoint='model', methods=[u'GET'])
 
+############## SEARCH
+
+def search_index():
+    q = request.args.get('q')
+    docs = indexer.search(q)
+    
+    return Response(stream_with_context(json.dumps(docs, default=json_serial)), mimetype='application/json')
+
+def search_view_index(package_name):
+    
+    docs = indexer.search_view_by_package_name(package_name)
+    
+    return Response(stream_with_context(json.dumps(docs, default=json_serial)), mimetype='application/json')
+    
+jsonschema.add_url_rule('/{}/search'.format(_c.TYPE), view_func=search_index, endpoint='search', methods=[u'GET'])
+jsonschema.add_url_rule('/{}/search_view/<package_name>'.format(_c.TYPE), view_func=search_view_index, endpoint='search_view', methods=[u'GET'])
+
+# MOVE IN TOOLS
+from datetime import date, datetime
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))

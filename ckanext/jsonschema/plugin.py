@@ -45,7 +45,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IDatasetForm)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IValidators)
-    #plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IActions)
 
@@ -143,8 +143,63 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         #     'url':d.url
         # }
 
-    # def before_index(self, pkg_dict):
-    #     return pkg_dict
+    def before_index(self, pkg_dict):
+
+        package = json.loads(pkg_dict['data_dict'])
+        package_id = package.get('id')
+        site_id = pkg_dict.get('site_id')
+
+        resources = package.get('resources')
+
+        childs = []
+        res_ids = []
+        res_jsonschema_types = []
+        res_jsonschema_bodys = []
+        res_jsonschema_opts = []
+
+        resource_views = [] 
+
+        # TODO filter only active resources/views
+        for resource in resources:
+            res_ids.append(resource.get('id'))
+            res_jsonschema_types.append(_t.get_resource_type(resource) or None)
+            res_jsonschema_bodys.append(_t.get_resource_body(resource) or None)
+            res_jsonschema_opts.append(_t.get_resource_opt(resource) or None)
+
+            resource_views = toolkit.get_action('resource_view_list')({}, {'id': resource.get('id')})
+            
+            for idx, view in enumerate(resource_views): 
+
+                view_type = view.get('view_type')
+                plugin = _vt.get_jsonschema_view_plugin(view_type)
+
+                view_jsonschema_body = _vt.get_view_body(view)
+                view_jsonschema_body_resolved = plugin.resolve(_t.as_dict(view_jsonschema_body), view)
+
+                childs.append({
+                    'site_id': site_id,
+                    'index_id': idx,
+                    'package_id': package_id,
+                    'res_id': resource.get('id'),
+                    'id': view.get('id'),
+                    'view_id': view.get('id'),
+                    'view_type': view_type,
+                    'view_{}'.format(_c.SCHEMA_TYPE_KEY): _vt.get_view_type(view) or None,
+                    'view_{}'.format(_c.SCHEMA_BODY_KEY): view_jsonschema_body or None,
+                    'view_{}_resolved'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body_resolved),
+                    'view_{}'.format(_c.SCHEMA_OPT_KEY): _vt.get_view_opt(view) or None
+                })
+
+
+        pkg_dict.update({
+            'res_id': res_ids,
+            'res_{}'.format(_c.SCHEMA_TYPE_KEY): res_jsonschema_types,
+            'res_{}'.format(_c.SCHEMA_BODY_KEY): res_jsonschema_bodys,
+            'res_{}'.format(_c.SCHEMA_OPT_KEY): res_jsonschema_opts,
+            '_childDocuments_': childs
+          })
+
+        return pkg_dict
             
 
     # def before_view(self, pkg_dict):

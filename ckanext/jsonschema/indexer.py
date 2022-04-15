@@ -1,16 +1,59 @@
-
 import logging
+import socket
 
-import ckanext.jsonschema.utils as _u
+import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.constants as _c
+import pysolr
 import requests
+from ckan.common import config
 # use
 # &wt=json for json response writer
 # or
 # &wt=python
 # see https://solr.apache.org/guide/6_6/response-writers.html
-from ckan.lib.search.common import SolrSettings
+from ckan.lib.search.common import SolrSettings, SearchIndexError, make_connection
+
 
 log = logging.getLogger(__name__)
+
+
+def search_view_by_package_name(package_name):
+    
+    query = '{!child of="entity_type:package"}name:' + package_name
+    views_resolved = []
+    key = "view_{}_resolved".format(_c.SCHEMA_BODY_KEY)
+    for view in search(query):
+        views_resolved.append(_t.as_dict(view.get(key)))
+
+    return views_resolved
+
+def search(query):
+
+    # include_private = asbool(data_dict.pop('include_private', False))
+    # include_drafts = asbool(data_dict.pop('include_drafts', False))
+    # data_dict.setdefault('fq', '')
+    # if not include_private:
+    #     data_dict['fq'] = '+capacity:public ' + data_dict['fq']
+    # if include_drafts:
+    #     data_dict['fq'] += ' +state:(active OR draft)'
+
+
+    solr = make_connection()
+    #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
+    try:
+        return solr.search(q=query).docs
+    except socket.error as e:
+        err = 'Could not connect to SOLR %r: %r' % (solr.url, e)
+        log.error(err)
+        raise SearchIndexError(err)
+    except pysolr.SolrError as e:
+        err = 'SOLR %r exception: %r' % (solr.url, e)
+        log.error(err)
+        raise SearchIndexError(err)
+
+
+
+################################### UNUSED ############################################
 
 
 BASE_URL = SolrSettings.get()[0].replace('/ckan', '')
@@ -209,12 +252,12 @@ def index():
 
     
 
-def search(core_name):
-    ''' 
-        - We need a query by id (single result) 
-        - We need a free text like query in each field
-    '''
-    pass
+# def search(core_name):
+#     ''' 
+#         - We need a query by id (single result) 
+#         - We need a free text like query in each field
+#     '''
+#     pass
 
 
 def indexer_get(url, params={}):

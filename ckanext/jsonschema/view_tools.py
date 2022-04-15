@@ -370,7 +370,7 @@ def get_configured_jsonschema_types_for_plugin_view(view_type, resource):
     The view is retrieved by matching on the view_type and the plugin.info.name
     '''
 
-    plugin = next(plugin for plugin in _i.JSONSCHEMA_IVIEW_PLUGINS if plugin.info().get('name') == view_type)
+    plugin = get_jsonschema_view_plugin(view_type)
     config = plugin.config
     return get_view_jsonshema_types(config, resource)
 
