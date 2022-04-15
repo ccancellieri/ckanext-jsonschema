@@ -399,8 +399,8 @@ def jsonschema_fields_to_string(key, data, errors, context):
     _data[_c.SCHEMA_TYPE_KEY] = _t.get_package_type(_data)
     _data[_c.SCHEMA_OPT_KEY] = json.dumps(_t.as_dict(_t.get_package_opt(_data)))
 
-    # for resource in _data.get('resources', []):
-    #     jsonschema_resource_fields_to_string(resource)
+    for resource in _data.get('resources', []):
+        jsonschema_resource_fields_to_json(resource)
 
     data.update(df.flatten_dict(_data))
 
