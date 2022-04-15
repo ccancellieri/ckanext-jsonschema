@@ -452,7 +452,7 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
     
     else:
 
-        for resource in unflattened_data.get('resources',[]):
+        for idx, resource in enumerate(unflattened_data.get('resources',[])):
 
             # skip this validation if it is not a jsonschema resource
             if not _t.get_resource_type(resource):
@@ -478,6 +478,6 @@ def jsonschema_fields_should_be_objects(key, data, errors, context):
                 resource_name = resource.get('name') or 'unnamed'
                 message = 'Resource body and opt should be an object. Please check resource n.{} named: "{}"'.format(resource_position, resource_name)
                 message += '   Array is not allowed to be used at root level.'
-                stop_with_error(str(_(message)), key, errors)
+                stop_with_error(str(_(message)), ('resources', idx, _c.SCHEMA_BODY_KEY, ), errors)
                 
 ############################################

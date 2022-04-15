@@ -50,7 +50,8 @@
 	{% if resource_body and resource_body.contactInfo %}
 		{% if resource_body.contactInfo.address
 			and resource_body.contactInfo.address.electronicMailAddress %}
-{{_label}}: [{{resource_body.individualName}}](mailto:{{resource_body.contactInfo.address.electronicMailAddress}}) {{resource_body.organisationName}}
+			{% set info_name = resource_body.individualName or resource_body.organisationName %}
+{{_label}}: [{{info_name}}](mailto:{{resource_body.contactInfo.address.electronicMailAddress}})
 		{% else %}
 {{_label}}: {{resource_body.individualName}} {{resource_body.organisationName}}
 		{% endif %}

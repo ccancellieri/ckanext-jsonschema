@@ -161,28 +161,40 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         # TODO filter only active resources/views
         for resource in resources:
-            res_ids.append(resource.get('id'))
+            resource_id = resource.get('id')
+            res_ids.append(resource_id)
             res_jsonschema_types.append(_t.get_resource_type(resource) or None)
             res_jsonschema_bodys.append(_t.get_resource_body(resource) or None)
             res_jsonschema_opts.append(_t.get_resource_opt(resource) or None)
 
-            resource_views = toolkit.get_action('resource_view_list')({}, {'id': resource.get('id')})
+            resource_views = toolkit.get_action('resource_view_list')({}, {'id': resource_id})
             
             for idx, view in enumerate(resource_views): 
 
+                view_id = view.get('id')
                 view_type = view.get('view_type')
                 plugin = _vt.get_jsonschema_view_plugin(view_type)
 
                 view_jsonschema_body = _vt.get_view_body(view)
-                view_jsonschema_body_resolved = plugin.resolve(_t.as_dict(view_jsonschema_body), view)
+                view_jsonschema_body_resolved = view_jsonschema_body
+
+                if plugin:
+                    try:
+                        view_jsonschema_body_resolved = plugin.resolve(_t.as_dict(view_jsonschema_body), view)
+                    except Exception as e:
+                        log.error('Error while resolving view. ')
+                        log.error('Package id:{}, resource id:{}, view id: {}'.format(package_id, resource_id, view_id))
+                        log.error(str(e))
+                else:
+                    log.warn('No plugin found for view_type: {}'.format(view_type))
 
                 childs.append({
                     'site_id': site_id,
                     'index_id': idx,
                     'package_id': package_id,
-                    'res_id': resource.get('id'),
-                    'id': view.get('id'),
-                    'view_id': view.get('id'),
+                    'res_id': resource_id,
+                    'id': view_id,
+                    'view_id': view_id,
                     'view_type': view_type,
                     'view_{}'.format(_c.SCHEMA_TYPE_KEY): _vt.get_view_type(view) or None,
                     'view_{}'.format(_c.SCHEMA_BODY_KEY): view_jsonschema_body or None,

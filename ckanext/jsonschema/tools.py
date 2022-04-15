@@ -6,6 +6,7 @@ _ = toolkit._
 import json
 import logging
 import os
+from datetime import date, datetime
 
 import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
@@ -315,7 +316,7 @@ def _find_in_registry_or_catalog(item, sub):
         # in that case fetch the filename directly from the catalog
         filename = item
 
-    return _c.JSON_CATALOG[sub].get(filename)
+    return _c.JSON_CATALOG.get(sub, {}).get(filename)
 
 ###################################################### 
 
@@ -577,6 +578,7 @@ class CustomRefResolver(RefResolver):
         """
 
         import os
+
         import jsonschema.exceptions as exceptions
         from jsonschema.compat import urldefrag
 
@@ -674,3 +676,11 @@ def format_number(n):
 def url_quote(url):
     import urllib
     return urllib.quote(url)
+
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))

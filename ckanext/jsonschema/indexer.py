@@ -27,7 +27,7 @@ def search_view_by_package_name(package_name):
 
     return views_resolved
 
-def search(query):
+def search(query, fq=''):
 
     # include_private = asbool(data_dict.pop('include_private', False))
     # include_drafts = asbool(data_dict.pop('include_drafts', False))
@@ -41,7 +41,7 @@ def search(query):
     solr = make_connection()
     #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
     try:
-        return solr.search(q=query).docs
+        return solr.search(q=query, fq='').docs
     except socket.error as e:
         err = 'Could not connect to SOLR %r: %r' % (solr.url, e)
         log.error(err)
