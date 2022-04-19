@@ -224,16 +224,42 @@ From CKAN 2.8.9 it should be possible to create the file at the startup, so the 
 
 Add the following entry to the SOLR schema.xml:
 
+
+```
+
 <field name="package_id" type="string" indexed="true" stored="true" multiValued="false"/>
 
 <field name="res_id" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="res_jsonschema_type" type="string" indexed="true" stored="true" multiValued="true"/>
+<field name="res_jsonschema_type" type="string" indexed="true" stored="true"multiValued="true"/>
 <field name="res_jsonschema_body" type="text" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschema_opt" type="text" indexed="true" stored="true" multiValued="true"/>
 
 <field name="view_id" type="string" indexed="true" stored="true" />
 <field name="view_type" type="string" indexed="true" stored="true"/>
 <field name="view_jsonschema_type" type="string" indexed="true" stored="true"/>
-<field name="view_jsonschema_body" type="text" indexed="true" stored="true"/>
+<field name="view_jsonschema_body" type="text" indexed="false" stored="true"/>
 <field name="view_jsonschema_body_resolved" type="text" indexed="true" stored="true"/>
 <field name="view_jsonschema_opt" type="text" indexed="true" stored="true"/>
+
+```
+
+
+Tomcat9 sorl:
+
+Due to relaxedQueryPath limits (https://tomcat.apache.org/tomcat-8.5-doc/config/http.html)
+we need to properly setup the connector:
+nano /etc/tomcat9/server.xml
+
+Setup the connector as following:
+
+```
+<Connector port="8983" protocol="HTTP/1.1"
+                   connectionTimeout="20000"
+               redirectPort="8443" relaxedQueryChars="&quot;&lt;&gt;[\]^`{|}"
+/>
+```
+
+
+see also:
+
+"&quot;&lt;&gt;![\]^`{|}"
