@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 def search_view_by_package_name(package_name):
     
-    query = '{!child of="entity_type:package"}name:' + package_name
+    query = '{\!child of="entity_type:package"}name:' + package_name
     views_resolved = []
     key = "view_{}_resolved".format(_c.SCHEMA_BODY_KEY)
     for view in search(query):
