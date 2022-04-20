@@ -84,7 +84,7 @@ FILENAME_REGISTRY='registry.json'
 
 # VIEWS
 PATH_VIEW_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.view_config', path.join(PATH_ROOT,'view_config')))
-RESOURCE_FORMAT = 'resource_format'
+RESOURCE_FORMATS = 'resource_formats'
 WILDCARD_FORMAT = 'available_for_all_resource_formats'
 RESOURCE_JSONSCHEMA_TYPE = 'resource_jsonschema_type'
 WILDCARD_JSONSCHEMA_TYPE = 'available_for_all_resource_jsonschema_types'

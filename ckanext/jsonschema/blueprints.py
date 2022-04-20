@@ -226,16 +226,24 @@ jsonschema.add_url_rule('/{}/type/<package_id>/<resource_id>/<view_id>'.format(_
 jsonschema.add_url_rule('/{}/opt/<package_id>/<resource_id>/<view_id>'.format(_c.TYPE), view_func=get_view_opt, methods=[u'GET'])
 
 
-def get_model(package_id, resource_id):
+def get_model(package_id, resource_id, view_id=None):
 
-    # TODO
-    # This doesn't work
-    # Define what has to be in the model    
-    content = _vt._get_model(package_id, resource_id)
+    if not package_id or not resource_id:
+        abort(400, str(_("package_id and resource_id are mandatory")))
 
+    content = {}
+
+    if view_id:
+        view = _g.get_view(view_id)
+        view_type = view.get('view_type')
+        plugin = _vt.get_jsonschema_view_plugin(view_type)
+        content = plugin.get_model(view)
+    else:
+        abort(500, str(_("Unimplemented get_model for resource")))
 
     return Response(stream_with_context(json.dumps(content)), mimetype='application/json')
 jsonschema.add_url_rule('/{}/model/<package_id>/<resource_id>'.format(_c.TYPE), view_func=get_model, endpoint='model', methods=[u'GET'])
+jsonschema.add_url_rule('/{}/model/<package_id>/<resource_id>/<view_id>'.format(_c.TYPE), view_func=get_model, endpoint='model', methods=[u'GET'])
 
 ############## SEARCH
 

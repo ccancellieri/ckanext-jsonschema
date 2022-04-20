@@ -63,7 +63,7 @@
             title="{{_('Shows a table with copy to clipboard buttons for a fast usage of available informations from the dataset and resources')}}"
             data-target="#helperTable" >{{_('Tools')}}</button>
         <a class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Click to open the model used by this configuration"
-            href="{{h.url_for('jsonschema.model', resource_id=resource.id, package_id=package.id, _external=True)}}" target="_blank">
+            href="{{h.url_for('jsonschema.model', resource_id=resource.id, package_id=package.id, view_id=resource_view.id, _external=True)}}" target="_blank">
             Model
         </a>
         {% if resource_view.id %}
