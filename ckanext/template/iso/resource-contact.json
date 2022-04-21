@@ -1,4 +1,17 @@
 {
-    "name":"",
-    "description":""
+    "individualName":"",
+    "organisationName":"",
+    "role":"author",
+    "contactInfo": {
+        "address": {
+            "electronicMailAddress":"",
+            "country":"",
+            "deliveryPoint":"",
+            "postalCode":"",
+            "city": ""
+        },
+        "phone": {
+            "voice":""
+        }
+    }
 }
