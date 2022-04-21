@@ -168,12 +168,16 @@ def clone_metadata(context, data_dict):
 
     _type = _t.get_package_type(pkg)
     body = _t.get_package_body(pkg)
-
-
-    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)
+    opt = {
+        'cloned' : True,
+        'source_url': pkg.get('url'),
+        'cloned_on': str(datetime.datetime.now())
+    }
 
     package_dict = {
-        'extras': pkg.get('extras'),
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY : _type,
+        _c.SCHEMA_OPT_KEY : opt,
         'resources': [],
         'type': _type,
         'owner_org': data_dict.get('owner_org')
@@ -181,18 +185,8 @@ def clone_metadata(context, data_dict):
     
     _check_access('package_create', context, package_dict)
 
-    opt = {
-        'cloned' : True,
-        'source_url': pkg.get('url'),
-        'cloned_on': str(datetime.datetime.now())
-    }
 
-    clone_context = {
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : _type,
-        _c.SCHEMA_OPT_KEY : opt,
-    }
-
+    clone_context = {}
     errors = []
 
     try:
@@ -215,7 +209,7 @@ def clone_metadata(context, data_dict):
 
 
         # Port back from context extras to data
-        _t.update_extras_from_context(package_dict, clone_context)
+        #_t.update_extras_from_context(package_dict, clone_context)
 
         for resource in pkg.get('resources'):
 
@@ -226,12 +220,7 @@ def clone_metadata(context, data_dict):
                 if 'revision_id' in resource:
                     del resource['revision_id']
                 
-                resource_clone_context = {
-                    _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
-                    _c.SCHEMA_TYPE_KEY : _t.get_resource_type(resource),
-                    _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
-                }
-
+                resource_clone_context = {}
                 resource_type = _t.get_resource_type(resource)
                 plugin = configuration.get_plugin(_type, resource_type)
                 
@@ -242,8 +231,6 @@ def clone_metadata(context, data_dict):
                     continue
                 
                 cloner(resource, errors, resource_clone_context)
-
-                _t.update_extras_from_resource_context(resource, resource_clone_context)
 
                 # attach to package_dict
                 package_dict['resources'].append(resource)
