@@ -88,7 +88,7 @@ class IBinder(Interface):
         '''
         pass
 
-    def clone(self, package_dict, errors, context):
+    def clone(self, source_pkg, package_dict, errors, context):
         '''
         Clones a package        
         '''
