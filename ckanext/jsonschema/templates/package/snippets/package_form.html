@@ -37,5 +37,8 @@
       {% include 'snippets/jsonschema_form.html' %}
 
       {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}
+    {% else %}
+      {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}
     {% endif %}
+
   {% endblock %}
