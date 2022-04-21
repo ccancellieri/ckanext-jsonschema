@@ -263,6 +263,9 @@ def get_view_configuration(config, resource_format, resource_jsonschema_type=Non
     Returns the first (could be more than one) view configuration that matches the given resource 
     '''
     
+    if not resource_format:
+        return None
+
     resource_format = resource_format.lower()
 
     for view in get_views(config):
