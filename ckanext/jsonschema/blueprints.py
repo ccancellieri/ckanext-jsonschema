@@ -239,7 +239,8 @@ def get_model(package_id, resource_id, view_id=None):
         plugin = _vt.get_jsonschema_view_plugin(view_type)
         content = plugin.get_model(view)
     else:
-        abort(500, str(_("Unimplemented get_model for resource")))
+        content = _vt.get_model(package_id, resource_id)
+        #abort(500, str(_("Unimplemented get_model for resource")))
 
     return Response(stream_with_context(json.dumps(content)), mimetype='application/json')
 jsonschema.add_url_rule('/{}/model/<package_id>/<resource_id>'.format(_c.TYPE), view_func=get_model, endpoint='model', methods=[u'GET'])

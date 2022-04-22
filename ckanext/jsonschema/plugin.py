@@ -144,6 +144,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # }
 
     # def before_index(self, pkg_dict):
+    # IMPORTANT: Check already existing views on not available plugin
+    # ckan/lib/datapreview/resource_view_list filters out views for which the plugin is no more available
+
 
     #     package = json.loads(pkg_dict['data_dict'])
     #     package_id = package.get('id')
