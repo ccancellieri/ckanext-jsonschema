@@ -62,17 +62,17 @@ PATH_TEMPLATE=path.realpath(config.get('ckanext.jsonschema.path.template', path.
 REST_TEMPLATE_PATH='/{}/template'.format(TYPE)
 
 #REST_GET_BODY = TODO
-REST_GET_BODY_PATH='/{}/body'.format(TYPE)
+#REST_GET_BODY_PATH='/{}/body'.format(TYPE)
 
 
 # (Optional)
 # Used as options
-PATH_OPT=path.realpath(config.get('ckanext.jsonschema.path.opt', path.join(PATH_ROOT,'opt')))
-REST_OPT_PATH='/{}/opt'.format(TYPE)
+#PATH_OPT=path.realpath(config.get('ckanext.jsonschema.path.opt', path.join(PATH_ROOT,'opt')))
+#REST_OPT_PATH='/{}/opt'.format(TYPE)
 
 # (Optional)
 # Used as json-editor modules to initialize the UI with js extension points
-PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.moudle', path.join(PATH_ROOT,'module')))
+PATH_MODULE=path.realpath(config.get('ckanext.jsonschema.path.module', path.join(PATH_ROOT,'module')))
 REST_MODULE_FILE_PATH='/{}/module'.format(TYPE)
 
 PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join(PATH_ROOT,'config')))
@@ -83,7 +83,6 @@ PATH_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.config', path.join
 FILENAME_REGISTRY='registry.json'
 
 # VIEWS
-PATH_VIEW_CONFIG=path.realpath(config.get('ckanext.jsonschema.path.view_config', path.join(PATH_ROOT,'view_config')))
 RESOURCE_FORMATS = 'resource_formats'
 WILDCARD_FORMAT = 'available_for_all_resource_formats'
 RESOURCE_JSONSCHEMA_TYPE = 'resource_jsonschema_type'
