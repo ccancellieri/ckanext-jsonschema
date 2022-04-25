@@ -1,8 +1,14 @@
 {
 
+    "dataset": {
+        "label": "Dataset",
+        "plugin_name": "jsonschema_dataset",
+        "supported_all_ckan_fields": true
+    },
     "dataset-resource": {
         "label": "Dataset Resource",
-        "supported_all_ckan_fields": true
+        "supported_all_ckan_fields": true,
+        "plugin_name": "jsonschema_dataset"
     },
 
 

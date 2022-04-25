@@ -11,6 +11,18 @@ class IJsonschemaView(Interface):
         
         pass
 
+
+    def get_model(self, view):
+        """
+        Optionally used in resolve if needed
+        Plugins can enrich the model
+
+        Needed because interpolate already has the view, while the blueprint only has the view_id
+        This method retrieves the id and calls _get_model which expects the view and not the id
+        """
+        import ckanext.jsonschema.view_tools as _vt
+        return _vt.get_model(view.get('package_id'), view.get('resource_id'))
+
     def resolve(self, template):
         return template
 
@@ -76,7 +88,7 @@ class IBinder(Interface):
         '''
         pass
 
-    def clone(self, package_dict, errors, context):
+    def clone(self, source_pkg, package_dict, errors, context):
         '''
         Clones a package        
         '''
@@ -159,6 +171,17 @@ class IBinder(Interface):
         Returns dump function for the package_type
         '''
         return None
+
+    def get_model(self, package_id, resource_id):
+        '''
+        Optionally used in resolve if needed
+        Plugins can enrich the model
+        '''
+        import ckanext.jsonschema.view_tools as _vt
+
+        return _vt.get_model(package_id, resource_id)
+
+
 
 
 JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(IBinder)

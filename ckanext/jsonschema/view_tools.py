@@ -68,7 +68,7 @@ def interpolate_fields(model, template):
         
         import re
 
-        method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\.\_\-]*\)\}\})\"'
+        method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\, \.\_\-]*\)\}\})\"'
         output_regex = '\g<1>'
         _template = None
         rendered = ''
@@ -100,7 +100,7 @@ def interpolate_fields(model, template):
     #return dictize_pkg(template)
     return template
 
-def _get_model(package_id, resource_id):
+def get_model(package_id, resource_id):
     '''
     Returns the model used by jinja2 template
     '''
@@ -263,11 +263,14 @@ def get_view_configuration(config, resource_format, resource_jsonschema_type=Non
     Returns the first (could be more than one) view configuration that matches the given resource 
     '''
     
+    if not resource_format:
+        return None
+
     resource_format = resource_format.lower()
 
     for view in get_views(config):
 
-        format_matches = view.get(_c.RESOURCE_FORMAT) == resource_format or view.get(_c.WILDCARD_FORMAT, False) == True
+        format_matches = resource_format in view.get(_c.RESOURCE_FORMATS, []) or view.get(_c.WILDCARD_FORMAT, False) == True
             
         if format_matches:
             

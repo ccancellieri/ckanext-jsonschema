@@ -1,3 +1,5 @@
+import datetime
+
 import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
 
@@ -12,17 +14,15 @@ Invalid = df.Invalid
 
 import logging
 
+import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.tools as _t
-from ckanext.jsonschema.iso19139 import extractor
-from ckanext.jsonschema.iso19139 import extractor_iso19139
+from ckanext.jsonschema.iso19139 import extractor, extractor_iso19139
 from ckanext.jsonschema.iso19139.constants import (
-    TYPE_ISO, TYPE_ISO19139,
-    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY, TYPE_ISO_RESOURCE_DISTRIBUTOR, 
-    TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW, TYPE_ISO_RESOURCE_MAINTAINER, 
-    TYPE_ISO_RESOURCE_METADATA_CONTACT, TYPE_ISO_RESOURCE_ONLINE_RESOURCE,
-    TYPE_ISO_RESOURCE_RESOURCE_CONTACT
-    )
+    TYPE_ISO, TYPE_ISO19139, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY,
+    TYPE_ISO_RESOURCE_DISTRIBUTOR, TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW,
+    TYPE_ISO_RESOURCE_MAINTAINER, TYPE_ISO_RESOURCE_METADATA_CONTACT,
+    TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_RESOURCE_CONTACT)
 
 log = logging.getLogger(__name__)
 
@@ -35,9 +35,6 @@ import ckan.lib.navl.dictization_functions as df
 
 config = toolkit.config
 
-
-def default_cloner(item, errors, context):
-    pass
 
 input_types = {
     TYPE_ISO19139: extractor_iso19139._extract_iso
@@ -56,17 +53,33 @@ supported_resource_types = {
     TYPE_ISO_RESOURCE_METADATA_CONTACT: extractor._extract_iso_resource_responsible,
     TYPE_ISO_RESOURCE_RESOURCE_CONTACT: extractor._extract_iso_resource_responsible,
     TYPE_ISO_RESOURCE_MAINTAINER: extractor._extract_iso_resource_responsible,
-    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible,
-    # TODO move the following to the default implementation
-    'dataset-resource': lambda data, errors, context: None
+    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: extractor._extract_iso_resource_responsible
 }
 
 
-def clone(package_dict, errors, context):
-        body = _t.get_package_body(package_dict)
+def clone(source_pkg, package_dict, errors, context):
+   
+    _type = _t.get_package_type(source_pkg)
+    body = _t.get_package_body(source_pkg)
+    opt = {
+        'cloned' : True,
+        'source_url': source_pkg.get('url'),
+        'cloned_on': str(datetime.datetime.now())
+    }
 
-        # reset the ID so that it is assigned by extract_from_json
-        body['fileIdentifier'] = ''
+    # reset the ID so that it is assigned by extract_from_json
+    body['fileIdentifier'] = ''
+
+    package_dict.update({
+        _c.SCHEMA_BODY_KEY: body,
+        _c.SCHEMA_TYPE_KEY : _type,
+        _c.SCHEMA_OPT_KEY : opt,
+    })
+
+
+
+def default_cloner(item, errors, context):
+    pass
 
 clonable_package_types = {
     TYPE_ISO: clone,

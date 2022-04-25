@@ -25,7 +25,7 @@
             <b>{{_('Error message:')}}</b> {{error.message[0]|safe}}
         {% else %}
           <!-- This will print errors unexpected errors in jsonschema, like exceptions -->
-          {{error|safe}}
+          {{key}} : {{error|safe}}
         {% endif %}
     </li>
     {% endfor %}

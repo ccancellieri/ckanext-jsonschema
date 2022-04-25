@@ -14,7 +14,7 @@
         },
         "organisationName": {
             "propertyOrder": 10,
-            "title": "Organisation name",
+            "title": "Organization name",
             "type": "string"
         },
         "positionName": {

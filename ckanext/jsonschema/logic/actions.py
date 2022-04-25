@@ -163,17 +163,16 @@ def validate_metadata(context, data_dict):
 
 def clone_metadata(context, data_dict):
 
+    source_pkg = _t.get(data_dict.get('id'))
+    _type = _t.get_package_type(source_pkg)
 
-    pkg = _t.get(data_dict.get('id'))
+    try:
+        plugin = configuration.get_plugin(_type)
+    except PluginNotFoundException as e:
+        return { "success": False, "msg": str(e)}
 
-    _type = _t.get_package_type(pkg)
-    body = _t.get_package_body(pkg)
-
-
-    #jsonschema_extras = _t.remove_jsonschema_extras_from_package_data(pkg)
 
     package_dict = {
-        'extras': pkg.get('extras'),
         'resources': [],
         'type': _type,
         'owner_org': data_dict.get('owner_org')
@@ -181,25 +180,9 @@ def clone_metadata(context, data_dict):
     
     _check_access('package_create', context, package_dict)
 
-    opt = {
-        'cloned' : True,
-        'source_url': pkg.get('url'),
-        'cloned_on': str(datetime.datetime.now())
-    }
 
-    clone_context = {
-        _c.SCHEMA_BODY_KEY: body,
-        _c.SCHEMA_TYPE_KEY : _type,
-        _c.SCHEMA_OPT_KEY : opt,
-    }
-
+    clone_context = {}
     errors = []
-
-    try:
-        plugin = configuration.get_plugin(_type)
-    except PluginNotFoundException as e:
-        return { "success": False, "msg": str(e)}
-
 
     try:
 
@@ -211,13 +194,9 @@ def clone_metadata(context, data_dict):
             return { "success": False, "msg": message}
 
         
-        cloner(package_dict, errors, clone_context)
+        cloner(source_pkg, package_dict, errors, clone_context)
 
-
-        # Port back from context extras to data
-        _t.update_extras_from_context(package_dict, clone_context)
-
-        for resource in pkg.get('resources'):
+        for resource in source_pkg.get('resources'):
 
             try:
                 del resource['id']
@@ -226,15 +205,15 @@ def clone_metadata(context, data_dict):
                 if 'revision_id' in resource:
                     del resource['revision_id']
                 
-                resource_clone_context = {
-                    _c.SCHEMA_BODY_KEY: _t.get_resource_body(resource),
-                    _c.SCHEMA_TYPE_KEY : _t.get_resource_type(resource),
-                    _c.SCHEMA_OPT_KEY : _t.get_resource_opt(resource),
-                }
-
+                resource_clone_context = {}
                 resource_type = _t.get_resource_type(resource)
                 plugin = configuration.get_plugin(_type, resource_type)
                 
+                # default to dataset resource
+                if not resource_type:
+                    import ckanext.jsonschema.dataset.constants as _dataset_constants
+                    resource_type = _dataset_constants.TYPE_DATASET_RESOURCE
+
                 cloner = plugin.get_resource_cloner(_type, resource_type)
 
                 if not cloner:
@@ -243,14 +222,32 @@ def clone_metadata(context, data_dict):
                 
                 cloner(resource, errors, resource_clone_context)
 
-                _t.update_extras_from_resource_context(resource, resource_clone_context)
-
                 # attach to package_dict
                 package_dict['resources'].append(resource)
             except PluginNotFoundException: #TODO remove, should raise error
                 pass 
 
         return toolkit.get_action('package_create')(context, package_dict)
+        # cloned_pkg_dict = toolkit.get_action('package_create')(context, package_dict)
+
+        # for new_resource in cloned_pkg_dict.get('resources'):
+
+        #     # find original resources to retrieve their id
+
+        #     # TODO: this is very very ugly...
+        #     source_resource = next(res for res in pkg.get('resources') if res.get('created') == resource.get('created'))
+        #     source_resource_id = source_resource.get('id')
+        #     source_views =  toolkit.get_action('resource_view_list')(context, {'id': new_resource.get()})
+
+        #     new_resource_id = new_resource.get('id')
+
+        #     for new_view in source_views:
+        #         del new_view['id']
+        #         new_view['resource_id'] = new_resource_id
+        #         toolkit.get_action('resource_view_create')(context, new_view)
+
+        # return cloned_pkg_dict
+
     except Exception as e:
         import traceback
         traceback.print_exc()
