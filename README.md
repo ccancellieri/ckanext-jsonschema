@@ -234,12 +234,14 @@ Add the following entry to the SOLR schema.xml:
 <field name="res_jsonschema_body" type="text" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschema_opt" type="text" indexed="true" stored="true" multiValued="true"/>
 
-<field name="view_id" type="string" indexed="true" stored="true" />
+<dynamicField name="res_view_*" type="text" indexed="true" stored="true" multiValued="true"/>
+
+<!--field name="view_id" type="string" indexed="true" stored="true" />
 <field name="view_type" type="string" indexed="true" stored="true"/>
 <field name="view_jsonschema_type" type="string" indexed="true" stored="true"/>
-<field name="view_jsonschema_body" type="text" indexed="false" stored="true"/>
+<field name="view_jsonschema_body" type="text" indexed="true" stored="true"/>
 <field name="view_jsonschema_body_resolved" type="text" indexed="true" stored="true"/>
-<field name="view_jsonschema_opt" type="text" indexed="true" stored="true"/>
+<field name="view_jsonschema_opt" type="text" indexed="true" stored="true"/-->
 
 ```
 
