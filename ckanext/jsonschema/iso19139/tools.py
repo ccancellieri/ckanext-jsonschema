@@ -27,6 +27,8 @@ def calculate_bbox(wms_base_url, layer_name = None):
 
 # TODO see also
 # https://github.com/ckan/ckanext-spatial/blob/master/ckanext/spatial/lib/__init__.py
+# https://github.com/ckan/ckanext-spatial/blob/master/ckanext/spatial/harvesters/base.py#L420
+# https://geobgu.xyz/py/shapely.html
 
 
 # response = wms.getmap(layers=[name,],
