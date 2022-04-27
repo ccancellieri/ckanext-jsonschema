@@ -150,9 +150,14 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         # TODO use IBinder to define extension points by plugin
 
+
         package = json.loads(pkg_dict['data_dict'])
         package_id = package.get('id')
         site_id = pkg_dict.get('site_id')
+
+        package_jsonschema_type = _t.get_package_type(package)
+        package_plugin = configuration.get_plugin(package_jsonschema_type)
+        pkg_dict = package_plugin.before_index_package(pkg_dict) 
 
         resources = package.get('resources')
 
@@ -193,14 +198,14 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 if view_type not in view_types:
                     view_types.append(view_type)
 
-                plugin = _vt.get_jsonschema_view_plugin(view_type)
+                view_plugin = _vt.get_jsonschema_view_plugin(view_type)
 
                 view_jsonschema_body = _vt.get_view_body(view)
                 view_jsonschema_body_resolved = view_jsonschema_body
 
-                if plugin:
+                if view_plugin:
                     try:
-                        view_jsonschema_body_resolved = plugin.resolve(_t.as_dict(view_jsonschema_body), view)
+                        view_jsonschema_body_resolved = view_plugin.resolve(_t.as_dict(view_jsonschema_body), view)
 
                         # only on solr > 5.x
     #                     childs.append({

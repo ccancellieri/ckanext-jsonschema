@@ -257,6 +257,13 @@ Add the following entry to the SOLR schema.xml:
 <field name="view_jsonschema_body_resolved" type="text" indexed="true" stored="true"/>
 <field name="view_jsonschema_opt" type="text" indexed="true" stored="true"/-->
 
+
+<field name="bbox_area" type="float" indexed="true" stored="true" />
+<field name="maxx" type="float" indexed="true" stored="true" />
+<field name="maxy" type="float" indexed="true" stored="true" />
+<field name="minx" type="float" indexed="true" stored="true" />
+<field name="miny" type="float" indexed="true" stored="true" />
+
 ```
 
 

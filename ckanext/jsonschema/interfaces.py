@@ -182,6 +182,11 @@ class IBinder(Interface):
         return _vt.get_model(package_id, resource_id)
 
 
+    def before_index_package(self, pkg_dict):
+        '''
+        Modify pkg_dict before it is indexed 
+        '''
+        return pkg_dict
 
 
 JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(IBinder)
