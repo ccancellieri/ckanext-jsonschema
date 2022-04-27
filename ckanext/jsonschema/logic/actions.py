@@ -1,12 +1,11 @@
-import datetime
+from datetime import date, datetime
 
-import ckan.plugins.toolkit as toolkit
-import ckanext.jsonschema.constants as _c
-import ckanext.jsonschema.utils as _u
-import ckanext.jsonschema.validators as _v
-import ckanext.jsonschema.tools as _t
-import ckanext.jsonschema.configuration as configuration
 import ckan.lib.navl.dictization_functions as df
+import ckan.plugins.toolkit as toolkit
+import ckanext.jsonschema.configuration as configuration
+import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.utils as _u
 from ckan.logic import NotFound, ValidationError
 from ckan.plugins.core import PluginNotFoundException
 
@@ -77,7 +76,7 @@ def importer(context, data_dict):
         'imported' : True,
         'source_format':'xml' if from_xml else 'json',
         'source_url': url,
-        'imported_on': str(datetime.datetime.now())
+        'imported_on': str(datetime.now())
     })
 
 
@@ -193,8 +192,10 @@ def clone_metadata(context, data_dict):
             log.info(message)
             return { "success": False, "msg": message}
 
-        
+        today_string = date.today().strftime("%b-%d-%Y")
         cloner(source_pkg, package_dict, errors, clone_context)
+        # TODO format
+        package_dict['title'] = 'Cloned ' + package_dict['title'] + ' ' + today_string
 
         for resource in source_pkg.get('resources'):
 
