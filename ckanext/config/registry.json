@@ -10,6 +10,16 @@
         "supported_all_ckan_fields": true,
         "plugin_name": "jsonschema_dataset"
     },
+    "json_resource": {
+        "label": "JSON Resource",
+        "plugin_name": "jsonschema_dataset",
+        "schema": "dataset/json_resource.json",
+        "template": "dataset/json_resource.json",
+        "supported_jsonschema_fields": ["body", "opt"],
+        "supported_ckan_fields":[
+            "name"
+        ]
+    },
 
 
     "iso": {
@@ -41,7 +51,7 @@
         "template": "iso/online-resource.json",
         "plugin_name": "jsonschema_iso",
         "supported_jsonschema_fields": ["body", "opt"],
-        "supported_ckan_fields": ["url", "format"]
+        "supported_ckan_fields": ["url"]
     },
     "graphic-overview": {
         "label": "Graphic Overview",

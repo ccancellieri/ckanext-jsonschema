@@ -177,35 +177,17 @@ jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), v
 
 ############ VIEW
 
-
-
 def get_view_body(package_id, resource_id, view_id):
+    
     try:
-        resolve = request.args.get('resolve', 'false')
-        wrap = request.args.get('wrap', 'false')
-        view = _g.get_view(view_id)
-
-        view_body = _vt.get_view_body(view)
-        view_type = view.get('view_type')
-        plugin = _vt.get_jsonschema_view_plugin(view_type)
-
-        if not view_body:
-            raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
-
-        if wrap.lower() == 'true':
-            view_body = plugin.wrap_view(view_body, view)
-
-        if resolve.lower() == 'true':
-            view_body = plugin.resolve(view_body, view)
-
-        
-        return Response(stream_with_context(json.dumps(view_body)), mimetype='application/json')
+        content = _vt.resolve_view_body(view_id, request.args)
+        return Response(stream_with_context(json.dumps(content)), mimetype='application/json')
     except ValidationError as e:
         traceback.print_exc()
         abort(400, e.error_dict.get('message'))
     except Exception as e:
         traceback.print_exc()
-        abort(400, str(e))
+        abort(400, str(e))        
     
 
 def get_view_type(package_id, resource_id, view_id):

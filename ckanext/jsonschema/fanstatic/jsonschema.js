@@ -18,6 +18,10 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
             return asObject(value);
         },
+        setValue(path, value) {
+            var valueEditor = jsonschema.editor.getEditor(path)
+            valueEditor.setValue(value)
+        },
         onSubmit: function (event) {
                 if (!this.editor) return;
 

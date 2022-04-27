@@ -226,15 +226,29 @@ Add the following entry to the SOLR schema.xml:
 
 
 ```
+<!-- <types>
+    ...
+    <fieldType name="jsonschema_type" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.KeywordTokenizerFactory"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.KeywordTokenizerFactory"/>
+        </analyzer>
+    </fieldType>
+    ...
+</types> -->
+
 
 <field name="package_id" type="string" indexed="true" stored="true" multiValued="false"/>
 
 <field name="res_id" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="res_jsonschema_type" type="string" indexed="true" stored="true"multiValued="true"/>
 <field name="res_jsonschema_body" type="text" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschema_opt" type="text" indexed="true" stored="true" multiValued="true"/>
 
 <dynamicField name="res_view_*" type="text" indexed="true" stored="true" multiValued="true"/>
+<dynamicField name="*_jsonschema_type" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" />
+<!--<field name="res_jsonschema_type" type="string" indexed="true" stored="true" multiValued="true"/>-->
 
 <!--field name="view_id" type="string" indexed="true" stored="true" />
 <field name="view_type" type="string" indexed="true" stored="true"/>

@@ -9,6 +9,7 @@ import os
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.interfaces as _i
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.logic.get as _g
 
 from ckan.plugins.toolkit import h
 
@@ -282,6 +283,8 @@ def get_view_configuration(config, resource_format, resource_jsonschema_type=Non
 
 
             else:
+                # The wildcard allows also for views without jsonschema_type(s)
+                # Maybe add a specific option in the configuration? (available_for_resources_without_)
                 available_for_all_resource_jsonschema_types = view.get(_c.WILDCARD_JSONSCHEMA_TYPE, False) == True
                 jsonschema_type_matches = (resource_jsonschema_type and resource_jsonschema_type in view.get(_c.RESOURCE_JSONSCHEMA_TYPE, [])) 
                 
@@ -383,3 +386,25 @@ def get_view_info(view_type, resource):
         info = plugin.info()
         if plugin.info().get('name') == view_type:
             return info
+
+
+def resolve_view_body(view_id, args):
+    
+    resolve = args.get('resolve', 'false')
+    wrap = args.get('wrap', 'false')
+    view = _g.get_view(view_id)
+
+    view_body = get_view_body(view)
+    view_type = view.get('view_type')
+    plugin = get_jsonschema_view_plugin(view_type)
+
+    if not view_body:
+        raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
+
+    if wrap.lower() == 'true':
+        view_body = plugin.wrap_view(view_body, view, args)
+
+    if resolve.lower() == 'true':
+        view_body = plugin.resolve(view_body, view, args)
+
+    return view_body

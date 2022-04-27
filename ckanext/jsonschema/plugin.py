@@ -216,19 +216,22 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     #                         'view_{}_resolved'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body_resolved),
     #                         'view_{}'.format(_c.SCHEMA_OPT_KEY): _vt.get_view_opt(view) or None
     #                     })
-                        views.append({
-                            'view_type': view_type,
-                            '{}'.format(_c.SCHEMA_TYPE_KEY): _vt.get_view_type(view) or None,
-                            '{}'.format(_c.SCHEMA_BODY_KEY): view_jsonschema_body or None,
-                            '{}_resolved'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body_resolved),
-                            '{}'.format(_c.SCHEMA_OPT_KEY): _vt.get_view_opt(view) or None
-                        })
+                        
                     except Exception as e:
                         log.error('Error while resolving view. ')
                         log.error('Package id:{}, resource id:{}, view id: {}'.format(package_id, resource_id, view_id))
                         log.error(str(e))
+
                 else:
                     log.warn('No plugin found for view_type: {}'.format(view_type))
+            
+                views.append({
+                        'view_type': view_type,
+                        '{}'.format(_c.SCHEMA_TYPE_KEY): _vt.get_view_type(view) or None,
+                        '{}'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body) if view_jsonschema_body else None,
+                        '{}_resolved'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body_resolved) if view_jsonschema_body_resolved else None,
+                        '{}'.format(_c.SCHEMA_OPT_KEY): json.dumps(_vt.get_view_opt(view)) if _vt.get_view_opt(view) else None
+                    })
 
         pkg_dict.update({
             'res_id': res_ids,

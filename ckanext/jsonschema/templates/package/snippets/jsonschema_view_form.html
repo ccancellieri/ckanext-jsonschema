@@ -61,7 +61,8 @@
     <div style="display: inline-block;">
         <button class="btn btn-primary" type="button"  data-toggle="collapse" 
             title="{{_('Shows a table with copy to clipboard buttons for a fast usage of available informations from the dataset and resources')}}"
-            data-target="#helperTable" >{{_('Tools')}}</button>
+            data-target="#helperTable" >{{_('Tools')}}
+        </button>
         <a class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Click to open the model used by this configuration"
             href="{{h.url_for('jsonschema.model', resource_id=resource.id, package_id=package.id, view_id=resource_view.id, _external=True)}}" target="_blank">
             Model
@@ -89,7 +90,7 @@
             <td class="col">
                 <button class="btn btn-secondary" onclick="copy(this, event, '{{package.id}}')" data-toggle="tooltip" data-placement="bottom" title="{{package.id}}">
                     <i class="fa fa-clipboard" aria-hidden="true"></i>
-                    <b id="package-id">Dataset ID</b></button>
+                    <b id="package-id">Dataset ID</b>
                 </button>
             </td>
             <td class="col">

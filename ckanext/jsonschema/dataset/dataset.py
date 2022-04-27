@@ -27,7 +27,8 @@ import ckan.lib.navl.dictization_functions as df
 config = toolkit.config
 
 supported_resource_types = {
-    _dataset_constants.TYPE_DATASET_RESOURCE: lambda data, errors, context: None
+    _dataset_constants.TYPE_DATASET_RESOURCE: lambda data, errors, context: None,
+    _dataset_constants.TYPE_JSON_RESOURCE: lambda data, errors, context: None
 }
 
 def clone(source_pkg, package_dict, errors, context):
@@ -48,7 +49,8 @@ def default_cloner(item, errors, context):
     pass
 
 clonable_resources_types = {
-    _dataset_constants.TYPE_DATASET_RESOURCE: default_cloner
+    _dataset_constants.TYPE_DATASET_RESOURCE: default_cloner,
+    _dataset_constants.TYPE_JSON_RESOURCE: default_cloner
 }
 
 class JsonschemaDataset(p.SingletonPlugin):

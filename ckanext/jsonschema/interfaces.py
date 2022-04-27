@@ -23,10 +23,10 @@ class IJsonschemaView(Interface):
         import ckanext.jsonschema.view_tools as _vt
         return _vt.get_model(view.get('package_id'), view.get('resource_id'))
 
-    def resolve(self, template):
-        return template
+    def resolve(self, view_body, view, args={}):
+        return view_body
 
-    def wrap_view(self, view_body, view):
+    def wrap_view(self, view_body, view, args={}):
         return view_body
 
 class IBinder(Interface):
