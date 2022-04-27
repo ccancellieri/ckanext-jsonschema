@@ -386,7 +386,7 @@ def get(dataset_id, resource_id = None, domain = None):
                 # we wanted to extract something from the resource
                 return _extract_from_resource(resource, domain)
 
-        raise Exception('Unable to find the requested resource {}'.format(resource_id))
+        raise toolkit.ObjectNotFound('Unable to find the requested resource {}'.format(resource_id))
 
     # we wanted to extract something from the package
     return _extract_from_package(pkg, domain)

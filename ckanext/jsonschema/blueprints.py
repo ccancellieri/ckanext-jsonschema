@@ -120,7 +120,11 @@ jsonschema.add_url_rule('{}/<path:schema_type>'.format(_c.REST_MODULE_FILE_PATH)
 
 def get_body(dataset_id, resource_id = None):
     #return Response(stream_with_context(_t.get_body(dataset_id, resource_id)), mimetype='application/json')
-    return Response(stream_with_context(json.dumps(_t.get_body(dataset_id, resource_id))), mimetype='application/json')
+    try:
+        return Response(stream_with_context(json.dumps(_t.get_body(dataset_id, resource_id))), mimetype='application/json')
+    except toolkit.ObjectNotFound as e:
+        return toolkit.abort(404, _(str(e)))
+
 
 jsonschema.add_url_rule('/{}/body/<dataset_id>/<resource_id>'.format(_c.TYPE,), view_func=get_body, methods=[u'GET'])
 jsonschema.add_url_rule('/{}/body/<dataset_id>'.format(_c.TYPE,), view_func=get_body, methods=[u'GET'])
