@@ -210,6 +210,7 @@ class JsonschemaIso(p.SingletonPlugin):
             return extractor_iso19139._extract_id(body)
             
     def before_index_package(self, pkg_dict):
+
         from shapely import geometry
         from shapely.geometry import Polygon
 
@@ -234,6 +235,5 @@ class JsonschemaIso(p.SingletonPlugin):
         pkg_dict['minx'] = minx
         pkg_dict['bbox_area'] = (pkg_dict['maxx'] - pkg_dict['minx']) * \
                     (pkg_dict['maxy'] - pkg_dict['miny'])
-
 
         return pkg_dict

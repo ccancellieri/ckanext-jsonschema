@@ -85,6 +85,7 @@ setup(
         jsonschema_iso=ckanext.jsonschema.iso19139:JsonschemaIso
         jsonschema_stac=ckanext.jsonschema.stac.stac:JsonSchemaStac
         jsonschema_dataset=ckanext.jsonschema.dataset.dataset:JsonschemaDataset
+        jsonschema_frictionless=ckanext.jsonschema.frictionless.plugin:JsonschemaFrictionless
         
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan

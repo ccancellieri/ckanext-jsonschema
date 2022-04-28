@@ -270,8 +270,8 @@ def view_show(context, data_dict):
 
     _check_access('resource_view_show', context, {'id': view_id})
 
-    query = 'res_view_id:{}'.format(view_id)
-    fl = 'res_view_*'
+    query = 'view_ids:{}'.format(view_id)
+    fl = 'view_*'
 
     results = indexer.search(query=query, fl=fl)
     
@@ -281,31 +281,28 @@ def view_show(context, data_dict):
     view_document = results[0]
 
     found = False
-    for idx, id in enumerate(view_document.get('res_view_id')):
+    for idx, id in enumerate(view_document.get('view_ids')):
         if id == view_id:
             found = True
             break
 
     if not found:
         raise NotFound()
-    
 
-    view_document = _t.dictize_pkg(json.loads(view_document.get('res_view_obj')[idx]))
-    content = {
-        'view_id': view_document.get('res_view_id'),
-        'view_type': view_document.get('res_view_view_type'),
-        'view_{}'.format(_c.SCHEMA_TYPE_KEY): view_document.get('res_view_{}'.format(format(_c.SCHEMA_TYPE_KEY))),
-        'view_{}'.format(_c.SCHEMA_OPT_KEY): view_document.get('res_view_{}'.format(format(_c.SCHEMA_OPT_KEY)))
-    }
+    view_document = _t.dictize_pkg(json.loads(view_document.get('view_jsonschemas')[idx]))
 
     if resolve.lower() == "true":
-        view_body = view_document.get('res_view_{}_resolved'.format(_c.SCHEMA_BODY_KEY)) 
+        view_body = view_document.get(_c.SCHEMA_BODY_KEY)
     else:
-        view_body = view_document.get('res_view_{}'.format(_c.SCHEMA_BODY_KEY)) 
+        view_body = view_document.get(_c.SCHEMA_BODY_KEY) 
 
-    content.update({
-        'view_{}'.format(_c.SCHEMA_BODY_KEY): view_body
-    })
+    content = {
+        'view_id': view_document.get('view_id'),
+        'view_type': view_document.get('view_type'),
+        _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
+        _c.SCHEMA_BODY_KEY: view_body,
+        _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
+    }
 
     return content
 
@@ -335,6 +332,7 @@ def spatial_search(context, data_dict):
     search_params = _it.params_for_solr_search(bbox_query_validated, search_params)
 
     # {!frange incl=false l=0 u=1}div(mul(mul(max(0,sub(min(180,maxx),max(-180,minx))),max(0,sub(min(90,maxy),max(-90,miny)))),2),add(0.0,mul(sub(maxy,miny),sub(maxx,minx))))
+# 'div(mul(mul(max(0,sub(min(152.45628,maxx),max(-12.311967,minx))),max(0,sub(min(15.993704,maxy),max(28.187208,miny)))),2),add(2009.10227887,mul(sub(maxy,miny),sub(maxx,minx))))'
 
     results = indexer.search_with_params_dict(search_params)
 
