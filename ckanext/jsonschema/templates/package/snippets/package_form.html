@@ -4,6 +4,9 @@
     {% set is_jsonschema = true %}
   {% endif %}
 
+  {% if c.action == "new" and c.controller == "package" %}
+    {% set use_template = True %}
+  {% endif %}
 
   {% block stages %}
     {% if is_jsonschema %}
@@ -34,6 +37,7 @@
       {% set opt = h.jsonschema_as_json(h.jsonschema_get_package_opt(data)) %}
       {% set data_dict = h.jsonschema_as_json(data) %}
       
+      {% set use_template = use_template %}
       {% include 'snippets/jsonschema_form.html' %}
 
       {% snippet 'package/snippets/package_metadata_fields.html', package_type=jsonschema_type, data=data, errors=errors %}
