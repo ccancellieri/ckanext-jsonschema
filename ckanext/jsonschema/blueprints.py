@@ -234,15 +234,15 @@ jsonschema.add_url_rule('/{}/model/<package_id>/<resource_id>/<view_id>'.format(
 
 ############## SEARCH
 
-def search_index():
-    q = request.args.get('q')
-    docs = indexer.search(q)
+# def search_index():
+#     q = request.args.get('q')
+#     docs = indexer.search(q)
 
-    return Response(stream_with_context(json.dumps(docs, default=_t.json_serial)), mimetype='application/json')
+#     return Response(stream_with_context(json.dumps(docs, default=_t.json_serial)), mimetype='application/json')
 
-def search_view_index(package_name):
-    docs = indexer.search_view_by_package_name(package_name)
-    return Response(stream_with_context(json.dumps(docs, default=_t.json_serial)), mimetype='application/json')
+# def search_view_index(package_name):
+#     docs = indexer.search_view_by_package_name(package_name)
+#     return Response(stream_with_context(json.dumps(docs, default=_t.json_serial)), mimetype='application/json')
     
-jsonschema.add_url_rule('/{}/search'.format(_c.TYPE), view_func=search_index, endpoint='search', methods=[u'GET'])
-jsonschema.add_url_rule('/{}/search_view/<package_name>'.format(_c.TYPE), view_func=search_view_index, endpoint='search_view', methods=[u'GET'])
+# jsonschema.add_url_rule('/{}/search'.format(_c.TYPE), view_func=search_index, endpoint='search', methods=[u'GET'])
+# jsonschema.add_url_rule('/{}/search_view/<package_name>'.format(_c.TYPE), view_func=search_view_index, endpoint='search_view', methods=[u'GET'])

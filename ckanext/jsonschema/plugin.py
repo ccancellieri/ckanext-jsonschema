@@ -53,15 +53,22 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def get_actions(self):
         from ckanext.jsonschema.logic.action.get import reload
         from ckanext.jsonschema.logic.actions import (clone_metadata, importer,
-                                                      validate_metadata)
+                                                      validate_metadata, view_show, spatial_search)
 
         actions = {
             'jsonschema_importer': importer,
             'jsonschema_reload': reload,
             'jsonschema_validate': validate_metadata,
             'jsonschema_clone': clone_metadata,
+            'jsonschema_view_show': view_show,
+            'jsonschema_spatial_search': spatial_search,
+
+            # CHAINED CKAN ACTIONS
             'resource_create': action.resource_create,
-            'resource_update': action.resource_update
+            'resource_update': action.resource_update,
+            'resource_view_create': action.resource_view_create,
+            'resource_view_update': action.resource_view_update,
+            'resource_view_delete': action.resource_view_delete
         }
         return actions
 
@@ -149,8 +156,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     # ckan/lib/datapreview/resource_view_list filters out views for which the plugin is no more available
 
         # TODO use IBinder to define extension points by plugin
-
-
         package = json.loads(pkg_dict['data_dict'])
         package_id = package.get('id')
         site_id = pkg_dict.get('site_id')
@@ -189,19 +194,26 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             resource_views = toolkit.get_action('resource_view_list')({}, {'id': resource_id})
             for idx, view in enumerate(resource_views): 
 
+                view_jsonschema_type = _vt.get_view_type(view)
+                
+                # do not index non-jsonschema views
+                if not view_jsonschema_type:
+                    continue
+
                 view_id = view.get('id')
                 view_type = view.get('view_type')
 
 
                 # TODO use IBinder to define extension points by plugin (resource view type)
-                
-                if view_type not in view_types:
-                    view_types.append(view_type)
+                # if view_type not in view_types:
+                #     view_types.append(view_type)
 
                 view_plugin = _vt.get_jsonschema_view_plugin(view_type)
 
                 view_jsonschema_body = _vt.get_view_body(view)
                 view_jsonschema_body_resolved = view_jsonschema_body
+                view_jsonschema_opt = _vt.get_view_opt(view)
+
 
                 if view_plugin:
                     try:
@@ -231,11 +243,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                     log.warn('No plugin found for view_type: {}'.format(view_type))
             
                 views.append({
+                        'view_id': view_id,
                         'view_type': view_type,
-                        '{}'.format(_c.SCHEMA_TYPE_KEY): _vt.get_view_type(view) or None,
+                        '{}'.format(_c.SCHEMA_TYPE_KEY): view_jsonschema_type or None,
                         '{}'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body) if view_jsonschema_body else None,
                         '{}_resolved'.format(_c.SCHEMA_BODY_KEY): json.dumps(view_jsonschema_body_resolved) if view_jsonschema_body_resolved else None,
-                        '{}'.format(_c.SCHEMA_OPT_KEY): json.dumps(_vt.get_view_opt(view)) if _vt.get_view_opt(view) else None
+                        '{}'.format(_c.SCHEMA_OPT_KEY): json.dumps(view_jsonschema_opt) if view_jsonschema_opt else None
                     })
 
         pkg_dict.update({
@@ -244,15 +257,39 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'res_{}'.format(_c.SCHEMA_BODY_KEY): res_jsonschema_bodys,
             'res_{}'.format(_c.SCHEMA_OPT_KEY): res_jsonschema_opts
           })
-        
-        for view_type in view_types:
-            pkg_dict.update({
-            'res_view_{}_{}'.format(view_type, _c.SCHEMA_TYPE_KEY): [view.get(_c.SCHEMA_TYPE_KEY) for view in views if view.get('view_type') == view_type ],
-            'res_view_{}_{}'.format(view_type, _c.SCHEMA_BODY_KEY): [view.get(_c.SCHEMA_BODY_KEY) for view in views if view.get('view_type') == view_type ],
-            'res_view_{}_{}_resolved'.format(view_type, _c.SCHEMA_BODY_KEY): [view.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)) for view in views if view.get('view_type') == view_type ],
-            'res_view_{}_{}'.format(view_type, _c.SCHEMA_OPT_KEY): [view.get(_c.SCHEMA_OPT_KEY) for view in views if view.get('view_type') == view_type ]
-          })
+          
+        pkg_dict.update({
+            'res_view_id': [view.get('view_id') for view in views],
+            'res_view_view_type': [view.get('view_type') for view in views],
+            'res_view_{}'.format(_c.SCHEMA_TYPE_KEY): [view.get(_c.SCHEMA_TYPE_KEY) for view in views]
+        })
 
+        for view in views:
+
+            view_id = view.get('view_id')
+
+            pkg_dict.update({
+                'res_view_obj': json.dumps({
+                    'res_view_id': view_id,
+                    'res_view_{}'.format(_c.SCHEMA_BODY_KEY): view.get(_c.SCHEMA_BODY_KEY),
+                    'res_view_{}_resolved'.format(_c.SCHEMA_BODY_KEY): view.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
+                    'res_view_{}'.format(_c.SCHEMA_OPT_KEY): view.get(_c.SCHEMA_OPT_KEY),
+                    'res_view_{}'.format(_c.SCHEMA_TYPE_KEY): view.get(_c.SCHEMA_TYPE_KEY)
+                })
+            })
+        
+
+
+        # for view_type in view_types:
+        #     pkg_dict.update({
+        #     'res_view_id': [view.get('view_id') for view in views if view.get('view_type') == view_type],
+        #     'res_view_{}_{}'.format(view_type, _c.SCHEMA_TYPE_KEY): [view.get(_c.SCHEMA_TYPE_KEY) for view in views if view.get('view_type') == view_type ],
+        #     'res_view_{}_{}'.format(view_type, _c.SCHEMA_BODY_KEY): [view.get(_c.SCHEMA_BODY_KEY) for view in views if view.get('view_type') == view_type ],
+        #     'res_view_{}_{}_resolved'.format(view_type, _c.SCHEMA_BODY_KEY): [view.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)) for view in views if view.get('view_type') == view_type ],
+        #     'res_view_{}_{}'.format(view_type, _c.SCHEMA_OPT_KEY): [view.get(_c.SCHEMA_OPT_KEY) for view in views if view.get('view_type') == view_type ]
+        #   })
+
+        log.info('Indexed package: {}'.format(pkg_dict.get('id')))
         return pkg_dict
         
     # def before_view(self, pkg_dict):

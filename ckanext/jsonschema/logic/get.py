@@ -62,6 +62,7 @@ def get_pkg(dataset_id):
 
 
 def get_view(resource_view_id):
+    # TODO: get from solr
 
     from ckanext.jsonschema.tools import dictize_pkg
 

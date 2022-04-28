@@ -15,12 +15,15 @@ NotAuthorized = logic.NotAuthorized
 ValidationError = logic.ValidationError
 
 import ckan.lib.navl.dictization_functions as df
+import ckan.model as model
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 from ckan.plugins import toolkit
 
 StopOnError = df.StopOnError
 
+import ckan.model.domain_object as domain_object
+from ckan.lib.search import SearchIndexError
 
 
 @plugins.toolkit.chained_action
@@ -72,3 +75,50 @@ def validate_resource(next_auth, context, data_dict):
         raise ValidationError(df.unflatten(errors))
 
     return next_auth(context, data_dict)
+
+
+@plugins.toolkit.chained_action
+def resource_view_update(next_auth, context, data_dict):
+    next_auth(context, data_dict)
+    _index_package(data_dict)
+    
+
+@plugins.toolkit.chained_action
+def resource_view_create(next_auth, context, data_dict):
+    next_auth(context, data_dict)
+    _index_package(data_dict)
+
+@plugins.toolkit.chained_action
+def resource_view_delete(next_auth, context, data_dict):
+    next_auth(context, data_dict)
+    _index_package(data_dict)
+
+
+def _index_package(data_dict):
+
+
+    if 'id' in data_dict: # this is the view id
+        resource_view = toolkit.get_action('resource_view_show')(None, {u'id': data_dict.get('id')})
+        package_id = resource_view.get('package_id')
+        
+    
+    if 'resource_id' in data_dict:
+        resource = toolkit.get_action('resource_show')(None, {u'id': data_dict.get('resource_id')})
+        package_id = resource.get('package_id')
+
+
+    package = model.Package.get(package_id)
+
+    # code from ckan/model/modification
+    for observer in plugins.PluginImplementations(plugins.IDomainObjectModification):
+        try:
+            observer.notify(package, domain_object.DomainObjectOperation.changed)
+        except SearchIndexError as search_error:
+            log.exception(search_error)
+            # Reraise, since it's pretty crucial to ckan if it can't index
+            # a dataset
+            raise
+        except Exception as ex:
+            log.exception(ex)
+            # Don't reraise other exceptions since they are generally of
+            # secondary importance so shouldn't disrupt the commit.

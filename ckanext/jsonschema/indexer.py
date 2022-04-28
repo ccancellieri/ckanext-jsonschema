@@ -27,7 +27,7 @@ def search_view_by_package_name(package_name):
 
     return views_resolved
 
-def search(query, fq=''):
+def search(query, fq='', fl=''):
 
     # include_private = asbool(data_dict.pop('include_private', False))
     # include_drafts = asbool(data_dict.pop('include_drafts', False))
@@ -41,7 +41,7 @@ def search(query, fq=''):
     solr = make_connection()
     #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
     try:
-        return solr.search(q=query, fq='').docs
+        return solr.search(q=query, fq=fq, fl=fl).docs
     except socket.error as e:
         err = 'Could not connect to SOLR %r: %r' % (solr.url, e)
         log.error(err)
@@ -51,6 +51,20 @@ def search(query, fq=''):
         log.error(err)
         raise SearchIndexError(err)
 
+def search_with_params_dict(search_params):
+
+    solr = make_connection()
+    #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
+    try:
+        return solr.search(search_params).docs
+    except socket.error as e:
+        err = 'Could not connect to SOLR %r: %r' % (solr.url, e)
+        log.error(err)
+        raise SearchIndexError(err)
+    except pysolr.SolrError as e:
+        err = 'SOLR %r exception: %r' % (solr.url, e)
+        log.error(err)
+        raise SearchIndexError(err)
 
 
 ################################### UNUSED ############################################

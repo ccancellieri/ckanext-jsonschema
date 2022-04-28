@@ -1,13 +1,16 @@
+import json
 from datetime import date, datetime
 
 import ckan.lib.navl.dictization_functions as df
 import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
+import ckanext.jsonschema.indexer as indexer
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
-from ckan.logic import NotFound, ValidationError
+from ckan.logic import NotFound, ValidationError, side_effect_free
 from ckan.plugins.core import PluginNotFoundException
+from ckanext.jsonschema.iso19139 import tools as _it
 
 _ = toolkit._
 h = toolkit.h
@@ -221,10 +224,11 @@ def clone_metadata(context, data_dict):
                     log.info('No cloner configured for resource type {} on package type {}. Skipping'.format(resource_type, _type))
                     continue
                 
-                cloner(resource, errors, resource_clone_context)
-
-                # attach to package_dict
-                package_dict['resources'].append(resource)
+                resource = cloner(resource, errors, resource_clone_context)
+                if resource:
+                    # attach to package_dict
+                    package_dict['resources'].append(resource)
+            
             except PluginNotFoundException: #TODO remove, should raise error
                 pass 
 
@@ -256,3 +260,82 @@ def clone_metadata(context, data_dict):
         message = str(e)
         log.error(message)
         raise ValidationError(message)
+
+
+@side_effect_free
+def view_show(context, data_dict):
+    
+    view_id = data_dict.get('view_id')
+    resolve = data_dict.get('resolve', 'false')
+
+    _check_access('resource_view_show', context, {'id': view_id})
+
+    query = 'res_view_id:{}'.format(view_id)
+    fl = 'res_view_*'
+
+    results = indexer.search(query=query, fl=fl)
+    
+    if len(results) == 0:
+        raise NotFound()
+
+    view_document = results[0]
+
+    found = False
+    for idx, id in enumerate(view_document.get('res_view_id')):
+        if id == view_id:
+            found = True
+            break
+
+    if not found:
+        raise NotFound()
+    
+
+    view_document = _t.dictize_pkg(json.loads(view_document.get('res_view_obj')[idx]))
+    content = {
+        'view_id': view_document.get('res_view_id'),
+        'view_type': view_document.get('res_view_view_type'),
+        'view_{}'.format(_c.SCHEMA_TYPE_KEY): view_document.get('res_view_{}'.format(format(_c.SCHEMA_TYPE_KEY))),
+        'view_{}'.format(_c.SCHEMA_OPT_KEY): view_document.get('res_view_{}'.format(format(_c.SCHEMA_OPT_KEY)))
+    }
+
+    if resolve.lower() == "true":
+        view_body = view_document.get('res_view_{}_resolved'.format(_c.SCHEMA_BODY_KEY)) 
+    else:
+        view_body = view_document.get('res_view_{}'.format(_c.SCHEMA_BODY_KEY)) 
+
+    content.update({
+        'view_{}'.format(_c.SCHEMA_BODY_KEY): view_body
+    })
+
+    return content
+
+@side_effect_free
+def spatial_search(context, data_dict):
+
+    if 'bbox' not in data_dict:
+        return ValidationError('A bbox is needed to perform spatial search')
+
+
+    bbox_query = data_dict.get('bbox')
+    bbox_query_validated = _it.validate_bbox(bbox_query)
+    
+    if not bbox_query_validated:
+        raise ValidationError('The bbox is not valid')
+
+    # Adjust easting values
+    while (bbox_query_validated['minx'] < -180):
+        bbox_query_validated['minx'] += 360
+        bbox_query_validated['maxx'] += 360
+
+    while (bbox_query_validated['minx'] > 180):
+        bbox_query_validated['minx'] -= 360
+        bbox_query_validated['maxx'] -= 360
+
+    search_params = {}
+    search_params = _it.params_for_solr_search(bbox_query_validated, search_params)
+
+    # {!frange incl=false l=0 u=1}div(mul(mul(max(0,sub(min(180,maxx),max(-180,minx))),max(0,sub(min(90,maxy),max(-90,miny)))),2),add(0.0,mul(sub(maxy,miny),sub(maxx,minx))))
+
+    results = indexer.search_with_params_dict(search_params)
+
+    return results
