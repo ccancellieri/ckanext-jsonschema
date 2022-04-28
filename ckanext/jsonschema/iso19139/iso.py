@@ -76,21 +76,16 @@ def clone(source_pkg, package_dict, errors, context):
         _c.SCHEMA_OPT_KEY : opt,
     })
 
-
-
-def default_cloner(item, errors, context):
-    pass
-
 clonable_package_types = {
     TYPE_ISO: clone,
 }
 
 clonable_resources_types = {
-    TYPE_ISO_RESOURCE_DISTRIBUTOR: default_cloner,
-    TYPE_ISO_RESOURCE_METADATA_CONTACT: default_cloner,
-    TYPE_ISO_RESOURCE_RESOURCE_CONTACT: default_cloner,
-    TYPE_ISO_RESOURCE_MAINTAINER: default_cloner,
-    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: default_cloner
+    TYPE_ISO_RESOURCE_DISTRIBUTOR: _i.default_cloner,
+    TYPE_ISO_RESOURCE_METADATA_CONTACT: _i.default_cloner,
+    TYPE_ISO_RESOURCE_RESOURCE_CONTACT: _i.default_cloner,
+    TYPE_ISO_RESOURCE_MAINTAINER: _i.default_cloner,
+    TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY: _i.default_cloner
 }
 
 def dump_to_output(data, errors, context, output_format):

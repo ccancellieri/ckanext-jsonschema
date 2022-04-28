@@ -246,8 +246,9 @@ Add the following entry to the SOLR schema.xml:
 <field name="res_jsonschema_body" type="text" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschema_opt" type="text" indexed="true" stored="true" multiValued="true"/>
 
+<field name="res_view_id" type="string" indexed="true" stored="true" multiValued="true"/>
 <dynamicField name="res_view_*" type="text" indexed="true" stored="true" multiValued="true"/>
-<dynamicField name="*_jsonschema_type" type="string" indexed="true" stored="true" multiValued="true" omitNorms="true" />
+<dynamicField name="*_jsonschema_type" type="string" indexed="true" stored="true" multiValued="true" />
 <!--<field name="res_jsonschema_type" type="string" indexed="true" stored="true" multiValued="true"/>-->
 
 <!--field name="view_id" type="string" indexed="true" stored="true" />

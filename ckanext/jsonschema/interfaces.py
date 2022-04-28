@@ -156,13 +156,14 @@ class IBinder(Interface):
 
     def get_package_cloner(self, package_type):
         ''' 
-        Returns cloner extractor function for the package type
+        Returns cloner function for the package type
         '''
         return None
 
     def get_resource_cloner(self, package_type, resource_type):            
         ''' 
-        Returns cloner extractor function for the resource type
+        Returns cloner function for the resource type. The cloner function should get the resource, get it and return it.
+        If the resource cloner doesn't return the resource, then it should not be cloned
         '''
         return None
 
@@ -204,3 +205,16 @@ def get_all_jsonschema_plugins():
             jsonschema_plugins.append(plugin)
 
     return jsonschema_plugins
+
+
+def default_cloner(item, errors, context):
+    '''
+    Returns an item to clone without any modification
+    '''
+    return item
+
+def default_extractor(data, errors, context):
+    '''
+    Doesn't extract anything
+    '''
+    return None

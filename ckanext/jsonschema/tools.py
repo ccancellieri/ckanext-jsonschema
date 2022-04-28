@@ -684,8 +684,3 @@ def json_serial(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     raise TypeError ("Type %s not serializable" % type(obj))
-
-def default_cloner():
-    """
-    Function that prepares the default package_dict for a jsonschema package that has to be cloned 
-    """
