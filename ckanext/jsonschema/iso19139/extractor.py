@@ -175,6 +175,10 @@ def _extract_iso_graphic_overview(data, errors, context):
     body = _t.get_resource_body(data)
 
     name = body.get('name', 'Graphic overview')
+
+    # we set back the name into the body, so that if it came from the default,
+    # the jsonschema_body is aligned too
+    body['name'] = name
     
     description = body.get('description')
     _dict = {

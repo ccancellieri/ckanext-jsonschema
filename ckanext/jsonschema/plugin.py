@@ -161,6 +161,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # site_id = pkg_dict.get('site_id')
 
         package_jsonschema_type = _t.get_package_type(package)
+
+        # if get_skip_index_from_registry(package_jsonschema_type):
+            #return pkg_dict
         package_plugin = configuration.get_plugin(package_jsonschema_type)
 
         try:
@@ -192,6 +195,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             res_descriptions.append(resource.get('description'))
             
             resource_jsonschema_type = _t.get_resource_type(resource)
+            # if get_skip_index_from_registry(resource_jsonschema_type):
+                # continue
+        
             # do not index jsonschema fields if regular type
             if resource_jsonschema_type:
                 res_jsonschema_types.append(resource_jsonschema_type)
@@ -206,19 +212,22 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             for view in resource_views:
 
                 view_jsonschema_type = _vt.get_view_type(view)
-                
+                # TODO
+                # if get_skip_index_from_registry(view_jsonschema_type):
+                    # continue
+
                 # do not index non-jsonschema views
                 if not view_jsonschema_type:
                     continue
 
                 view_id = view.get('id')
                 view_type = view.get('view_type')
-
-                # TODO use IBinder to define extension points by plugin (resource view type)
-                # if view_type not in view_types:
-                #     view_types.append(view_type)
-
+                
                 view_plugin = _vt.get_jsonschema_view_plugin(view_type)
+
+                # TODO: before_index_view
+                # TODO use IBinder to define extension points by plugin (resource view type)
+
                 view_jsonschema_body = _vt.get_view_body(view)
                 view_jsonschema_body_resolved = view_jsonschema_body
 

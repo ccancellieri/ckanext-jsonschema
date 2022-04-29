@@ -408,3 +408,22 @@ def resolve_view_body(view_id, args):
         view_body = plugin.resolve(view_body, view, args)
 
     return view_body
+
+
+def can_view(config, data_dict):
+
+    resource = data_dict.get('resource', None)
+        
+    resource_format = resource.get('format')
+    resource_jsonschema_type = _t.get_resource_type(resource)
+    
+    view_configuration = get_view_configuration(config, resource_format, resource_jsonschema_type)
+    
+    if view_configuration:            
+        automatic_view_creation = toolkit.c.action != 'resource_views' 
+        if automatic_view_creation:
+            return view_configuration.get(_c.DEFAULT_VIEW, False)
+        else:
+            return True
+
+    return False
