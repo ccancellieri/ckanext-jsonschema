@@ -1,2 +1,1 @@
-
-TYPE_TABULAR_DATA_PACKAGE = 'tabular_data_package'
+TYPE_TABULAR_DATA_RESOURCE = 'tabular_data_resource'

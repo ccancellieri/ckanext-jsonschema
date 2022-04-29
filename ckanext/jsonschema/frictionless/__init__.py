@@ -1,1 +1,0 @@
-from ckanext.jsonschema.frictionless.plugin import JsonschemaFrictionless

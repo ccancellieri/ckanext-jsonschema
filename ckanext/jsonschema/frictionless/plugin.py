@@ -1,5 +1,3 @@
-import datetime
-
 import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
 
@@ -14,15 +12,10 @@ Invalid = df.Invalid
 
 import logging
 
-import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.interfaces as _i
+import ckanext.jsonschema.frictionless.constants as _fc
 import ckanext.jsonschema.tools as _t
-from ckanext.jsonschema.iso19139 import extractor, extractor_iso19139
-from ckanext.jsonschema.iso19139.constants import (
-    TYPE_ISO, TYPE_ISO19139, TYPE_ISO_RESOURCE_CITED_RESPONSIBLE_PARTY,
-    TYPE_ISO_RESOURCE_DISTRIBUTOR, TYPE_ISO_RESOURCE_GRAPHIC_OVERVIEW,
-    TYPE_ISO_RESOURCE_MAINTAINER, TYPE_ISO_RESOURCE_METADATA_CONTACT,
-    TYPE_ISO_RESOURCE_ONLINE_RESOURCE, TYPE_ISO_RESOURCE_RESOURCE_CONTACT)
+from ckanext.jsonschema.iso19139.constants import (TYPE_ISO)
 
 log = logging.getLogger(__name__)
 
@@ -39,21 +32,15 @@ config = toolkit.config
 input_types = {
 }
 
-supported_types = {
-    TYPE_TABULAR_DATA_PACKAGE: lambda data, errors, context: None
-}
+supported_types = {}
 
 supported_resource_types = {
+    _fc.TYPE_TABULAR_DATA_RESOURCE: _i.default_extractor
 }
 
-def default_cloner(item, errors, context):
-    pass
+clonable_package_types = {}
 
-clonable_package_types = {
-}
-
-clonable_resources_types = {
-}
+clonable_resources_types = {}
 
 def dump_to_output(data, errors, context, output_format):
     import ckan.lib.base as base

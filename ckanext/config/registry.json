@@ -91,7 +91,15 @@
         "supported_ckan_fields": ["url", "format"]
     },
      
-    
+    "tabular_data_resource": {
+        "label": "Tabular Data Resource",
+        "schema": "frictionless/tabular-data-resource.json",
+        "template": "frictionless/tabular-data-resource.json",
+        "plugin_name": "jsonschema_frictionless",
+        "supported_jsonschema_fields": ["body", "opt"],
+        "supported_ckan_fields": ["name"]
+    },
+
     "stac": {
         "label": "Stac",
         "schema": "stac/stac.json",
