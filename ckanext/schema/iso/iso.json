@@ -51,7 +51,6 @@
             "propertyOrder": 80,
             "title": "Reference System",
             "type": "string",
-            "format": "autocomplete",
             "links": [
                 {
                     "rel": "Spatial Reference for: {{self}}",

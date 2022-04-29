@@ -192,7 +192,8 @@
                   "search": "tag_keywords_autocomplete",
                   "getResultValue": "tag_getResultValue",
                   "renderResult": "tag_render",
-                  "autoSelect": true
+                  "autoSelect": true,
+                  "debounceTime":500
                 }
               }
             },
