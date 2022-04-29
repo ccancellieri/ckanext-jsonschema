@@ -189,6 +189,17 @@ class IBinder(Interface):
         '''
         return pkg_dict
 
+    def before_index_resource(self, pkg_dict, resource):
+        '''
+        Modify pkg_dict before the resource is added  
+        '''
+        return pkg_dict
+        
+    def before_index_view(self, pkg_dict, resource, view):
+        '''
+        Modify pkg_dict before the view is added  
+        '''
+        return pkg_dict
 
 JSONSCHEMA_IBINDER_PLUGINS = PluginImplementations(IBinder)
 JSONSCHEMA_IVIEW_PLUGINS = PluginImplementations(IJsonschemaView)

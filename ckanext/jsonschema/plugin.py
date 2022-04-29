@@ -53,7 +53,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def get_actions(self):
         from ckanext.jsonschema.logic.action.get import reload
         from ckanext.jsonschema.logic.actions import (clone_metadata, importer,
-                                                      validate_metadata, view_show, spatial_search)
+                                                      validate_metadata, view_show)
 
         actions = {
             'jsonschema_importer': importer,
@@ -61,7 +61,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_validate': validate_metadata,
             'jsonschema_clone': clone_metadata,
             'jsonschema_view_show': view_show,
-            'jsonschema_spatial_search': spatial_search,
 
             # CHAINED CKAN ACTIONS
             'resource_create': action.resource_create,
@@ -189,15 +188,21 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             #  use iso plugin to implement https://github.com/ckan/ckanext-spatial/blob/4ac25f19aa4eb9c798451f5eeb3084f907ccc003/ckanext/spatial/plugin.py#L187
             #  check also iso19139/tools.py
 
+            resource_jsonschema_type = _t.get_resource_type(resource)
+            if _t.get_skip_indexing_from_registry(resource_jsonschema_type):
+                continue
             
             resource_id = resource.get('id')
+            resource_format = resource.get('format')
             res_ids.append(resource_id)
-            res_descriptions.append(resource.get('description'))
-            
-            resource_jsonschema_type = _t.get_resource_type(resource)
-            # if get_skip_index_from_registry(resource_jsonschema_type):
-                # continue
+            res_descriptions.append(resource.get('description'))            
         
+            resource_plugin = configuration.get_plugin(resource_jsonschema_type)
+            try:
+                pkg_dict = resource_plugin.before_index_resource(pkg_dict, resource)
+            except Exception as e:
+                log.error(str(e))
+
             # do not index jsonschema fields if regular type
             if resource_jsonschema_type:
                 res_jsonschema_types.append(resource_jsonschema_type)
@@ -212,21 +217,24 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             for view in resource_views:
 
                 view_jsonschema_type = _vt.get_view_type(view)
-                # TODO
-                # if get_skip_index_from_registry(view_jsonschema_type):
-                    # continue
-
+            
                 # do not index non-jsonschema views
                 if not view_jsonschema_type:
                     continue
+                
+                if _t.get_skip_indexing_from_registry(view_jsonschema_type):
+                    continue
+        
 
                 view_id = view.get('id')
                 view_type = view.get('view_type')
-                
                 view_plugin = _vt.get_jsonschema_view_plugin(view_type)
+                try:
+                    if not _vt.get_skip_indexing_from_config(view_plugin.config, resource_format, view_jsonschema_type):
+                        pkg_dict = view_plugin.before_index_view(pkg_dict, resource, view)
+                except Exception as e:
+                    log.error(str(e))
 
-                # TODO: before_index_view
-                # TODO use IBinder to define extension points by plugin (resource view type)
 
                 view_jsonschema_body = _vt.get_view_body(view)
                 view_jsonschema_body_resolved = view_jsonschema_body
