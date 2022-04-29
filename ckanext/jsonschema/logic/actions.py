@@ -270,17 +270,17 @@ def view_show(context, data_dict):
     _check_access('resource_view_show', context, {'id': view_id})
 
     query = 'view_ids:{}'.format(view_id)
-    fl = 'view_*'
+    fl = 'view_*, indexed_ts'
 
     results = indexer.search(query=query, fl=fl)
     
     if len(results) == 0:
         raise NotFound()
 
-    view_document = results[0]
+    document = results[0]
 
     found = False
-    for idx, id in enumerate(view_document.get('view_ids')):
+    for idx, id in enumerate(document.get('view_ids')):
         if id == view_id:
             found = True
             break
@@ -288,7 +288,7 @@ def view_show(context, data_dict):
     if not found:
         raise NotFound()
 
-    view_document = _t.dictize_pkg(json.loads(view_document.get('view_jsonschemas')[idx]))
+    view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[idx]))
 
     if resolve.lower() == "true":
         view_body = view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY))
@@ -296,6 +296,7 @@ def view_show(context, data_dict):
         view_body = view_document.get(_c.SCHEMA_BODY_KEY) 
 
     content = {
+        'indexed_ts': document.get('indexed_ts'),
         'view_id': view_document.get('view_id'),
         'view_type': view_document.get('view_type'),
         _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
