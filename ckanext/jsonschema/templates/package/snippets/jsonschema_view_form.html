@@ -36,8 +36,10 @@
 
 
 {% set filtered_types = h.jsonschema_get_configured_jsonschema_types_for_plugin_view(data.view_type, resource) %}
+<!-- {# if not resource_view.id #} -->
 <!-- Adds the select for the jsonschema_type -->
 {% include 'snippets/jsonschema_type_select.html' %}
+<!-- {# endif #} -->
 
 {% set view_info = h.jsonschema_get_view_info(data.view_type, resource) %}
 

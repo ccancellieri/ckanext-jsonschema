@@ -37,27 +37,29 @@
 
 
 {% block basic_fields %}
+  
+{% if not data.id %}
+<!-- unable to pass filtered _types to the include, adding this if will prevent the selector to work... -->
 
+<!-- Adds the select for the jsonschema_type -->
   {% set filtered_types =  h.jsonschema_handled_resource_types(dataset_type) %}
-  <!-- Adds the select for the jsonschema_type -->
   {% include 'snippets/jsonschema_type_select.html' %}
 
-  {% block scripts %}
-      {# which is the jsonschema type in this context/environment #}
-
-          <script>
-            function select_jsonschema_type(jsonschema_type){
-              {% if c.action == 'new_resource' %}
-              url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
-                {% else %}
-              url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
-              {% endif %}
-        
-              window.location.href = url + '?selected_jsonschema_type=' + jsonschema_type
-            }
-          </script>
-        
-  {% endblock %}
+{% endif %}
+{% block scripts %}
+    {# which is the jsonschema type in this context/environment #}
+        <script>
+          function select_jsonschema_type(jsonschema_type){
+            {% if c.action == 'new_resource' %}
+            url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
+              {% else %}
+            url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
+            {% endif %}
+      
+            window.location.href = url + '?selected_jsonschema_type=' + jsonschema_type
+          }
+        </script>
+{% endblock %}
 
   {% block basic_fields_name %}
     {% if h.jsonschema_is_supported_ckan_field(jsonschema_type, 'name') %}
