@@ -56,7 +56,7 @@ def get_pkg(dataset_id):
         raise Exception('we expect a dataset_id')
 
     # may throw not found
-    pkg = toolkit.get_action('package_show')(None, {'id':dataset_id})
+    pkg = toolkit.get_action('package_show')({'use_cache':True}, {'id':dataset_id})
 
     return pkg
 
