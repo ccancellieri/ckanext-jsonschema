@@ -15,27 +15,6 @@ export const initialize = () => {
     //         "popup": 'up' /*bottom show in the bottom */
     // }
     window.JSONEditor.defaults.callbacks = {
-        "template": {
-            "view_template": (jseditor,e) => {
-
-                if (!e || !e.id || e.id == '' || !isValidUUID(e.id)) {
-                    return "Please set a view id";
-                }
-                
-                var url = new URL('jsonschema/describe?view_id='+e.id, jsonschema.ckanUrl);
-                var request = new XMLHttpRequest();
-                request.open('GET', url, false);  // `false` makes the request synchronous
-                request.send(null);
-
-                if (request.status === 200) {
-                    const res = JSON.parse(request.response);
-                    return res.resource_name+" - "+res.dataset_title;
-                } else {
-                    console.error("Unable to resolve item: "+e.id+".\n Response: "+request.response);
-                    return "";
-                }
-            }
-        },
         "autocomplete": {
         // This is callback functions for the "autocomplete" editor
         // In the schema you refer to the callback function by key
