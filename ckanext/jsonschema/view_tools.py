@@ -293,6 +293,11 @@ def get_view_configuration(config, resource_format, resource_jsonschema_type=Non
         
     return None
 
+
+def get_skip_indexing_from_config(config, resource_format, resource_jsonschema_type=None):
+    view_config = get_view_configuration(config, resource_format, resource_jsonschema_type)
+    return view_config.get(_c.SKIP_INDEXING, False)
+
 # def get_schema(config, format, jsonschema_type=None):
     
 #     catalog_key = get_schema_type(config, format, jsonschema_type)

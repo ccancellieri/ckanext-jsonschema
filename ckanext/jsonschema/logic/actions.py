@@ -10,7 +10,6 @@ import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
 from ckan.logic import NotFound, ValidationError, side_effect_free
 from ckan.plugins.core import PluginNotFoundException
-from ckanext.jsonschema.iso19139 import tools as _it
 
 _ = toolkit._
 h = toolkit.h
@@ -305,35 +304,3 @@ def view_show(context, data_dict):
     }
 
     return content
-
-@side_effect_free
-def spatial_search(context, data_dict):
-
-    if 'bbox' not in data_dict:
-        return ValidationError('A bbox is needed to perform spatial search')
-
-
-    bbox_query = data_dict.get('bbox')
-    bbox_query_validated = _it.validate_bbox(bbox_query)
-    
-    if not bbox_query_validated:
-        raise ValidationError('The bbox is not valid')
-
-    # Adjust easting values
-    while (bbox_query_validated['minx'] < -180):
-        bbox_query_validated['minx'] += 360
-        bbox_query_validated['maxx'] += 360
-
-    while (bbox_query_validated['minx'] > 180):
-        bbox_query_validated['minx'] -= 360
-        bbox_query_validated['maxx'] -= 360
-
-    search_params = {}
-    search_params = _it.params_for_solr_search(bbox_query_validated, search_params)
-
-    # {!frange incl=false l=0 u=1}div(mul(mul(max(0,sub(min(180,maxx),max(-180,minx))),max(0,sub(min(90,maxy),max(-90,miny)))),2),add(0.0,mul(sub(maxy,miny),sub(maxx,minx))))
-    # 'div(mul(mul(max(0,sub(min(152.45628,maxx),max(-12.311967,minx))),max(0,sub(min(15.993704,maxy),max(28.187208,miny)))),2),add(2009.10227887,mul(sub(maxy,miny),sub(maxx,minx))))'
-    # https://github.com/dsmiley/SOLR-2155
-    results = indexer.search_with_params_dict(search_params)
-
-    return results

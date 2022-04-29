@@ -89,6 +89,7 @@ RESOURCE_JSONSCHEMA_TYPE = 'resource_jsonschema_type'
 WILDCARD_JSONSCHEMA_TYPE = 'available_for_all_resource_jsonschema_types'
 VIEW_JSONSCHEMA_TYPE = 'view_jsonschema_type'
 DEFAULT_VIEW = 'default_view'
+SKIP_INDEXING = 'skip_indexing'
 
 # JINJA CONFIGURATION
 SUPPORTED_CKAN_FIELDS = 'supported_ckan_fields'

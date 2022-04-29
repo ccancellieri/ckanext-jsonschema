@@ -263,6 +263,14 @@ def get_label_from_registry(_type):
     else:
         return _type
 
+def get_skip_indexing_from_registry(_type):
+    registry_entry = get_from_registry(_type)
+
+    if registry_entry:
+        return registry_entry.get(_c.SKIP_INDEXING, False)
+    else:
+        return False
+
 def is_supported_ckan_field(jsonschema_type, field):
 
     registry_entry = get_from_registry(jsonschema_type)

@@ -26,9 +26,15 @@ import ckan.lib.navl.dictization_functions as df
 
 config = toolkit.config
 
+def _extract_data_json_resource(data, errors, context):
+    data.update({
+        'format': 'JSON'
+    })
+
+
 supported_resource_types = {
     _dataset_constants.TYPE_DATASET_RESOURCE: _i.default_extractor,
-    _dataset_constants.TYPE_JSON_RESOURCE: _i.default_extractor
+    _dataset_constants.TYPE_JSON_RESOURCE: _extract_data_json_resource
 }
 
 def clone(source_pkg, package_dict, errors, context):

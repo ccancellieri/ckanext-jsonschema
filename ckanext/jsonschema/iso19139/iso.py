@@ -208,32 +208,3 @@ class JsonschemaIso(p.SingletonPlugin):
 
         elif dataset_type == TYPE_ISO19139:
             return extractor_iso19139._extract_id(body)
-            
-    def before_index_package(self, pkg_dict):
-
-        from shapely import geometry
-        from shapely.geometry import Polygon
-
-        bbox = Polygon()
-        package = json.loads(pkg_dict['data_dict'])
-        resources = package.get('resources')
-
-        for resource in resources:
-            resource_jsonschema_type = _t.get_resource_type(resource)
-            resource_format = resource.get('format')
-
-            if resource_jsonschema_type == TYPE_ISO_RESOURCE_ONLINE_RESOURCE and resource_format.lower() == "wms":
-                wms_base_url = resource.get('url')
-                resource_name = resource.get('name')
-                bounds = _it.calculate_bbox(wms_base_url, resource_name)
-                bbox = bbox.union(geometry.box(*bounds, ccw=True))
-
-        minx, miny, maxx, maxy = bbox.bounds
-        pkg_dict['maxy'] = maxy
-        pkg_dict['miny'] = miny
-        pkg_dict['maxx'] = maxx
-        pkg_dict['minx'] = minx
-        pkg_dict['bbox_area'] = (pkg_dict['maxx'] - pkg_dict['minx']) * \
-                    (pkg_dict['maxy'] - pkg_dict['miny'])
-
-        return pkg_dict
