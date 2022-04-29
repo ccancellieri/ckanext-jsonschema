@@ -397,21 +397,23 @@ def resolve_view_body(view_id, args):
     
     resolve = args.get('resolve', 'false')
     wrap = args.get('wrap', 'false')
-    view = _g.get_view(view_id)
+
+    view = _g.get_view(view_id, resolve)
 
     view_body = get_view_body(view)
-    view_type = view.get('view_type')
-    plugin = get_jsonschema_view_plugin(view_type)
 
     if not view_body:
         raise Exception(_('Unable to find a valid configuration for view ID: {}'.format(str(view.get('id')))))
+
+    view_type = view.get('view_type')
+    plugin = get_jsonschema_view_plugin(view_type)
 
     if wrap.lower() == 'true':
         view_body = plugin.wrap_view(view_body, view, args)
 
     if resolve.lower() == 'true':
         view_body = plugin.resolve(view_body, view, args)
-
+    
     return view_body
 
 

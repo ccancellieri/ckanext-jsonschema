@@ -265,7 +265,7 @@ def clone_metadata(context, data_dict):
 def view_show(context, data_dict):
     
     view_id = data_dict.get('view_id')
-    resolve = data_dict.get('resolve', 'false')
+    resolve = data_dict.get('resolve', 'false') # TODO BOOL
 
     _check_access('resource_view_show', context, {'id': view_id})
 

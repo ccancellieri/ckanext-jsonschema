@@ -196,6 +196,7 @@ def get_view_body(package_id, resource_id, view_id):
 
 def get_view_type(package_id, resource_id, view_id):
  
+    # view = toolkit.get_action('jsonschema_view_show')(None, {'id': view_id})
     view = _g.get_view(view_id)
 
     return Response(stream_with_context(json.dumps(_vt.get_view_type(view))), mimetype='application/json')
@@ -203,6 +204,7 @@ def get_view_type(package_id, resource_id, view_id):
 
 def get_view_opt(package_id, resource_id, view_id):
 
+    # toolkit.get_action('jsonschema_view_show')(None, {'id': view_id})
     view = _g.get_view(view_id)
 
     return Response(stream_with_context(json.dumps(_vt.get_view_opt(view))), mimetype='application/json')
@@ -220,9 +222,14 @@ def get_model(package_id, resource_id, view_id=None):
     content = {}
 
     if view_id:
+        # TODO we could try to use the action jsonschema_view_show
+        #  but let's also check if a dictize is needed (due to special jinja nested models interpolation)
+        
         view = _g.get_view(view_id)
+        
         view_type = view.get('view_type')
         plugin = _vt.get_jsonschema_view_plugin(view_type)
+        
         content = plugin.get_model(view)
     else:
         content = _vt.get_model(package_id, resource_id)
