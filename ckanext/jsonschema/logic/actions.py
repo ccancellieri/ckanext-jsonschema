@@ -271,20 +271,24 @@ def view_show(context, data_dict):
     _check_access('resource_view_show', context, {'id': view_id})
 
     query = 'view_ids:{}'.format(view_id)
-    fl = 'view_*, indexed_ts'
+    fl = 'view_*,indexed_ts'
 
     results = indexer.search(query=query, fl=fl)
     
     if len(results) == 0:
         raise NotFound('Unable to find view: {}'.format(view_id))
 
+    log.debug('Search view result is: {}'.format(results))
+    
     document = results[0]
 
     found = False
-    for idx, id in enumerate(document.get('view_ids')):
-        if id == view_id:
-            found = True
-            break
+    view_ids = document.get('view_ids')
+    if view_ids:
+        for idx, id in enumerate(view_ids):
+            if id == view_id:
+                found = True
+                break
 
     if not found:
         raise NotFound('Unable to find view: {}'.format(view_id))
