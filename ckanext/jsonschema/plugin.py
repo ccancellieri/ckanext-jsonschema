@@ -184,27 +184,24 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             # TODO filter only active resources/views ?
 
             resource_id = resource.get('id')
-            resource_format = resource.get('format')
-
+            res_ids.append(resource_id)
+            
             resource_jsonschema_type = _t.get_resource_type(resource)
             if not resource_jsonschema_type:
-                log.info('Jsonschema Indexer may not take care of a not jsonschema resource: skipping resource {}'.format(resource_id))
-                continue
+                # do not index jsonschema fields if regular type
+                log.info('Jsonschema Indexer may not take care of a not jsonschema resource:\
+                     skipping jsonschema fields for resource {}'.format(resource_id))
+                # but we may want to index the attached views...
+            else:
+                if _t.get_skip_indexing_from_registry(resource_jsonschema_type):
+                    continue
+                
+                resource_plugin = configuration.get_plugin(resource_jsonschema_type)
+                try:
+                    pkg_dict = resource_plugin.before_index_resource(pkg_dict, resource)
+                except Exception as e:
+                    log.error(str(e))
 
-            if _t.get_skip_indexing_from_registry(resource_jsonschema_type):
-                continue
-            
-            res_ids.append(resource_id)
-            # res_descriptions.append(resource.get('description'))            
-        
-            resource_plugin = configuration.get_plugin(resource_jsonschema_type)
-            try:
-                pkg_dict = resource_plugin.before_index_resource(pkg_dict, resource)
-            except Exception as e:
-                log.error(str(e))
-
-            # do not index jsonschema fields if regular type
-            if resource_jsonschema_type:
                 res_jsonschema_types.append(resource_jsonschema_type)
                 res_jsonschemas.append({
                     'resource_id' : resource_id,
@@ -224,12 +221,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 
                 if _t.get_skip_indexing_from_registry(view_jsonschema_type):
                     continue
-        
 
                 view_id = view.get('id')
                 view_type = view.get('view_type')
                 view_plugin = _vt.get_jsonschema_view_plugin(view_type)
                 try:
+                    resource_format = resource.get('format')
                     if not _vt.get_skip_indexing_from_config(view_plugin.config, resource_format, view_jsonschema_type):
                         pkg_dict = view_plugin.before_index_view(pkg_dict, resource, view)
                 except Exception as e:
