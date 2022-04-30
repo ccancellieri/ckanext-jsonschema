@@ -276,7 +276,7 @@ def view_show(context, data_dict):
     results = indexer.search(query=query, fl=fl)
     
     if len(results) == 0:
-        raise NotFound()
+        raise NotFound('Unable to find view: {}'.format(view_id))
 
     document = results[0]
 
@@ -297,7 +297,7 @@ def view_show(context, data_dict):
         view_body = view_document.get(_c.SCHEMA_BODY_KEY) 
 
     content = {
-        'indexed_ts': document.get('indexed_ts'),
+        'indexed_ts': document.get('indexed_ts').isoformat(),
         'package_id': view_document.get('package_id'),
         'resource_id': view_document.get('resource_id'),
         'view_id': view_document.get('view_id'),
