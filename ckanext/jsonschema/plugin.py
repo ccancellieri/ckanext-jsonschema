@@ -140,6 +140,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         # TODO use IBinder to define extension points by plugin
         package = json.loads(pkg_dict['data_dict'])
         package_id = package.get('id')
+
+        log.info('Indexing package: {}'.format(package_id))
         # site_id = pkg_dict.get('site_id')
 
         package_jsonschema_type = _t.get_package_type(package)
@@ -172,6 +174,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
             resource_id = resource.get('id')
             res_ids.append(resource_id)
+
+            log.info('Indexing resource: {}'.format(view_id))
             
             resource_jsonschema_type = _t.get_resource_type(resource)
             if not resource_jsonschema_type:
@@ -218,6 +222,9 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
                 view_id = view.get('id')
                 view_type = view.get('view_type')
+
+                log.info('Indexing view: {}'.format(view_id))
+
                 try:
                     view_plugin = _vt.get_jsonschema_view_plugin(view_type)
                     resource_format = resource.get('format')
