@@ -403,8 +403,7 @@ def resolve_view_body(view_id, args):
         view = _g.get_view(view_id, resolve and not force_resolve)
     except:
         # unable to get a resolved body, we fetch an unresolved body from the DB
-        args['resolve']= False
-        view = _g.get_view(view_id, args)
+        view = _g.get_view(view_id, False)
         # then enforce resolution
         args['force_resolve']= True
 
