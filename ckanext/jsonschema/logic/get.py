@@ -74,12 +74,14 @@ def get_view(resource_view_id, resolve = False):
     try:
         resource_view = toolkit.get_action('jsonschema_view_show')(None, {'view_id': resource_view_id, 'resolve': resolve})
     except Exception as e:
-        # TODO this is a sideffect of the index_false option from the registry...
-        # should we deprecate that?
         
         if not resolve:
-            resource_view = toolkit.get_action('resource_view_show')(None, {'id': resource_view_id})
+            resource_view = dictize_pkg(toolkit.get_action('resource_view_show')(None, {'id': resource_view_id}))
+            # The model could be different not including
+            resource_view.update({
+                'view_id':resource_view['id']
+                })
         else:
             raise Exception('The view has not been indexed or found in solr, Impossible to locate a resolved model, from the database')
     
-    return dictize_pkg(resource_view)
+    return resource_view

@@ -193,6 +193,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                      skipping jsonschema fields for resource {}'.format(resource_id))
                 # but we may want to index the attached views...
                 res_jsonschemas.append({
+                    'package_id' : package_id,
                     'resource_id' : resource_id,
                     _c.SCHEMA_TYPE_KEY : None,
                     _c.SCHEMA_BODY_KEY : None,
@@ -210,6 +211,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
                 res_jsonschema_types.append(resource_jsonschema_type)
                 res_jsonschemas.append({
+                    'package_id' : package_id,
                     'resource_id' : resource_id,
                     _c.SCHEMA_TYPE_KEY : resource_jsonschema_type,
                     _c.SCHEMA_BODY_KEY : _t.get_resource_body(resource) or None,
@@ -240,7 +242,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
 
                 view_jsonschema_body = _vt.get_view_body(view)
-                view_jsonschema_body_resolved = view_jsonschema_body
+                view_jsonschema_body_resolved = None
 
                 if view_plugin:
                     try:
@@ -254,16 +256,17 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             
                 views.append({
                         'view_id': view_id,
+                        'resource_id': resource_id,
+                        'package_id': package_id,
                         'view_type': view_type,
-                        '{}'.format(_c.SCHEMA_TYPE_KEY): view_jsonschema_type,
-                        '{}'.format(_c.SCHEMA_BODY_KEY): view_jsonschema_body or None,
-                        '{}_resolved'.format(_c.SCHEMA_BODY_KEY): view_jsonschema_body_resolved or None,
-                        '{}'.format(_c.SCHEMA_OPT_KEY): _vt.get_view_opt(view) or None
+                        _c.SCHEMA_TYPE_KEY: view_jsonschema_type,
+                        _c.SCHEMA_BODY_KEY: view_jsonschema_body,
+                        '{}_resolved'.format(_c.SCHEMA_BODY_KEY): view_jsonschema_body_resolved,
+                        _c.SCHEMA_OPT_KEY: _vt.get_view_opt(view) or None
                     })
 
         pkg_dict.update({
             'res_ids': res_ids,
-            # 'res_descriptions': res_descriptions,
             'res_jsonschemas': res_jsonschemas,
             'res_jsonschema_types': res_jsonschema_types,
             'view_ids': [view.get('view_id') for view in views],

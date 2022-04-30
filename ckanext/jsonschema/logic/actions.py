@@ -271,7 +271,7 @@ def view_show(context, data_dict):
     _check_access('resource_view_show', context, {'id': view_id})
 
     query = 'view_ids:{}'.format(view_id)
-    fl = 'view_*, indexed_ts, id, res_ids'
+    fl = 'view_*, indexed_ts'
 
     results = indexer.search(query=query, fl=fl)
     
@@ -289,7 +289,6 @@ def view_show(context, data_dict):
     if not found:
         raise NotFound('Unable to find view: {}'.format(view_id))
 
-    resource_id = document.get('res_ids')[idx]
     view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[idx]))
 
     if resolve:
@@ -299,8 +298,8 @@ def view_show(context, data_dict):
 
     content = {
         'indexed_ts': document.get('indexed_ts'),
-        'package_id': document.get('id'),
-        'resource_id': resource_id,
+        'package_id': view_document.get('package_id'),
+        'resource_id': view_document.get('resource_id'),
         'view_id': view_document.get('view_id'),
         'view_type': view_document.get('view_type'),
         _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
