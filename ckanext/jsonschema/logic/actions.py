@@ -271,15 +271,17 @@ def view_show(context, data_dict):
     _check_access('resource_view_show', context, {'id': view_id})
 
     query = 'view_ids:{}'.format(view_id)
-    fl = 'view_*,indexed_ts'
+    
+    # commented out, not properly supported by solr 3.6
+    # fl = 'view_*,indexed_ts'
 
-    results = indexer.search(query=query, fl=fl)
+    results = indexer.search(query=query)
     
     if len(results) == 0:
         raise NotFound('Unable to find view: {}'.format(view_id))
 
     log.debug('Search view result is: {}'.format(results))
-    
+
     document = results[0]
 
     found = False
