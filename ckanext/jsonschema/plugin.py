@@ -175,7 +175,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             resource_id = resource.get('id')
             res_ids.append(resource_id)
 
-            log.info('Indexing resource: {}'.format(view_id))
+            log.info('Indexing resource: {}'.format(resource_id))
             
             resource_jsonschema_type = _t.get_resource_type(resource)
             if not resource_jsonschema_type:
@@ -267,7 +267,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'view_jsonschema_types': [view.get(_c.SCHEMA_TYPE_KEY) for view in views],
             'view_jsonschemas': [json.dumps(view) for view in views]
         })
-
+        log.debug('Indexed package with: {}'.format(json.dumps(pkg_dict)))
         log.info('Indexed package: {}'.format(pkg_dict.get('id')))
         return pkg_dict
         
