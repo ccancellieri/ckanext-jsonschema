@@ -189,9 +189,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             else:
                 if _t.get_skip_indexing_from_registry(resource_jsonschema_type):
                     continue
-                
-                resource_plugin = configuration.get_plugin(resource_jsonschema_type)
                 try:
+                    resource_plugin = configuration.get_plugin(resource_jsonschema_type)
                     pkg_dict = resource_plugin.before_index_resource(pkg_dict, resource)
                 except Exception as e:
                     log.error(str(e))
@@ -219,10 +218,10 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
                 view_id = view.get('id')
                 view_type = view.get('view_type')
-                view_plugin = _vt.get_jsonschema_view_plugin(view_type)
                 try:
+                    view_plugin = _vt.get_jsonschema_view_plugin(view_type)
                     resource_format = resource.get('format')
-                    if not _vt.get_skip_indexing_from_config(view_plugin.config, resource_format, view_jsonschema_type):
+                    if view_plugin and not _vt.get_skip_indexing_from_config(view_plugin.config, resource_format, view_jsonschema_type):
                         pkg_dict = view_plugin.before_index_view(pkg_dict, resource, view)
                 except Exception as e:
                     log.warn(str(e))
