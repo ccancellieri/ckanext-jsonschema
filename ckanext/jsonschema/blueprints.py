@@ -185,7 +185,7 @@ def get_view_body(package_id, resource_id, view_id):
 
     resolve = request.args.get('resolve', 'false').lower() == 'true' 
     wrap = request.args.get('wrap', 'false').lower() == 'true' 
-    force_resolve = request.args.get('wrap', 'false').lower() == 'true'
+    force_resolve = request.args.get('force_resolve', 'false').lower() == 'true'
 
     args = {
         'resolve': resolve,
