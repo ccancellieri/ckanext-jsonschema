@@ -96,7 +96,7 @@ def resource_view_delete(next_auth, context, data_dict):
 
 def _index_package(data_dict):
 
-
+    package_id = None
     if 'id' in data_dict: # this is the view id
         try:
             resource_view = toolkit.get_action('resource_view_show')(None, {u'id': data_dict.get('id')})
