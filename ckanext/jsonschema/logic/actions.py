@@ -266,7 +266,7 @@ def clone_metadata(context, data_dict):
 def view_show(context, data_dict):
     
     view_id = data_dict.get('view_id')
-    resolve = data_dict.get('resolve', 'false') # TODO BOOL
+    resolve = data_dict.get('resolve', False)
 
     _check_access('resource_view_show', context, {'id': view_id})
 
@@ -292,7 +292,7 @@ def view_show(context, data_dict):
     resource_id = document.get('res_ids')[idx]
     view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[idx]))
 
-    if resolve.lower() == "true":
+    if resolve:
         view_body = view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY))
     else:
         view_body = view_document.get(_c.SCHEMA_BODY_KEY) 

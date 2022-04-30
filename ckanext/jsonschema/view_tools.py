@@ -395,11 +395,15 @@ def get_view_info(view_type, resource):
 
 
 def resolve_view_body(view_id, args):
-    
-    resolve = args.get('resolve', 'false')
-    wrap = args.get('wrap', 'false')
 
-    view = _g.get_view(view_id, resolve)
+    try:
+        view = _g.get_view(view_id, args.get('resolve', False))
+    except:
+        # unable to get a resolved body, let's fetch an unresolved from the DB
+        args['resolve']= False
+        view = _g.get_view(view_id, args)
+        # now let's enforce resolution
+        args['force_resolve']= True
 
     view_body = get_view_body(view)
 
@@ -409,10 +413,10 @@ def resolve_view_body(view_id, args):
     view_type = view.get('view_type')
     plugin = get_jsonschema_view_plugin(view_type)
 
-    if wrap.lower() == 'true':
+    if args.get('wrap', False):
         view_body = plugin.wrap_view(view_body, view, args)
 
-    if resolve.lower() == 'true':
+    if args.get('resolve', False) or args.get('force_resolve', False):
         view_body = plugin.resolve(view_body, view, args)
     
     return view_body

@@ -192,6 +192,12 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 log.info('Jsonschema Indexer may not take care of a not jsonschema resource:\
                      skipping jsonschema fields for resource {}'.format(resource_id))
                 # but we may want to index the attached views...
+                res_jsonschemas.append({
+                    'resource_id' : resource_id,
+                    _c.SCHEMA_TYPE_KEY : None,
+                    _c.SCHEMA_BODY_KEY : None,
+                    _c.SCHEMA_OPT_KEY : None
+                })
             else:
                 if _t.get_skip_indexing_from_registry(resource_jsonschema_type):
                     continue

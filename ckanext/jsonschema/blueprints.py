@@ -182,9 +182,19 @@ jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), v
 ############ VIEW
 
 def get_view_body(package_id, resource_id, view_id):
+
+    resolve = args.get('resolve', 'false').lower() == 'true' 
+    wrap = args.get('wrap', 'false').lower() == 'true' 
+    force_resolve = args.get('wrap', 'false').lower() == 'true'
+
+    args = {
+        'resolve': resolve,
+        'wrap': wrap,
+        'force_resolve': force_resolve
+    }
     
     try:
-        content = _vt.resolve_view_body(view_id, request.args)
+        content = _vt.resolve_view_body(view_id, args)
         return Response(stream_with_context(json.dumps(content)), mimetype='application/json')
     except ValidationError as e:
         traceback.print_exc()

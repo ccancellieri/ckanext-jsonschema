@@ -63,7 +63,7 @@ def get_pkg(dataset_id):
     return pkg
 
 
-def get_view(resource_view_id, resolve = 'false'):
+def get_view(resource_view_id, resolve = False):
 
     from ckanext.jsonschema.tools import dictize_pkg
 
@@ -77,7 +77,7 @@ def get_view(resource_view_id, resolve = 'false'):
         # TODO this is a sideffect of the index_false option from the registry...
         # should we deprecate that?
         
-        if resolve.lower() == 'false':
+        if not resolve:
             resource_view = toolkit.get_action('resource_view_show')(None, {'id': resource_view_id})
         else:
             raise Exception('The view has not been indexed or found in solr, Impossible to locate a resolved model, from the database')
