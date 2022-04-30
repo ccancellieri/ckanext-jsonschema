@@ -72,7 +72,7 @@ def get_view(resource_view_id, resolve = 'false'):
 
     # may throw not found
     try:
-        resource_view = toolkit.get_action('jsonschema_view_show')(None, {'id': resource_view_id, 'resolve': resolve})
+        resource_view = toolkit.get_action('jsonschema_view_show')(None, {'view_id': resource_view_id, 'resolve': resolve})
     except Exception as e:
         # TODO this is a sideffect of the index_false option from the registry...
         # should we deprecate that?

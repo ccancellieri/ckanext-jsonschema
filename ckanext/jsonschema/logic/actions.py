@@ -229,7 +229,8 @@ def clone_metadata(context, data_dict):
                     package_dict['resources'].append(resource)
             
             except PluginNotFoundException: #TODO remove, should raise error
-                pass 
+                log.error('Unable to find a plugin implementation for resource type {}'.format(resource_type))
+                raise
 
         return toolkit.get_action('package_create')(context, package_dict)
         # cloned_pkg_dict = toolkit.get_action('package_create')(context, package_dict)
@@ -270,7 +271,7 @@ def view_show(context, data_dict):
     _check_access('resource_view_show', context, {'id': view_id})
 
     query = 'view_ids:{}'.format(view_id)
-    fl = 'view_*, indexed_ts'
+    fl = 'view_*, indexed_ts, id, res_ids'
 
     results = indexer.search(query=query, fl=fl)
     
@@ -286,8 +287,9 @@ def view_show(context, data_dict):
             break
 
     if not found:
-        raise NotFound()
+        raise NotFound('Unable to find view: {}'.format(view_id))
 
+    resource_id = document.get('res_ids')[idx]
     view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[idx]))
 
     if resolve.lower() == "true":
@@ -297,6 +299,8 @@ def view_show(context, data_dict):
 
     content = {
         'indexed_ts': document.get('indexed_ts'),
+        'package_id': document.get('id'),
+        'resource_id': resource_id,
         'view_id': view_document.get('view_id'),
         'view_type': view_document.get('view_type'),
         _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),

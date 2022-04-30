@@ -227,9 +227,7 @@ Add the following entry to the SOLR schema.xml:
 
 ```
 
-<field name="package_id" type="string" indexed="true" stored="true" multiValued="false"/>
 <field name="res_ids" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="res_descriptions" type="text" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschemas" type="text" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true"/>
 <field name="view_ids" type="string" indexed="true" stored="true" multiValued="true"/>

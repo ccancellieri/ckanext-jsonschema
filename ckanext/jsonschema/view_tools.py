@@ -110,6 +110,7 @@ def get_model(package_id, resource_id):
         raise Exception('wrong parameters we expect a package_id and a resource_id')
 
     # TODO can we have a context instead of None?
+    # toolkit.get_action('package_show')({'cached':False}, {'id':package_id})
     pkg = toolkit.get_action('package_show')(None, {'id':package_id})
     if not pkg:
         raise Exception('Unable to find package, check input params')

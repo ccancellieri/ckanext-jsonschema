@@ -90,22 +90,32 @@ def resource_view_create(next_auth, context, data_dict):
 
 @plugins.toolkit.chained_action
 def resource_view_delete(next_auth, context, data_dict):
-    next_auth(context, data_dict)
     _index_package(data_dict)
+    next_auth(context, data_dict)
 
 
 def _index_package(data_dict):
 
 
     if 'id' in data_dict: # this is the view id
-        resource_view = toolkit.get_action('resource_view_show')(None, {u'id': data_dict.get('id')})
-        package_id = resource_view.get('package_id')
-        
+        try:
+            resource_view = toolkit.get_action('resource_view_show')(None, {u'id': data_dict.get('id')})
+            package_id = resource_view.get('package_id')
+        except:
+            log.error('Unable to locate the resource for view id: {}'.data_dict.get('id'))
+            pass
     
-    if 'resource_id' in data_dict:
-        resource = toolkit.get_action('resource_show')(None, {u'id': data_dict.get('resource_id')})
-        package_id = resource.get('package_id')
+    if not package_id and 'resource_id' in data_dict:
+        try:
+            resource = toolkit.get_action('resource_show')(None, {u'id': data_dict.get('resource_id')})
+            package_id = resource.get('package_id')
+        except:
+            log.error('Unable to locate the package for resource id: {}'.data_dict.get('resource_id'))
+            pass
 
+    if not package_id:
+        log.error('Aborting: Unable to reindex the package for view id: {}'.data_dict.get('id'))
+        return
 
     package = model.Package.get(package_id)
 

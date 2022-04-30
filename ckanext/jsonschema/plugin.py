@@ -174,28 +174,28 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         resources = package.get('resources')
 
         res_ids = []
-        res_descriptions = []
+        # res_descriptions = []
         res_jsonschema_types = []
         res_jsonschemas = []
         
         views = []
         for resource in resources:
             
-            # TODO filter only active resources/views
+            # TODO filter only active resources/views ?
 
-            # TODO use IBinder to define extension points by plugin (resource type)
-            # TODO
-            #  use iso plugin to implement https://github.com/ckan/ckanext-spatial/blob/4ac25f19aa4eb9c798451f5eeb3084f907ccc003/ckanext/spatial/plugin.py#L187
-            #  check also iso19139/tools.py
+            resource_id = resource.get('id')
+            resource_format = resource.get('format')
 
             resource_jsonschema_type = _t.get_resource_type(resource)
+            if not resource_jsonschema_type:
+                log.info('Jsonschema Indexer may not take care of a not jsonschema resource: skipping resource {}'.format(resource_id))
+                continue
+
             if _t.get_skip_indexing_from_registry(resource_jsonschema_type):
                 continue
             
-            resource_id = resource.get('id')
-            resource_format = resource.get('format')
             res_ids.append(resource_id)
-            res_descriptions.append(resource.get('description'))            
+            # res_descriptions.append(resource.get('description'))            
         
             resource_plugin = configuration.get_plugin(resource_jsonschema_type)
             try:
@@ -233,7 +233,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                     if not _vt.get_skip_indexing_from_config(view_plugin.config, resource_format, view_jsonschema_type):
                         pkg_dict = view_plugin.before_index_view(pkg_dict, resource, view)
                 except Exception as e:
-                    log.error(str(e))
+                    log.warn(str(e))
 
 
                 view_jsonschema_body = _vt.get_view_body(view)
@@ -260,7 +260,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         pkg_dict.update({
             'res_ids': res_ids,
-            'res_descriptions': res_descriptions,
+            # 'res_descriptions': res_descriptions,
             'res_jsonschemas': res_jsonschemas,
             'res_jsonschema_types': res_jsonschema_types,
             'view_ids': [view.get('view_id') for view in views],
