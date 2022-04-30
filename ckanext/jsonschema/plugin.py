@@ -132,24 +132,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
 
     # IPackageController
-
-    # def before_index(self, pkg_dict):
-    #     # return pkg_dict
-    #     # d=pkg_dict
-
-    #     # d.pop('_version_')
-
-    #     pkg_dict.update({'validated_data_dict': json.loads(pkg_dict)})
-        
-    #     return pkg_dict
-        # # TODO solr
-        # return {
-        #     'title':d.title,
-        #     'name':d.name,
-        #     'url':d.url
-        # }
-        
-
+    
     def before_index(self, pkg_dict):
     # IMPORTANT: Check already existing views on not available plugin
     # ckan/lib/datapreview/resource_view_list filters out views for which the plugin is no more available
@@ -163,13 +146,17 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
         # if get_skip_index_from_registry(package_jsonschema_type):
             #return pkg_dict
-        package_plugin = configuration.get_plugin(package_jsonschema_type)
-
-        try:
-            pkg_dict = package_plugin.before_index_package(pkg_dict)
-        except Exception as e:
-            log.error(str(e))
-        
+        if not package_jsonschema_type:
+            # do not index jsonschema fields if regular type
+            log.info('Jsonschema Indexer may not take care of a not jsonschema package:\
+                    skipping jsonschema fields for package {}'.format(package_id))
+            # but we may want to index the attached views...
+        else:
+            try:
+                package_plugin = configuration.get_plugin(package_jsonschema_type)
+                pkg_dict = package_plugin.before_index_package(pkg_dict)
+            except Exception as e:
+                log.error(str(e))
         
         resources = package.get('resources')
 
