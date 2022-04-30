@@ -101,7 +101,7 @@ def index_package(data_dict):
 
     package_id = data_dict.get('package_id')
     
-    if 'id' in data_dict: # this is the view id
+    if not package_id and 'id' in data_dict: # this is the view id
         try:
             resource_view = toolkit.get_action('resource_view_show')(None, {u'id': data_dict.get('id')})
             package_id = resource_view.get('package_id')
