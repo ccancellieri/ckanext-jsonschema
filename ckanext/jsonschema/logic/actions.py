@@ -161,6 +161,8 @@ def validate_metadata(context, data_dict):
     if is_error:
         raise ValidationError(df.unflatten(errors))
 
+import ckanext.jsonschema.validators as _v
+import ckanext.jsonschema.logic.get as _g
 
 def clone_metadata(context, data_dict):
 
@@ -182,7 +184,9 @@ def clone_metadata(context, data_dict):
     _check_access('package_create', context, package_dict)
 
 
-    clone_context = {}
+    clone_context = {
+        'prevent_notify': True
+    }
     errors = []
 
     try:
@@ -194,12 +198,16 @@ def clone_metadata(context, data_dict):
             log.info(message)
             return { "success": False, "msg": message}
 
-        today_string = date.today().strftime("%b-%d-%Y")
         cloner(source_pkg, package_dict, errors, clone_context)
-        # TODO format
-        package_dict['title'] = 'Cloned ' + package_dict['title'] + ' ' + today_string
 
-        for resource in source_pkg.get('resources'):
+        # TODO format
+        package_dict['title'] = 'Cloned ' + source_pkg.get('title','') + ' ' + datetime.now().isoformat()
+
+        new_pkg_dict = toolkit.get_action('package_create')(clone_context, package_dict)
+
+        for _resource in source_pkg.get('resources'):
+
+            resource = dict(_resource)
 
             try:
                 del resource['id']
@@ -207,6 +215,8 @@ def clone_metadata(context, data_dict):
 
                 if 'revision_id' in resource:
                     del resource['revision_id']
+
+                resource['package_id'] = new_pkg_dict['id']
                 
                 resource_clone_context = {}
                 resource_type = _t.get_resource_type(resource)
@@ -224,35 +234,49 @@ def clone_metadata(context, data_dict):
                     continue
                 
                 resource = cloner(resource, errors, resource_clone_context)
-                if resource:
-                    # attach to package_dict
-                    package_dict['resources'].append(resource)
+                # if resource:
+                #     # attach to package_dict
+                #     package_dict['resources'].append(resource)
+
+                resource = toolkit.get_action('resource_create')(clone_context, resource)
+                
+                # now let's clone the views
+                views = toolkit.get_action('resource_view_list')(None,{'id': _resource['id']})
+                for view in views:
+                    view_dict_clone = {
+                        'view_type': view['view_type'],
+                        'title': view['title'],
+                        'resource_id': resource['id']
+                    }
+
+                    # TODO how to clone other custom views?
+
+                    # this cloner will take care of normal views
+                    # AND jsonschema views
+                    jsonschema_type = view.get('jsonschema_type')
+
+                    if jsonschema_type:
+                        view_dict_clone.update({
+                            _c.SCHEMA_BODY_KEY: view.get('jsonschema_body'),
+                            _c.SCHEMA_TYPE_KEY: jsonschema_type,
+                            _c.SCHEMA_OPT_KEY: view.get('jsonschema_opt')
+                        })
+
+                    try:
+                        vv = toolkit.get_action('resource_view_create')(clone_context, view_dict_clone)
+                    except Exception as e:
+                        log.error(str(e))
             
             except PluginNotFoundException: #TODO remove, should raise error
                 log.error('Unable to find a plugin implementation for resource type {}'.format(resource_type))
                 raise
 
-        return toolkit.get_action('package_create')(context, package_dict)
-        # cloned_pkg_dict = toolkit.get_action('package_create')(context, package_dict)
+        
+        import ckanext.jsonschema.logic.action.action as action
+        action.index_package({'package_id': new_pkg_dict.get('id')})
 
-        # for new_resource in cloned_pkg_dict.get('resources'):
-
-        #     # find original resources to retrieve their id
-
-        #     # TODO: this is very very ugly...
-        #     source_resource = next(res for res in pkg.get('resources') if res.get('created') == resource.get('created'))
-        #     source_resource_id = source_resource.get('id')
-        #     source_views =  toolkit.get_action('resource_view_list')(context, {'id': new_resource.get()})
-
-        #     new_resource_id = new_resource.get('id')
-
-        #     for new_view in source_views:
-        #         del new_view['id']
-        #         new_view['resource_id'] = new_resource_id
-        #         toolkit.get_action('resource_view_create')(context, new_view)
-
-        # return cloned_pkg_dict
-
+        return new_pkg_dict
+        
     except Exception as e:
         import traceback
         traceback.print_exc()

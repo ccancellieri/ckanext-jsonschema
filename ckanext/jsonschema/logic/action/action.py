@@ -80,17 +80,20 @@ def validate_resource(next_auth, context, data_dict):
 @plugins.toolkit.chained_action
 def resource_view_update(next_auth, context, data_dict):
     next_auth(context, data_dict)
-    index_package(data_dict)
+    if not context.get('prevent_notify'):
+        index_package(data_dict)
     
 
 @plugins.toolkit.chained_action
 def resource_view_create(next_auth, context, data_dict):
     next_auth(context, data_dict)
-    index_package(data_dict)
+    if not context.get('prevent_notify'):
+        index_package(data_dict)
 
 @plugins.toolkit.chained_action
 def resource_view_delete(next_auth, context, data_dict):
-    index_package(data_dict)
+    if not context.get('prevent_notify'):
+        index_package(data_dict)
     next_auth(context, data_dict)
 
 
