@@ -183,9 +183,9 @@ jsonschema.add_url_rule('/{}/registry/<path:jsonschema_type>'.format(_c.TYPE), v
 
 def get_view_body(package_id, resource_id, view_id):
 
-    resolve = args.get('resolve', 'false').lower() == 'true' 
-    wrap = args.get('wrap', 'false').lower() == 'true' 
-    force_resolve = args.get('wrap', 'false').lower() == 'true'
+    resolve = request.args.get('resolve', 'false').lower() == 'true' 
+    wrap = request.args.get('wrap', 'false').lower() == 'true' 
+    force_resolve = request.args.get('wrap', 'false').lower() == 'true'
 
     args = {
         'resolve': resolve,
