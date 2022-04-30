@@ -1,5 +1,4 @@
-
-
+from ckan.logic import NotFound
 import ckan.plugins.toolkit as toolkit
 import ckan.logic as logic
 
@@ -73,8 +72,7 @@ def get_view(resource_view_id, resolve = False):
     # may throw not found
     try:
         resource_view = toolkit.get_action('jsonschema_view_show')(None, {'view_id': resource_view_id, 'resolve': resolve})
-    except Exception as e:
-        
+    except NotFound as e:
         if not resolve:
             resource_view = dictize_pkg(toolkit.get_action('resource_view_show')(None, {'id': resource_view_id}))
             # The model could be different not including
@@ -83,5 +81,7 @@ def get_view(resource_view_id, resolve = False):
                 })
         else:
             raise Exception('The view has not been indexed or found in solr, Impossible to locate a resolved model, from the database')
+    except Exception as e:
+        raise e
     
     return resource_view
