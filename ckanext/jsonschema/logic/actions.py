@@ -505,7 +505,7 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                         .format(view_document['package_id'], view_document['resource_id']), _external=True),
                     'metadata_link': toolkit.url_for('/dataset/{}'\
                         .format(view_document['package_id']), _external=True),
-                    '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}'\
+                    '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}/{}'\
                         .format(_c.TYPE, view_document['package_id'], view_document['resource_id'], view_document['view_id']),  _external=True, resolve=True),
                     'view_type': view_document.get('view_type'),
                     _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
