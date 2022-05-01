@@ -389,7 +389,7 @@ def view_search(context, data_dict):
         query = 'capacity:public AND view_types:{}'.format(searching_view_type)
 
         q = None
-        (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
+        (aq, searching_full) = _append_param(data_dict, 'full', q, 'validated_data_dict')
         q = aq if aq else q
         (aq, searching_schema_type) = _append_param(data_dict, 'schema_type', q, 'view_jsonschema_types')
         q = aq if aq else q
