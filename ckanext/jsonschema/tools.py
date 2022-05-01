@@ -245,6 +245,9 @@ def as_datetime(dict, path, strptime_format='%Y-%m-%d'):
 
 ########################  REGISTRY ############################## 
 
+def get_registry():
+    return configuration.get_registry()
+
 def get_from_registry(_type):
     registry = configuration.get_registry()
     return registry.get(_type)

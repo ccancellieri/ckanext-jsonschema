@@ -346,7 +346,7 @@ def view_show(context, data_dict):
     
 def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = False):
     solr_val = data_dict.get(dict_key)
-    join_condition = data_dict.get('join_condition', 'AND')
+    
     # if starred and quoted:
     #     value='"*{{}}*"'
     # elif starred:
@@ -428,13 +428,19 @@ def view_search(context, data_dict):
             if searching_full:
                 matching_res_id = res_ids
             elif searching_res_name and searching_res_desc:
+
                 if res_names and res_descs:
                     if len(res_descs) == len(res_names):
+                        join_condition = data_dict.get('join_condition', 'and').lower()
                         for ridx, res_name in enumerate(res_names):
                             res_desc = res_descs[ridx]
 
-                            if searching_res_name in res_name.lower() or searching_res_desc in res_desc.lower():
-                                matching_res_id.append(res_ids[ridx])
+                            if join_condition=='and':
+                                if searching_res_name in res_name.lower() and searching_res_desc in res_desc.lower():
+                                    matching_res_id.append(res_ids[ridx])
+                            else:
+                                if searching_res_name in res_name.lower() or searching_res_desc in res_desc.lower():
+                                    matching_res_id.append(res_ids[ridx])
                     else:
                         # descriptions and names lengths are not matching
                         # it's impossible to match by description also
