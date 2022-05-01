@@ -341,8 +341,6 @@ def view_show(context, data_dict):
     }
 
     return content
-
-
     
 def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = False):
     solr_val = data_dict.get(dict_key)
@@ -363,7 +361,6 @@ def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = Fal
             return '{}:{}'.format(solr_key, solr_val), solr_val.lower()
 
     return None, None
-
 
 @side_effect_free
 def view_search(context, data_dict):
@@ -502,8 +499,17 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                     if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
                         continue
 
-                content = view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY))
-                if content:
-                    # if exists append to the returning list
-                    ret.append(content)
+                # if here append the document
+                ret.append({
+                    'resource_link': toolkit.url_for('/dataset/{}/resource/{}'\
+                        .format(view_document['package_id'], view_document['resource_id']), _external=True),
+                    'metadata_link': toolkit.url_for('/dataset/{}'\
+                        .format(view_document['package_id']), _external=True),
+                    '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}'\
+                        .format(_c.TYPE, view_document['package_id'], view_document['resource_id'], view_document['view_id']),  _external=True, resolve=True),
+                    'view_type': view_document.get('view_type'),
+                    _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
+                    _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
+                    _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
+                })
     return ret
