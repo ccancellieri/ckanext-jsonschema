@@ -41,6 +41,7 @@ def search(query, fq='', fl=''):
     solr = make_connection()
     #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
     try:
+        # defType='edismax', 
         return solr.search(q=query, fq=fq, fl=fl).docs
     except socket.error as e:
         err = 'Could not connect to SOLR %r: %r' % (solr.url, e)

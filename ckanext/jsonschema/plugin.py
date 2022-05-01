@@ -10,8 +10,12 @@ import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import ckanext.jsonschema.view_tools as _vt
 from ckan.logic.schema import (default_create_package_schema,
-                               default_update_package_schema,
-                               default_show_package_schema)
+                               default_show_package_schema,
+                               default_update_package_schema)
+from ckanext.jsonschema.logic.action.get import reload
+from ckanext.jsonschema.logic.actions import (clone_metadata, importer,
+                                              validate_metadata, view_search,
+                                              view_show)
 
 get_validator = toolkit.get_validator
 not_missing = get_validator('not_missing')
@@ -51,9 +55,6 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
     #IActions
     def get_actions(self):
-        from ckanext.jsonschema.logic.action.get import reload
-        from ckanext.jsonschema.logic.actions import (clone_metadata, importer,
-                                                      validate_metadata, view_show)
 
         actions = {
             'jsonschema_importer': importer,
@@ -61,6 +62,7 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'jsonschema_validate': validate_metadata,
             'jsonschema_clone': clone_metadata,
             'jsonschema_view_show': view_show,
+            'jsonschema_view_search': view_search,
 
             # CHAINED CKAN ACTIONS
             'resource_create': action.resource_create,

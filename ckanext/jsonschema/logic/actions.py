@@ -6,8 +6,10 @@ import ckan.plugins.toolkit as toolkit
 import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.indexer as indexer
+# import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
+# import ckanext.jsonschema.validators as _v
 from ckan.logic import NotFound, ValidationError, side_effect_free
 from ckan.plugins.core import PluginNotFoundException
 
@@ -147,6 +149,8 @@ def validate_metadata(context, data_dict):
 
     id = data_dict.get('id')
 
+    # TODO check permissions: package_show?
+
     package = _t.get(id)
 
     if package is None:
@@ -161,8 +165,6 @@ def validate_metadata(context, data_dict):
     if is_error:
         raise ValidationError(df.unflatten(errors))
 
-import ckanext.jsonschema.validators as _v
-import ckanext.jsonschema.logic.get as _g
 
 def clone_metadata(context, data_dict):
 
@@ -339,3 +341,154 @@ def view_show(context, data_dict):
     }
 
     return content
+
+
+    
+def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = False):
+    solr_val = data_dict.get(dict_key)
+    join_condition = data_dict.get('join_condition', 'AND')
+    # if starred and quoted:
+    #     value='"*{{}}*"'
+    # elif starred:
+    #     value='*{{}}*'
+    # elif quoted:
+    #     value='"{{}}"'
+    if solr_val:
+        # base_query = '{}:{}'.format()
+        if q:
+            # return '{} {} {}:"*{}*"'.format(q, join_condition, solr_key, solr_val), solr_val.lower()
+            return '{} {} {}:{}'.format(q, join_condition, solr_key, solr_val), solr_val.lower()
+        else:
+            # return '{}:"*{}*"'.format(solr_key, solr_val), solr_val.lower()
+            return '{}:{}'.format(solr_key, solr_val), solr_val.lower()
+
+    return None, None
+
+
+@side_effect_free
+def view_search(context, data_dict):
+
+    # view_jsonschema_types=terriajs # wms, csv, scorecard, mapcard 
+
+    # view_types=terriajs #plugin name
+    
+    if 'view_type' not in data_dict:
+        raise ValidationError('View_type is mandatory field')
+    
+    # notes
+    # name
+    # organization
+    # 
+    try:
+        searching_view_type = data_dict.get('view_type').lower()
+
+        query = 'capacity:public AND view_types:*{}*'.format(searching_view_type)
+
+        q = None
+        (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
+        q = aq if aq else q
+        (aq, searching_organization_name) = _append_param(data_dict, 'organization_name', q, 'organization')
+        q = aq if aq else q
+        (aq, searching_package_name) = _append_param(data_dict, 'package_name', q, 'name')
+        q = aq if aq else q
+        (aq, searching_package_desc) = _append_param(data_dict, 'package_desc', q, 'notes')
+        q = aq if aq else q
+        (aq, searching_res_name) = _append_param(data_dict, 'resource_name', q, 'res_name')
+        q = aq if aq else q
+        (aq, searching_res_desc) = _append_param(data_dict, 'resource_desc', q, 'res_description')
+        q = aq if aq else q
+
+        
+
+        # q = '+package_title'.format(data_dict.get('title','').lower()) if 'package_title' in data_dict else q
+
+        # q = '+res_name'.format(data_dict.get('resource_title','').lower()) if 'resource_title' in data_dict else q
+        # q = '+res_description'.format(data_dict.get('resource_desc','').lower()) if 'resource_desc' in data_dict else q
+        
+        # commented out, not properly supported by solr 3.6
+        # fl = 'view_*,indexed_ts'
+
+        results = indexer.search(query='{} AND {}'.format(query, q))
+
+        # log.debug('Search view result is: {}'.format(results))
+
+        returning = []
+
+        
+        # for each package
+        for document in results:
+            res_descs = document.get('res_description')
+            res_names = document.get('res_name')
+            res_ids = document.get('res_ids')
+            matching_res_id = []
+            if searching_full:
+                matching_res_id = res_ids
+            elif searching_res_name and searching_res_desc:
+                if res_names and res_descs:
+                    if len(res_descs) == len(res_names):
+                        for ridx, res_name in enumerate(res_names):
+                            res_desc = res_descs[ridx]
+
+                            if searching_res_name in res_name.lower() or searching_res_desc in res_desc.lower():
+                                matching_res_id.append(res_ids[ridx])
+                    else:
+                        # descriptions and names lengths are not matching
+                        # it's impossible to match by description also
+                        # we will return all the views of this package ignoring the
+                        # exact match with the description
+                        matching_res_id = res_ids
+
+            elif searching_res_name:
+                if res_names:
+                    for ridx, res_name in enumerate(res_names):
+                        if searching_res_name in res_name.lower():
+                            matching_res_id.append(res_ids[ridx])
+            elif searching_res_desc:
+                # should be mandatory while description is not
+                # so res_id array lenght will most probably match with res_names
+                # but we can't count on the same when you use description
+                # let's try to match with res_names array
+                if res_names and res_descs:
+                    if len(res_descs) == len(res_names):
+                        for ridx, res_desc in enumerate(res_descs):
+                            if searching_res_desc in res_desc.lower():
+                                matching_res_id.append(res_ids[ridx])
+                else:
+                    # descriptions and names lengths are not matching
+                    # it's impossible to match by description also
+                    # we will return all the views of this package ignoring the
+                    # exact match with the description
+                    matching_res_id = res_ids
+            else:
+                # no resource filter condition
+                matching_res_id = res_ids
+            
+            if len(matching_res_id) > 0:
+                for res_id in matching_res_id:
+                    returning.extend(matching_views(document, searching_view_type, res_id))
+
+        return returning
+    except Exception as e:
+        raise ValidationError(str(e))
+
+def matching_views(document, searching_view_type = None, res_id = None):
+    ret = []
+    view_types = document.get('view_types')
+    # for each view
+    if view_types:
+        for vidx, view_type in enumerate(view_types):
+            # if matching the view_type
+            if searching_view_type in view_type:
+                # fetch the body
+                view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[vidx]))
+
+                # if res_id is passed we also have to filter by resource_id
+                if res_id:
+                    if res_id != view_document.get('resource_id'):
+                        continue
+
+                content = view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY))
+                if content:
+                    # if exists append to the returning list
+                    ret.append(content)
+    return ret
