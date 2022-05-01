@@ -372,20 +372,26 @@ def view_search(context, data_dict):
 
     # view_types=terriajs #plugin name
     
-    if 'view_type' not in data_dict:
-        raise ValidationError('View_type is mandatory field')
+    if 'type' not in data_dict:
+        raise ValidationError('Parameter \'type\' (plugin name used as view type) is mandatory field')
+
+    n_rows = data_dict.get('rows', 100)
+    if n_rows > 100:
+        raise ValidationError('Parameter \'rows\' maximum value is 100, try refining your query parameter')
     
     # notes
     # name
     # organization
     # 
     try:
-        searching_view_type = data_dict.get('view_type').lower()
+        searching_view_type = data_dict.get('type').lower()
 
-        query = 'capacity:public AND view_types:*{}*'.format(searching_view_type)
+        query = 'capacity:public AND view_types:{}'.format(searching_view_type)
 
         q = None
         (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
+        q = aq if aq else q
+        (aq, searching_schema_type) = _append_param(data_dict, 'schema_type', q, 'view_jsonschema_types')
         q = aq if aq else q
         (aq, searching_organization_name) = _append_param(data_dict, 'organization_name', q, 'organization')
         q = aq if aq else q
@@ -398,8 +404,6 @@ def view_search(context, data_dict):
         (aq, searching_res_desc) = _append_param(data_dict, 'resource_desc', q, 'res_description')
         q = aq if aq else q
 
-        
-
         # q = '+package_title'.format(data_dict.get('title','').lower()) if 'package_title' in data_dict else q
 
         # q = '+res_name'.format(data_dict.get('resource_title','').lower()) if 'resource_title' in data_dict else q
@@ -408,7 +412,7 @@ def view_search(context, data_dict):
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
 
-        results = indexer.search(query='{} AND {}'.format(query, q))
+        results = indexer.search(query=query, fq=q or '', rows=n_rows)
 
         # log.debug('Search view result is: {}'.format(results))
 
@@ -465,13 +469,13 @@ def view_search(context, data_dict):
             
             if len(matching_res_id) > 0:
                 for res_id in matching_res_id:
-                    returning.extend(matching_views(document, searching_view_type, res_id))
+                    returning.extend(matching_views(document, searching_view_type, res_id, searching_schema_type))
 
         return returning
     except Exception as e:
         raise ValidationError(str(e))
 
-def matching_views(document, searching_view_type = None, res_id = None):
+def matching_views(document, searching_view_type = None, res_id = None, searching_schema_type = None):
     ret = []
     view_types = document.get('view_types')
     # for each view
@@ -485,6 +489,11 @@ def matching_views(document, searching_view_type = None, res_id = None):
                 # if res_id is passed we also have to filter by resource_id
                 if res_id:
                     if res_id != view_document.get('resource_id'):
+                        continue
+
+                # filter by view schema type
+                if searching_schema_type:
+                    if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
                         continue
 
                 content = view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY))
