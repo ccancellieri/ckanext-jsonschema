@@ -346,7 +346,7 @@ def view_show(context, data_dict):
     
 def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = False):
     solr_val = data_dict.get(dict_key)
-    
+    join_condition = data_dict.get('join_condition', 'and').lower()
     # if starred and quoted:
     #     value='"*{{}}*"'
     # elif starred:
