@@ -200,8 +200,9 @@ def clone_metadata(context, data_dict):
 
         cloner(source_pkg, package_dict, errors, clone_context)
 
-        # TODO format
-        package_dict['title'] = 'Cloned ' + source_pkg.get('title','') + ' ' + datetime.now().isoformat()
+        # defaults
+        package_dict['private'] = True
+        package_dict['title'] = 'Cloned {} {}'.format(source_pkg.get('title',''), datetime.now().isoformat())
 
         new_pkg_dict = toolkit.get_action('package_create')(clone_context, package_dict)
 
