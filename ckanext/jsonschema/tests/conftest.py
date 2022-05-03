@@ -73,8 +73,8 @@ def get_jsonschema_resource(dataset):
     resource_body = {
         'package_id' : dataset.get('id'),
         'format': 'csv',
-        'jsonschema_type': 'resource-dataset',
-        'jsonschema_body': '{\"name\":\"\", \"description\": \"\"}',
+        'jsonschema_type': 'online-resource',
+        'jsonschema_body': '{\"name\":\"fake_name\", \"protocol\": \"WWW:DOWNLOAD-1.0-http--download\"}',
         'jsonschema_opt': '{ \"key\": \"value\"}'
     }  
 

@@ -56,7 +56,7 @@ def validate_resource(next_auth, context, data_dict):
     body = _t.as_dict(_t.get_resource_body(data_dict))
     opt = _t.as_dict(_t.get_resource_opt(data_dict))
 
-    package = toolkit.get_action('package_show')({}, {'id': data_dict.get('package_id')})
+    package = toolkit.get_action('package_show')(context, {'id': data_dict.get('package_id')})
     package_type = _t.get_package_type(package)
 
     ######################### TODO #########################

@@ -105,7 +105,6 @@
          }
       ],
       "resourceConstraints":{
-         "license_id": "notspecified",
          "securityConstraints":{
             "useLimitation":[
                "Security constraints"

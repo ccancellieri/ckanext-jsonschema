@@ -42,7 +42,7 @@ class TestIso(object):
         # Test code should use CKAN's plugins.load() function to load plugins
         # to be tested.
 
-        _plugins = ['jsonschema_iso', 'jsonschema' ]
+        _plugins = ['jsonschema_dataset', 'jsonschema_iso', 'jsonschema' ]
 
         for plugin in _plugins:
             if not ckan.plugins.plugin_loaded(plugin):
@@ -106,7 +106,7 @@ class TestIso(object):
 
         # test jsonschema_body
         iso_sample = json.loads(iso_sample)
-        schema_body = [json.loads(extra['value']) for extra in package['extras'] if extra['key'] == _c.SCHEMA_BODY_KEY][0]
+        schema_body = _t.get_package_body(package)
 
         assert iso_sample == schema_body
 
