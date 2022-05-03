@@ -185,10 +185,14 @@ def clone_metadata(context, data_dict):
     
     _check_access('package_create', context, package_dict)
 
-
-    clone_context = {
+    context.update({
         'prevent_notify': True
-    }
+    })
+    clone_context = {}
+    # clone_context = {
+    #     'prevent_notify': True
+    # }
+
     errors = []
 
     try:
@@ -206,7 +210,7 @@ def clone_metadata(context, data_dict):
         package_dict['private'] = True
         package_dict['title'] = 'Cloned {} {}'.format(source_pkg.get('title',''), datetime.now().isoformat())
 
-        new_pkg_dict = toolkit.get_action('package_create')(clone_context, package_dict)
+        new_pkg_dict = toolkit.get_action('package_create')(context, package_dict)
 
         for _resource in source_pkg.get('resources'):
 
@@ -241,7 +245,7 @@ def clone_metadata(context, data_dict):
                 #     # attach to package_dict
                 #     package_dict['resources'].append(resource)
 
-                resource = toolkit.get_action('resource_create')(clone_context, resource)
+                resource = toolkit.get_action('resource_create')(context, resource)
                 
                 # now let's clone the views
                 views = toolkit.get_action('resource_view_list')(None,{'id': _resource['id']})
@@ -266,7 +270,7 @@ def clone_metadata(context, data_dict):
                         })
 
                     try:
-                        vv = toolkit.get_action('resource_view_create')(clone_context, view_dict_clone)
+                        vv = toolkit.get_action('resource_view_create')(context, view_dict_clone)
                     except Exception as e:
                         log.error(str(e))
             

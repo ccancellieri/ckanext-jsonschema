@@ -4,9 +4,8 @@
 import ckan.plugins
 import ckan.tests.helpers as helpers
 import ckanext.jsonschema.configuration as configuration
-from ckan.logic.schema import default_create_package_schema
 from ckan.plugins.core import PluginNotFoundException
-from ckanext.jsonschema.plugin import _modify_package_schema
+
 
 
 class TestPlugin(object):
@@ -25,22 +24,26 @@ class TestPlugin(object):
                 ckan.plugins.load(plugin)
 
 
-    def test_modify_package_schema(self):
 
-        from six import PY3
+    #from ckan.logic.schema import default_create_package_schema
+    #from ckanext.jsonschema.plugin import _modify_package_schema
+    
+    # def test_modify_package_schema(self):
 
-        schema = default_create_package_schema()
-        schema = _modify_package_schema(schema)
+    #     from six import PY3
 
-        for modified_schema_function in ['schema_check', 'before_extractor', 'extractor', 'resource_extractor']:
+    #     schema = default_create_package_schema()
+    #     schema = _modify_package_schema(schema)
 
-            if PY3:
-                funcs = [fun for fun in schema['__before'] if fun.__name__ == modified_schema_function]
-            else:
-                funcs = [fun for fun in schema['__before'] if fun.func_name == modified_schema_function]
+    #     for modified_schema_function in ['schema_check', 'before_extractor', 'extractor', 'resource_extractor']:
+
+    #         if PY3:
+    #             funcs = [fun for fun in schema['__before'] if fun.__name__ == modified_schema_function]
+    #         else:
+    #             funcs = [fun for fun in schema['__before'] if fun.func_name == modified_schema_function]
             
-            found = len(funcs) > 0
-            assert found
+    #         found = len(funcs) > 0
+    #         assert found
 
 
     def test_configuration(self):

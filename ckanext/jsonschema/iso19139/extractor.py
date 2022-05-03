@@ -198,8 +198,12 @@ def _extract_iso_graphic_overview(data, errors, context):
 def render_notes(data, context):
     try:
         return base.render('iso/description.html', extra_vars={'dataset': data })
+    except TypeError as e: 
+        # during tests, a TypeError is raised because a session isn't registered 
+        log.error(str(e))
     except Exception as e:
         if e:
+            # message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
             message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
             log.error(message)
         # raise e

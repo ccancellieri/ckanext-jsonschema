@@ -4,7 +4,6 @@ import datetime
 import json
 import os
 
-import ckan.lib.base as base
 import ckan.plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.helpers as helpers
@@ -33,7 +32,7 @@ def reset_db():
     helpers.reset_db()
 
 def _render_wayback(schema_body, package):
-    return _t.render_template('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package})
+    return __render_template('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package})
 
 class TestIso(object):
     
@@ -56,13 +55,15 @@ class TestIso(object):
 
 
     def _create_iso_package(self, organization, iso19139_sample):
+        '''
+        Replicates the importer logic to create an ISO package
+        '''
 
         _type = 'iso19139'
         body = _u.xml_to_json(iso19139_sample)
     
         opt = dict(_c.SCHEMA_OPT)
         opt.update({
-            'validation': False,
             'imported' : True,
             'source_format':'xml',
             'source_url': "localhost:test",
@@ -71,26 +72,24 @@ class TestIso(object):
 
 
         # IMPORT - PREPROCESSING -
-        import_context = {
-            _c.SCHEMA_BODY_KEY: _t.as_dict(body),
-            _c.SCHEMA_TYPE_KEY : _type,
-            _c.SCHEMA_OPT_KEY : opt
-        }
+        import_context = {}
 
         package_dict = {
             # IMPORTER_TYPE = 'iso19139'old
             'type': _type,
             'owner_org': organization.get('id'),
-            'license_id': 'notspecified'
+            'license_id': 'notspecified',
+            _c.SCHEMA_BODY_KEY: _t.as_dict(body),
+            _c.SCHEMA_TYPE_KEY : _type,
+            _c.SCHEMA_OPT_KEY : opt,
         }
 
         errors = []
         plugin = configuration.get_plugin(_type)
-        extractor = plugin.get_input_extractor(_type, import_context) 
+        extractor = plugin.get_input_extractor(_type, package_dict, import_context) 
         extractor(package_dict, errors, import_context)   
 
         opt['validation'] = False  
-        _t.update_extras_from_context(package_dict, import_context)
 
 
         context = self._get_default_context()
@@ -165,7 +164,7 @@ class TestIso(object):
 
         #### Create the package 
         package = self._create_iso_package(organization, iso19139_sample)
-        schema_body = [json.loads(extra['value']) for extra in package['extras'] if extra['key'] == _c.SCHEMA_BODY_KEY][0]
+        schema_body = _t.get_package_body(package)
 
 
         #### Get the runtime wayback
@@ -242,3 +241,34 @@ class TestIso(object):
 
         clone_metadata(context, data_dict)
 
+def __render_template(template_name, extra_vars):
+    '''
+    This function creates a mock jinja environment to render templates
+    base.render cannot be used because there isn't a session registered when running tests
+    This function shouldn't be used outside of tests
+    '''
+
+    import os
+
+    import jinja2
+
+    # setup for render
+    templates_paths = [
+        os.path.join(_c.PATH_ROOT, "jsonschema/templates"),
+        os.path.join(_c.PATH_ROOT, "jsonschema/iso19139/templates"), #TODO should get from plugins
+    ]
+    templateLoader = jinja2.FileSystemLoader(searchpath=templates_paths)
+    templateEnv = jinja2.Environment(loader=templateLoader)
+    template = templateEnv.get_template(template_name)
+    
+    # add helpers
+    from ckan.plugins import get_plugin
+    h = get_plugin(_c.TYPE).get_helpers()
+    extra_vars['h'] = h
+
+    try:
+        return template.render(extra_vars)
+    except jinja2.TemplateSyntaxError as e:
+        log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
+    except Exception as e:
+        log.error('Exception: {}'.format(str(e)))
