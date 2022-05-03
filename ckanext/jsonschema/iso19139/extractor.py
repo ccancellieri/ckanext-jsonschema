@@ -198,8 +198,9 @@ def _extract_iso_graphic_overview(data, errors, context):
 def render_notes(data, context):
     try:
         return base.render('iso/description.html', extra_vars={'dataset': data })
-    except TypeError as e: 
+    except (TypeError, RuntimeError) as e: 
         # during tests, a TypeError is raised because a session isn't registered 
+        # RuntimeError appears to be raised when executing tests on the pipeline instead
         log.error(str(e))
     except Exception as e:
         if e:
