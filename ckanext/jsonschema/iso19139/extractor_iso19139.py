@@ -520,11 +520,18 @@ def __descriptiveKeywords(descriptiveKeywords, opt, data, errors, context):
         descriptiveKeywords = [descriptiveKeywords]
     for _dk in descriptiveKeywords:
         _k = {}
-        descriptiveKeywords_fields = {
-            ('gmd:MD_Keywords','gmd:type','gmd:MD_KeywordTypeCode','@codeListValue',):('type',),
-            # keywords (see below)
-        }
-        _t.map_to(_dk,descriptiveKeywords_fields,_k)
+
+        _k_type = _t.get_nested(_dk, ('gmd:MD_Keywords','gmd:type','gmd:MD_KeywordTypeCode','@codeListValue',))
+
+        # descriptiveKeywords_fields = {
+        #     ('gmd:MD_Keywords','gmd:type','gmd:MD_KeywordTypeCode','@codeListValue',):('type',),
+        #     # keywords (see below)
+        # }
+        #_t.map_to(_dk,descriptiveKeywords_fields,_k)
+        
+        if _k_type:
+            _t.set_nested(_k, ('type',), _k_type.lower())
+
         _keywords = _t.get_nested(_dk, ('gmd:MD_Keywords','gmd:keyword',))
         _ks = _t.as_list_of_values(_keywords, ('gco:CharacterString',))
         _t.set_nested(_k, ('keywords',), _ks)
