@@ -203,10 +203,10 @@ def render_notes(data, context):
         # RuntimeError appears to be raised when executing tests on the pipeline instead
         log.error(str(e))
     except Exception as e:
+        # TODO: Could be TemplateSyntaxError from jinja, which could use the commented custom message
         if e:
             # message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
-            message = 'Error on: {} line: {} Message:{}'.format(e.get('name',''),e.get('lineno',''),e.get('message',''))
-            log.error(message)
+            log.error(str(e))
         # raise e
 
 

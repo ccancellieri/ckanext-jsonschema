@@ -6,13 +6,17 @@ import os
 
 import ckan.plugins
 import ckan.plugins.toolkit as toolkit
+import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
+from ckan.lib.helpers import url_for
+import ckanext.jsonschema.configuration as configuration
 import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
 import pytest
-from ckanext.jsonschema.logic.actions import validate_metadata, clone_metadata
-import ckanext.jsonschema.configuration as configuration
+from ckanext.jsonschema.logic.actions import clone_metadata, validate_metadata
+from six import text_type
+import uuid
 
 @pytest.fixture
 def iso19139_sample(datadir):
@@ -21,6 +25,10 @@ def iso19139_sample(datadir):
 @pytest.fixture
 def iso_sample(datadir):
     return open(os.path.join(str(datadir), 'iso_sample.json')).read()
+
+@pytest.fixture
+def iso_sample2(datadir):
+    return json.loads(open(os.path.join(str(datadir), 'iso_sample2.json')).read())
 
 @pytest.fixture
 def iso_wayback_sample(datadir):
@@ -34,75 +42,35 @@ def reset_db():
 def _render_wayback(schema_body, package):
     return __render_template('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package})
 
-class TestIso(object):
+class TestIso(helpers.FunctionalTestBase):
     
+    _load_plugins = ('jsonschema_iso', 'jsonschema')
+
     @classmethod
     def setup_class(cls):
         
-        # Test code should use CKAN's plugins.load() function to load plugins
-        # to be tested.
-
-        _plugins = ['jsonschema_dataset', 'jsonschema_iso', 'jsonschema' ]
-
-        for plugin in _plugins:
-            if not ckan.plugins.plugin_loaded(plugin):
-                ckan.plugins.load(plugin)
+        helpers.reset_db()
 
         _t.initialize()
 
-    def _get_default_context(self):
-        return {"user": helpers.call_action("get_site_user")["name"]}
+        super(TestIso, cls).setup_class()
+
+    def test_package_create_fields_are_json_and_resources_fields_are_jsons(self, iso19139_sample):
+
+        package = self._create_iso_package_from_xml(iso19139_sample)
+
+        assert isinstance(package[_c.SCHEMA_BODY_KEY], dict) 
+        assert isinstance(package[_c.SCHEMA_OPT_KEY], dict) 
+        assert isinstance(package[_c.SCHEMA_TYPE_KEY], text_type) 
+
+        for resource in package.get('resources'):
+            assert isinstance(resource[_c.SCHEMA_BODY_KEY], dict) 
+            assert isinstance(resource[_c.SCHEMA_OPT_KEY], dict) 
+            assert isinstance(resource[_c.SCHEMA_TYPE_KEY], text_type) 
 
 
-    def _create_iso_package(self, organization, iso19139_sample):
-        '''
-        Replicates the importer logic to create an ISO package
-        '''
-
-        _type = 'iso19139'
-        body = _u.xml_to_json(iso19139_sample)
-    
-        opt = dict(_c.SCHEMA_OPT)
-        opt.update({
-            'imported' : True,
-            'source_format':'xml',
-            'source_url': "localhost:test",
-            'imported_on': str(datetime.datetime.now())
-        })
-
-
-        # IMPORT - PREPROCESSING -
-        import_context = {}
-
-        package_dict = {
-            # IMPORTER_TYPE = 'iso19139'old
-            'type': _type,
-            'owner_org': organization.get('id'),
-            'license_id': 'notspecified',
-            _c.SCHEMA_BODY_KEY: _t.as_dict(body),
-            _c.SCHEMA_TYPE_KEY : _type,
-            _c.SCHEMA_OPT_KEY : opt,
-        }
-
-        errors = []
-        plugin = configuration.get_plugin(_type)
-        extractor = plugin.get_input_extractor(_type, package_dict, import_context) 
-        extractor(package_dict, errors, import_context)   
-
-        opt['validation'] = False  
-
-
-        context = self._get_default_context()
-        package = toolkit.get_action('package_create')(context, package_dict)
-        return package
-
-
-
-    def test_dump_package_create(self, organization, iso19139_sample, iso_sample):
-
-        context = self._get_default_context()
-        package = self._create_iso_package(organization, iso19139_sample)
-                
+    def test_package_create_body_is_correct(self, iso19139_sample, iso_sample):
+        package = self._create_iso_package_from_xml(iso19139_sample)
 
         # test jsonschema_body
         iso_sample = json.loads(iso_sample)
@@ -134,7 +102,7 @@ class TestIso(object):
         assert title == package.get('title')
 
 
-    def test_dump_to_output_xml(self, organization, iso19139_sample, iso_wayback_sample):
+    def test_dump_to_output_xml(self, iso19139_sample, iso_wayback_sample):
 
         """
         Test for the Wayback functionality
@@ -160,10 +128,11 @@ class TestIso(object):
         """
     
         import re
+
         from six import PY3
 
         #### Create the package 
-        package = self._create_iso_package(organization, iso19139_sample)
+        package = self._create_iso_package_from_xml(iso19139_sample)
         schema_body = _t.get_package_body(package)
 
 
@@ -212,12 +181,12 @@ class TestIso(object):
 
         #### Perform test
         assert wayback == iso_wayback_sample
- 
 
-    def test_validate_api_for_iso(self, organization, iso19139_sample):
+
+    def test_validate_api(self, iso19139_sample):
         
-        context = self._get_default_context()
-        package = self._create_iso_package(organization, iso19139_sample)
+        context = {'user': factories.Sysadmin().get('name')}
+        package = self._create_iso_package_from_xml(iso19139_sample)
         
         data_dict = {
             'id': package['id']
@@ -227,19 +196,192 @@ class TestIso(object):
         result = validate_metadata(context, data_dict)
 
         assert result is None
-
     
-    def test_clone_api_for_iso(self, organization, iso19139_sample):
+
+    def test_clone_api_with_sysadmin(self, iso_sample2):
+        '''
+        Test the clone of a private metadata
+        '''
         
-        context = self._get_default_context()
-        package = self._create_iso_package(organization, iso19139_sample)
-        
+        # Create sysadmin
+        user = factories.Sysadmin()
+
+        # Create organization 
+        owner_org = factories.Organization()
+
+        # Create the metadata in that organization
+        package_dict = {
+            'owner_org': owner_org.get('id'),
+            'name': str(uuid.uuid4())
+        }
+        package_dict.update(iso_sample2)
+
+        context = {'user': user.get('name')}
+        package = toolkit.get_action('package_create')(context, package_dict)
+
+        # Create headers and payload for the request
+        headers = {'Authorization': str(user.get('apikey'))}
         data_dict = {
             'id': package['id'],
-            'owner_org': package['owner_org']
+            'owner_org': owner_org['id']
         }
 
-        clone_metadata(context, data_dict)
+        # Get the app 
+        app = self._get_test_app()
+
+        # Request the clone
+        response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        
+        # Check if it worked
+        assert response.status_int == 200
+
+        response_body = json.loads(response)
+        assert response_body['success'] == True
+
+        # The id should be different from the source package
+        cloned_id = response_body['result']['id']
+        assert cloned_id != package['id']
+
+        # Check that we can do a package show
+        show_result = toolkit.get_action('package_show')(context, {'id': cloned_id})
+        assert show_result != None
+        
+
+    def test_clone_api_with_editor_user(self, iso_sample2):
+        # We create a package
+        # Then we try to clone it by a user with edit permission on its organization, and we should succeed
+        # Then we try to clone it by a user without the needed permissions, and we should fail
+
+        
+        # Create the user
+        user1 = factories.User()
+        user2 = factories.User()
+
+        # Create organization with user1 as editor
+        owner_org = factories.Organization(
+            users=[{'name': user1.get('id'), 'capacity': 'editor'}]
+        )
+
+        # Create the metadata in that organization
+        package_dict = {
+            'owner_org': owner_org.get('id'),
+            'name': str(uuid.uuid4())
+        }
+        package_dict.update(iso_sample2)
+
+        context = {'user': user1.get('name')}
+
+        # Create with the source package with the first user
+        package = toolkit.get_action('package_create')(context, package_dict)
+
+
+        # Create headers and payload for the clone request with the first user (should succeed)
+        headers = {'Authorization': str(user1.get('apikey'))}
+        data_dict = {
+            'id': package['id'],
+            'owner_org': owner_org['id']
+        }
+
+        # Get the app 
+        app = self._get_test_app()
+
+        # Request the clone
+        response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        
+        # Check if it worked
+        assert response.status_int == 200
+
+        response_body = json.loads(response.body)
+        assert response_body['success'] == True
+
+        # The id should be different from the source package
+        cloned_id = response_body['result']['id']
+        assert cloned_id != package['id']
+
+        # Check that we can do a package show
+        show_result = toolkit.get_action('package_show')(context, {'id': cloned_id})
+        assert show_result != None
+
+        # Create headers and payload for the clone request with the second user (should fail)
+        headers = {'Authorization': str(user2.get('apikey'))}
+        data_dict = {
+            'id': package['id'],
+            'owner_org': owner_org['id']
+        }
+
+        # Request the clone
+        try:
+            response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        except:
+            pass
+
+
+    def _create_iso_package_from_xml(self, iso19139_sample):
+        '''
+        Replicates the importer logic to create an ISO package
+        '''
+
+        _type = 'iso19139'
+        body = _u.xml_to_json(iso19139_sample)
+    
+        opt = dict(_c.SCHEMA_OPT)
+        opt.update({
+            'imported' : True,
+            'source_format':'xml',
+            'source_url': "localhost:test",
+            'imported_on': str(datetime.datetime.now())
+        })
+
+
+        # IMPORT - PREPROCESSING -
+        import_context = {}
+
+        package_dict = {
+            # IMPORTER_TYPE = 'iso19139'old
+            'type': _type,
+            'owner_org': factories.Organization().get('id'),
+            'license_id': 'notspecified',
+            _c.SCHEMA_BODY_KEY: _t.as_dict(body),
+            _c.SCHEMA_TYPE_KEY : _type,
+            _c.SCHEMA_OPT_KEY : opt,
+        }
+
+        errors = []
+        plugin = configuration.get_plugin(_type)
+        extractor = plugin.get_input_extractor(_type, package_dict, import_context) 
+        extractor(package_dict, errors, import_context)   
+
+        opt['validation'] = False  
+
+
+        context = {'user': factories.Sysadmin().get('name')}
+        package = toolkit.get_action('package_create')(context, package_dict)
+        return package
+
+    # def _create_iso_package_with_jsonschema_and_dataset_resources(self, iso_sample2):
+    #     '''
+    #     Create an ISO package with jsonschema resources and dataset resources
+    #     '''
+
+    #     # Create sysadmin
+    #     user = factories.Sysadmin()
+
+    #     # Create organization with the user as admin
+    #     owner_org = factories.Organization(
+    #         users=[{'name': user.get('name'), 'capacity': 'admin'}],
+    #     )
+        
+    #     # Create the metadata in that organization
+    #     package_dict = {
+    #         'owner_org': owner_org.get('id'),
+    #         'name': str(uuid.uuid4())
+    #     }
+    #     package_dict.update(iso_sample2)
+
+    #     context = {'user': user.get('name')}
+    #     package = toolkit.get_action('package_create')(context, package_dict)
+    #     return user, owner_org, package 
+
 
 def __render_template(template_name, extra_vars):
     '''
@@ -269,6 +411,8 @@ def __render_template(template_name, extra_vars):
     try:
         return template.render(extra_vars)
     except jinja2.TemplateSyntaxError as e:
-        log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
+        pass
+        #log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
     except Exception as e:
-        log.error('Exception: {}'.format(str(e)))
+        pass
+        #log.error('Exception: {}'.format(str(e)))
