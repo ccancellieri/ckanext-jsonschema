@@ -4,7 +4,6 @@ import datetime
 import json
 import os
 
-import webtest
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
