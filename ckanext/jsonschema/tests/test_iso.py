@@ -311,15 +311,14 @@ class TestIso(helpers.FunctionalTestBase):
         # Request the clone
         try:
             response = self.app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
-        except webtest.app.AppError as e:
+        # except webtest.app.AppError as e:
+        except Exception as e:
             # Testing the string message is not very reliable, but we need to be sure that the
-            # error is 403 and not anything else
+           # error is 403 and not anything else, and there isn't the response status in the object
             if e.message.startswith('Bad response: 403'):
                 assert True
             else:
                 assert False
-        except Exception:
-            assert False
 
 
     def _create_iso_package_from_xml(self, iso19139_sample):
