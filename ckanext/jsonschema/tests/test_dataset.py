@@ -25,22 +25,22 @@ def dataset_sample2(datadir):
     return open(os.path.join(str(datadir), 'dataset_sample2.json')).read()
 
 
-class TestDataset(helpers.FunctionalTestBase):
+class TestDataset():
 
-    _load_plugins = ('jsonschema_dataset', 'jsonschema_iso', 'jsonschema')
+    # _load_plugins = ('jsonschema_dataset', 'jsonschema_iso', 'jsonschema')
     
-    @classmethod
-    def setup_class(cls):
+    # @classmethod
+    # def setup_class(cls):
         
-        helpers.reset_db()
-        _t.initialize()
-        super(TestDataset, cls).setup_class()
+    #     helpers.reset_db()
+    #     _t.initialize()
+    #     super(TestDataset, cls).setup_class()
 
-        cls.app = cls._get_test_app()
+        # cls.app = cls._get_test_app()
 
 
-    def _get_default_context(self):
-        return {"user": helpers.call_action("get_site_user")["name"]}
+    # def _get_default_context(self):
+    #     return {"user": helpers.call_action("get_site_user")["name"]}
 
     def test_package_create_dataset(self, organization, dataset_sample):
         

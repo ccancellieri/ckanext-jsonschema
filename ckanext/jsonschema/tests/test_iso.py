@@ -56,7 +56,7 @@ class TestIso(object):
 
     
     @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins", "with_request_context")
+    @pytest.mark.usefixtures("with_plugins")
     def test_clone_api_with_sysadmin(self, iso_sample2, app):
         '''
         Test the clone of a private metadata
@@ -85,9 +85,6 @@ class TestIso(object):
             'owner_org': owner_org['id']
         }
 
-        # Get the app 
-        #app = self._get_test_app()
-
         # Request the clone
         response = app.post(
             '/api/action/jsonschema_clone', 
@@ -95,13 +92,6 @@ class TestIso(object):
             headers=headers
         )
         
-        # Check if it worked
-        # assert response.status_int == 200
-        try:
-            print(dir(response))
-        except:
-            pass
-
         response_body = json.loads(response.body)
         assert response_body['success'] == True
 
