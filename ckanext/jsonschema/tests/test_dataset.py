@@ -27,6 +27,8 @@ def dataset_sample2(datadir):
 
 class TestDataset():
 
+    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_dataset jsonschema_iso jsonschema")
+    @pytest.mark.usefixtures("with_plugins")
     def test_package_create_dataset(self, organization, dataset_sample):
         
         package_dict = {
