@@ -17,6 +17,9 @@ import pytest
 import six
 from six import text_type
 
+from logging import getLogger
+log = getLogger(__name__)
+
 
 @pytest.fixture
 def iso19139_sample(datadir):
@@ -32,7 +35,10 @@ def iso_sample2(datadir):
 
 @pytest.fixture
 def iso_wayback_sample(datadir):
-    return open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
+    des =  open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
+    log.warn('des')
+    log.warn(des)
+    return des
 
 # Runs before each test
 @pytest.fixture(autouse=True)
@@ -140,9 +146,13 @@ class TestIso(object):
         data_identification = metadata['gmd:identificationInfo']['gmd:MD_DataIdentification']
         
         # notes
+        # Now the package description is dinamically generated, so it won't exactly match the source description
+        # but we can check that the source is included into the generated
         notes = data_identification['gmd:abstract']['gco:CharacterString']
-        assert notes == package.get('notes')
-        
+        #assert notes == package.get('notes')
+        assert notes in package.get('notes')        
+
+
         # number of keywords (not content)
         keywords_count = 0
         keywords_root = data_identification['gmd:descriptiveKeywords']
