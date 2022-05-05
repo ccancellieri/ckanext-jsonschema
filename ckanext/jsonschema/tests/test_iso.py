@@ -166,7 +166,8 @@ class TestIso(object):
         title = data_identification['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']
         assert title == package.get('title')
 
-
+    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
+    @pytest.mark.usefixtures("with_plugins")
     def test_dump_to_output_xml(self, iso19139_sample, iso_wayback_sample):
 
         """
@@ -405,36 +406,36 @@ class TestIso(object):
     #     return user, owner_org, package 
 
 
-def __render_template(template_name, extra_vars):
-    '''
-    This function creates a mock jinja environment to render templates
-    base.render cannot be used because there isn't a session registered when running tests
-    This function shouldn't be used outside of tests
-    '''
+# def __render_template(template_name, extra_vars):
+#     '''
+#     This function creates a mock jinja environment to render templates
+#     base.render cannot be used because there isn't a session registered when running tests
+#     This function shouldn't be used outside of tests
+#     '''
 
-    import os
+#     import os
 
-    import jinja2
+#     import jinja2
 
-    # setup for render
-    templates_paths = [
-        os.path.join(_c.PATH_ROOT, "jsonschema/templates"),
-        os.path.join(_c.PATH_ROOT, "jsonschema/iso19139/templates"), #TODO should get from plugins
-    ]
-    templateLoader = jinja2.FileSystemLoader(searchpath=templates_paths)
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    template = templateEnv.get_template(template_name)
+#     # setup for render
+#     templates_paths = [
+#         os.path.join(_c.PATH_ROOT, "jsonschema/templates"),
+#         os.path.join(_c.PATH_ROOT, "jsonschema/iso19139/templates"), #TODO should get from plugins
+#     ]
+#     templateLoader = jinja2.FileSystemLoader(searchpath=templates_paths)
+#     templateEnv = jinja2.Environment(loader=templateLoader)
+#     template = templateEnv.get_template(template_name)
     
-    # add helpers
-    from ckan.plugins import get_plugin
-    h = get_plugin(_c.TYPE).get_helpers()
-    extra_vars['h'] = h
+#     # add helpers
+#     from ckan.plugins import get_plugin
+#     h = get_plugin(_c.TYPE).get_helpers()
+#     extra_vars['h'] = h
 
-    try:
-        return template.render(extra_vars)
-    except jinja2.TemplateSyntaxError as e:
-        pass
-        #log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
-    except Exception as e:
-        pass
-        #log.error('Exception: {}'.format(str(e)))
+#     try:
+#         return template.render(extra_vars)
+#     except jinja2.TemplateSyntaxError as e:
+#         pass
+#         #log.error('Unable to interpolate line \'{}\'\nError:{}'.format(str(e.lineno), str(e)))
+#     except Exception as e:
+#         pass
+#         #log.error('Exception: {}'.format(str(e)))
