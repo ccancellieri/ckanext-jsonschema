@@ -14,7 +14,6 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
 import pytest
-import six
 from six import text_type
 
 from logging import getLogger
@@ -35,10 +34,8 @@ def iso_sample2(datadir):
 
 @pytest.fixture
 def iso_wayback_sample(datadir):
-    des =  open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
-    log.info('log - description')
-    log.info(des)
-    return des
+    return open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
+    
 
 # Runs before each test
 @pytest.fixture(autouse=True)
@@ -303,9 +300,27 @@ class TestIso(object):
         assert wayback == iso_wayback_sample
 
     
-    def test_package_create_fields_are_json_and_resources_fields_are_jsons(self, iso19139_sample):
+    def test_package_create_fields_are_json_and_resources_fields_are_jsons(self, iso_sample2):
 
-        package = self._create_iso_package_from_xml(iso19139_sample)
+
+        # Create sysadmin
+        user = factories.Sysadmin()
+
+        # Create organization with the user as admin
+        owner_org = factories.Organization(
+            users=[{'name': user.get('name'), 'capacity': 'admin'}],
+        )
+        
+        # Create the metadata in that organization
+        package_dict = {
+            'owner_org': owner_org.get('id'),
+            'name': str(uuid.uuid4())
+        }
+        package_dict.update(iso_sample2)
+
+        context = {'user': user.get('name')}
+        package = toolkit.get_action('package_create')(context, package_dict)
+        package = toolkit.get_action('package_show')(context, {'id': package['id']})
 
         assert isinstance(package[_c.SCHEMA_BODY_KEY], dict) 
         assert isinstance(package[_c.SCHEMA_OPT_KEY], dict) 

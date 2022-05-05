@@ -1,3 +1,146 @@
 {
-   "type": "dataset"
+   "maintainer":null,
+   "private":true,
+   "maintainer_email":null,
+   "notes": "Dataset description",
+   "author":null,
+   "author_email":null,
+   "state":"active",
+   "version":null,
+   "license_id":"FAL-1.3",
+   "type":"dataset",
+   "resources":[
+       {
+           "jsonschema_body":{
+               "organisationName":"ORG-UN",
+               "role":"author",
+               "contactInfo":{
+                   "phone":{
+                       "voice":"+453859485730"
+                   },
+                   "address":{
+                       "postalCode":"00163",
+                       "electronicMailAddress":"luise.brown@org.org",
+                       "deliveryPoint":"Via Caracalla",
+                       "city":"Paris",
+                       "country":"France"
+                   }
+               },
+               "individualName":"Luise Brown"
+           },
+           "state":"active",
+           "hash":"",
+           "description":"author: Luise Brown",
+           "format":"",
+           "mimetype_inner":null,
+           "url_type":null,
+           "jsonschema_opt":{},
+           "jsonschema_type":"metadata-contact",
+           "mimetype":null,
+           "cache_url":null,
+           "name":"Fake Name",
+           "url":"",
+           "last_modified":null,
+           "position":0,
+           "resource_type":null
+       },
+     {
+           "jsonschema_body":{
+               "name": "Fake online resource",
+           "protocol": "WWW:LINK-1.0-http--link"
+           },
+           "state":"active",
+           "hash":"",
+           "description":"O-R desc",
+           "format":"",
+           "mimetype_inner":null,
+           "url_type":null,
+           "jsonschema_opt":{},
+           "jsonschema_type":"online-resource",
+           "mimetype":null,
+           "cache_url":null,
+           "name":"O-R Name",
+           "url":"",
+           "last_modified":null,
+           "position":0,
+           "resource_type":null
+       },
+     {
+           "jsonschema_body":{
+               "organisationName":"ORG-UN-NAME",
+               "role":"author",
+               "individualName":"Ind name"
+           },
+           "state":"active",
+           "hash":"",
+           "description":"Point of contact",
+           "format":"",
+           "mimetype_inner":null,
+           "url_type":null,
+           "jsonschema_opt":{},
+           "jsonschema_type":"cited-responsible-party",
+           "mimetype":null,
+           "cache_url":null,
+           "name":"Fake Name",
+           "url":"",
+           "last_modified":null,
+           "position":0,
+           "resource_type":null
+       },
+     {
+           "state":"active",
+           "hash":"",
+           "description":"this should be a  plain dataset resource",
+           "format":"",
+           "mimetype_inner":null,
+           "url_type":null,
+           "mimetype":null,
+           "cache_url":null,
+           "name":"Plain resource",
+           "url":"",
+           "last_modified":null,
+           "position":0,
+           "resource_type":null
+       }
+   ],
+   "num_resources":1,
+   "tags":[
+       {
+           "vocabulary_id":null,
+           "state":"active",
+           "display_name":"cinema",
+           "name":"cinema"
+       },
+       {
+           "vocabulary_id":null,
+           "state":"active",
+           "display_name":"daily",
+           "name":"daily"
+       },
+       {
+           "vocabulary_id":null,
+           "state":"active",
+           "display_name":"logistics",
+           "name":"logistics"
+       },
+       {
+           "vocabulary_id":null,
+           "state":"active",
+           "display_name":"movies",
+           "name":"movies"
+       },
+       {
+           "vocabulary_id":null,
+           "state":"active",
+           "display_name":"oscar",
+           "name":"oscar"
+       },
+       {
+           "vocabulary_id":null,
+           "state":"active",
+           "display_name":"rome",
+           "name":"rome"
+       }
+   ],
+   "isopen":true
 }
