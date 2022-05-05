@@ -4,7 +4,7 @@ import datetime
 import json
 import os
 
-import ckan.plugins
+import webtest
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
@@ -50,10 +50,10 @@ class TestIso(helpers.FunctionalTestBase):
     def setup_class(cls):
         
         helpers.reset_db()
-
         _t.initialize()
-
         super(TestIso, cls).setup_class()
+        
+        cls.app = cls._get_test_app()
 
     def test_package_create_fields_are_json_and_resources_fields_are_jsons(self, iso19139_sample):
 
@@ -227,15 +227,15 @@ class TestIso(helpers.FunctionalTestBase):
         }
 
         # Get the app 
-        app = self._get_test_app()
+        #app = self._get_test_app()
 
         # Request the clone
-        response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        response = self.app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
         
         # Check if it worked
         assert response.status_int == 200
 
-        response_body = json.loads(response)
+        response_body = json.loads(response.body)
         assert response_body['success'] == True
 
         # The id should be different from the source package
@@ -246,7 +246,6 @@ class TestIso(helpers.FunctionalTestBase):
         show_result = toolkit.get_action('package_show')(context, {'id': cloned_id})
         assert show_result != None
         
-
     def test_clone_api_with_editor_user(self, iso_sample2):
         # We create a package
         # Then we try to clone it by a user with edit permission on its organization, and we should succeed
@@ -283,10 +282,10 @@ class TestIso(helpers.FunctionalTestBase):
         }
 
         # Get the app 
-        app = self._get_test_app()
+        #app = self._get_test_app()
 
         # Request the clone
-        response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        response = self.app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
         
         # Check if it worked
         assert response.status_int == 200
@@ -311,9 +310,16 @@ class TestIso(helpers.FunctionalTestBase):
 
         # Request the clone
         try:
-            response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
-        except:
-            pass
+            response = self.app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        except webtest.app.AppError as e:
+            # Testing the string message is not very reliable, but we need to be sure that the
+            # error is 403 and not anything else
+            if e.message.startswith('Bad response: 403'):
+                assert True
+            else:
+                assert False
+        except Exception:
+            assert False
 
 
     def _create_iso_package_from_xml(self, iso19139_sample):
