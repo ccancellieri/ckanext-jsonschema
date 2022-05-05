@@ -92,7 +92,7 @@ class TestIso(object):
         response = app.post(
             '/api/action/jsonschema_clone', 
             data=data_dict,
-            environ_overrides = {"REMOTE_USER": six.ensure_str(user["name"])}
+            headers=headers
         )
         
         # Check if it worked
