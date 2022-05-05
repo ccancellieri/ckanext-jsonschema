@@ -128,7 +128,7 @@ class TestIso(object):
     #         assert isinstance(resource[_c.SCHEMA_TYPE_KEY], text_type) 
 
     @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins", "with_request_context")
+    @pytest.mark.usefixtures("with_plugins")
     def test_package_create_body_is_correct(self, iso19139_sample, iso_sample):
         
         package = self._create_iso_package_from_xml(iso19139_sample)
@@ -167,7 +167,7 @@ class TestIso(object):
         assert title == package.get('title')
 
     @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins")
+    @pytest.mark.usefixtures("with_plugins", "with_request_context")
     def test_dump_to_output_xml(self, iso19139_sample, iso_wayback_sample):
 
         """
