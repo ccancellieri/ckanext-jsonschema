@@ -9,7 +9,7 @@ definitions:
             - git clone https://github.com/ckan/ckan.git
             - cd ckan
             # - git checkout tags/ckan-2.8.6
-            - git checkout tags/ckan-2.9.3
+            - git checkout tags/ckan-2.9.5
             - cd ..
             - cp contrib/docker/.env.template contrib/docker/.env
             # - echo "PLUGIN=${PLUGIN}" >> contrib/docker/.env
