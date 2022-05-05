@@ -1,13 +1,13 @@
 """Tests for dataset interactions."""
 
 
+import json
 import os
 import uuid
 
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
-import ckanext.jsonschema.tools as _t
 import pytest
 
 
@@ -18,29 +18,14 @@ def reset_db():
 
 @pytest.fixture
 def dataset_sample(datadir):
-    return open(os.path.join(str(datadir), 'dataset_sample.json')).read()
+    return json.loads(open(os.path.join(str(datadir), 'dataset_sample.json')).read())
 
 @pytest.fixture
 def dataset_sample2(datadir):
-    return open(os.path.join(str(datadir), 'dataset_sample2.json')).read()
+    return json.loads(open(os.path.join(str(datadir), 'dataset_sample2.json')).read())
 
 
 class TestDataset():
-
-    # _load_plugins = ('jsonschema_dataset', 'jsonschema_iso', 'jsonschema')
-    
-    # @classmethod
-    # def setup_class(cls):
-        
-    #     helpers.reset_db()
-    #     _t.initialize()
-    #     super(TestDataset, cls).setup_class()
-
-        # cls.app = cls._get_test_app()
-
-
-    # def _get_default_context(self):
-    #     return {"user": helpers.call_action("get_site_user")["name"]}
 
     def test_package_create_dataset(self, organization, dataset_sample):
         
