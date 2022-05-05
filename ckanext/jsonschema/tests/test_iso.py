@@ -86,7 +86,7 @@ class TestIso(object):
         }
 
         # Request the validate
-        response = app.post(
+        response = self.__do_post(app, 
             '/api/action/jsonschema_validate', 
             data=data_dict,
             headers=headers
@@ -125,7 +125,7 @@ class TestIso(object):
         }
 
         # Request the clone
-        response = app.post(
+        response = self.__do_post(app, 
             '/api/action/jsonschema_clone', 
             data=data_dict,
             headers=headers
@@ -179,7 +179,7 @@ class TestIso(object):
         }
 
         # Request the clone
-        response = app.post(
+        response = self.__do_post(app, 
             '/api/action/jsonschema_clone', 
             data=data_dict,
             headers=headers
@@ -206,7 +206,7 @@ class TestIso(object):
         # Request the clone
         try:
              # Request the clone
-            response = app.post(
+            response = self.__do_post(app, 
                 '/api/action/jsonschema_clone', 
                 data=data_dict,
                 headers=headers
@@ -221,7 +221,7 @@ class TestIso(object):
             else:
                 assert False
 
-
+    @pytest.mark.usefixtures("with_request_context")
     def test_dump_to_output_xml(self, iso19139_sample, iso_wayback_sample):
 
         """
@@ -422,3 +422,26 @@ class TestIso(object):
         package = toolkit.get_action('package_create')(context, package_dict)
         return user, owner_org, package 
 
+
+    def __do_post(self, app, url, data, headers):
+        '''
+        Needed to run the tests in local environment
+        The code to run posts is different between CKAN 2.8.6 (local) and CKAN 2.9.5 (pipeline)
+        The try block should work on the latter
+        The responses have different shapes
+        '''
+        
+        try:
+            response = app.post(
+                url, 
+                data,
+                headers=headers
+            )
+        except:
+            response = app.post_json(
+                url, 
+                data,
+                headers=headers
+            )
+
+        return response
