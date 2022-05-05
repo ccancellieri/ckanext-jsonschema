@@ -434,7 +434,7 @@ class TestIso(object):
         try:
             response = app.post(
                 url, 
-                data,
+                data=data,
                 headers=headers
             )
         except:
