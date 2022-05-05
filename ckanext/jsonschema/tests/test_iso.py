@@ -12,7 +12,6 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.utils as _u
 import pytest
-from ckanext.jsonschema.logic.actions import clone_metadata, validate_metadata
 from six import text_type
 import uuid
 

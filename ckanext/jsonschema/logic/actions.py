@@ -18,8 +18,6 @@ h = toolkit.h
 
 import logging
 
-from paste.deploy.converters import asbool
-
 log = logging.getLogger(__name__)
 
 import ckan.logic as logic
@@ -58,7 +56,8 @@ def importer(context, data_dict):
         raise ValidationError(message)
 
     # body is supposed to be json, if true a  1:1 conversion is provided
-    from_xml = asbool(data_dict.get('from_xml', False))
+    from_xml = data_dict.get('from_xml', 'false').lower() == "true"
+    #from_xml = asbool(data_dict.get('from_xml', False))
     try:
         if from_xml:
             body = _u.xml_to_json(response.text)
@@ -114,7 +113,8 @@ def importer(context, data_dict):
     #TODO resources store back to the package_dict
     try:
         # # TODO has deep impact/implications over resources
-        is_package_update = asbool(data_dict.get('package_update', False))
+        is_package_update = data_dict.get('package_update', 'false').lower() == "true"
+        #is_package_update = asbool(data_dict.get('package_update', False))
         if is_package_update:
             # errors=[]
             # for plugin in _v.JSONSCHEMA_PLUGINS:
