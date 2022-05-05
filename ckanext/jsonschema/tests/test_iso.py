@@ -48,14 +48,13 @@ def reset_db():
 def _render_wayback(schema_body, package):
     return base.render('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package})
 
-
+@pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
+@pytest.mark.usefixtures("with_plugins")
 class TestIso(object):
 
     ############ Functional Tests - API ############
     
     
-    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins")
     def test_validate_api(self, iso_sample2, app):
         
         # Create the user
@@ -97,8 +96,6 @@ class TestIso(object):
         assert response_body['success'] == True
 
     
-    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins")
     def test_clone_api_with_sysadmin(self, iso_sample2, app):
         '''
         Test the clone of a private metadata
@@ -146,8 +143,6 @@ class TestIso(object):
         assert show_result != None
 
 
-    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins")
     def test_clone_api_with_editor_user(self, iso_sample2, app):
         # We create a package
         # Then we try to clone it by a user with edit permission on its organization, and we should succeed
@@ -226,8 +221,7 @@ class TestIso(object):
             else:
                 assert False
 
-    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins", "with_request_context")
+
     def test_dump_to_output_xml(self, iso19139_sample, iso_wayback_sample):
 
         """
@@ -309,8 +303,6 @@ class TestIso(object):
         assert wayback == iso_wayback_sample
 
     
-    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins")
     def test_package_create_fields_are_json_and_resources_fields_are_jsons(self, iso19139_sample):
 
         package = self._create_iso_package_from_xml(iso19139_sample)
@@ -325,8 +317,6 @@ class TestIso(object):
             assert isinstance(resource[_c.SCHEMA_TYPE_KEY], text_type) 
 
 
-    @pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
-    @pytest.mark.usefixtures("with_plugins")
     def test_package_create_body_is_correct(self, iso19139_sample, iso_sample):
         
         package = self._create_iso_package_from_xml(iso19139_sample)
@@ -406,6 +396,7 @@ class TestIso(object):
         context = {'user': factories.Sysadmin().get('name')}
         package = toolkit.get_action('package_create')(context, package_dict)
         return package
+
 
     def _create_iso_package_with_jsonschema_and_dataset_resources(self, iso_sample2):
         '''
