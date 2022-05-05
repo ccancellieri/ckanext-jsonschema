@@ -4,6 +4,7 @@ import datetime
 import json
 import os
 
+import six
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
@@ -88,7 +89,11 @@ class TestIso(object):
         #app = self._get_test_app()
 
         # Request the clone
-        response = app.post_json('/api/action/jsonschema_clone', data_dict, headers=headers)
+        response = app.post(
+            '/api/action/jsonschema_clone', 
+            data=data_dict,
+            environ_overrides = {"REMOTE_USER": six.ensure_str(user["name"])}
+        )
         
         # Check if it worked
         assert response.status_int == 200
