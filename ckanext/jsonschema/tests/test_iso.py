@@ -327,9 +327,10 @@ class TestIso(object):
         assert isinstance(package[_c.SCHEMA_TYPE_KEY], text_type) 
 
         for resource in package.get('resources'):
-            assert isinstance(resource[_c.SCHEMA_BODY_KEY], dict) 
-            assert isinstance(resource[_c.SCHEMA_OPT_KEY], dict) 
-            assert isinstance(resource[_c.SCHEMA_TYPE_KEY], text_type) 
+            if _c.SCHEMA_TYPE_KEY in resource:
+                assert isinstance(resource[_c.SCHEMA_BODY_KEY], dict) 
+                assert isinstance(resource[_c.SCHEMA_OPT_KEY], dict) 
+                assert isinstance(resource[_c.SCHEMA_TYPE_KEY], text_type) 
 
 
     def test_package_create_body_is_correct(self, iso19139_sample, iso_sample):
