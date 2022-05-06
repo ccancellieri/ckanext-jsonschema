@@ -157,8 +157,14 @@ def validate_metadata(context, data_dict):
         raise NotFound("No package found with the specified uuid")
 
     body = _t.get_package_body(package)
-    _type = _t.get_package_type(package)
     
+    # We need the jsonschema type, so we cannot use _t.get_package_type which would also return datasets
+    # _type = _t.get_package_type(package)
+    _type = _t._extract_from_package(package, _c.SCHEMA_TYPE_KEY)
+
+    if not _type:
+        raise ValidationError("The jsonschema validation is only available on jsonschema metadata")
+
     errors = {}
     is_error = _t.draft_validation(_type, body, errors)
     
