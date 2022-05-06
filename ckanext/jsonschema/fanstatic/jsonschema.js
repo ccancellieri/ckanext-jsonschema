@@ -23,7 +23,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             valueEditor.setValue(value)
         },
         onSubmit: function (event) {
-                if (!this.editor) return;
+                if (!jsonschema.isEditorReady()) return;
 
                 this.saveToContext();
 
@@ -178,7 +178,7 @@ ckan.module('jsonschema', function (jQuery, _) {
             }
         },
         getEditorAce: function (workOnBody = jsonschema.workOnBody, wasWorkingOverBody = jsonschema.workOnBody){
-            this.usingEditor=false
+            
             
             let schema={
                 "type": "string",
@@ -257,16 +257,15 @@ ckan.module('jsonschema', function (jQuery, _) {
                     console.error(err);
                 } else {
                     jsonschema.getEditor();
-                    return;
                 }
+            }).finally(()=>{
+                this.editor.on('ready',this.editorReady);
+                this.editor.on('change',()=>{
+                    this.editorOnChange(jsonschema.ajvValidation());
+                });
+                this.editorToggle(true);
+                this.usingEditor=false;
             });
-            
-            this.editor.on('ready',this.editorReady);
-            this.editor.on('change',()=>{
-
-                this.editorOnChange(jsonschema.ajvValidation());
-            });
-            this.editorToggle(true);
         },
         ajvValidation: function () {
 
@@ -302,7 +301,6 @@ ckan.module('jsonschema', function (jQuery, _) {
 
         },
         getEditor: function (workOnBody = jsonschema.workOnBody, wasWorkingOverBody = jsonschema.workOnBody){
-            this.usingEditor=true
 
             let schema = jsonschema.jsonschema_schema;
 
@@ -384,7 +382,6 @@ ckan.module('jsonschema', function (jQuery, _) {
                 // TODO call when instantiate -> refactor to function and call onReady
                 var errors = jsonschema.editor.validate();
                 
-
                 if (errors && Object.keys(errors).length){
                     html_errors='<div style="height:150px; overflow:auto;" id="outher-error">'+
                             '<table id="inner-error" style="width:100%;">'+
@@ -401,10 +398,11 @@ ckan.module('jsonschema', function (jQuery, _) {
                     this.editorOnChange({'html':undefined, 'lock':false});
 
             });
+            this.usingEditor=true;
             // TODO call validation when instantiate -> refactor to function
         },
         editorOptToggle: function () {
-            if(!this.editor) return;
+            if(!jsonschema.isEditorReady()) return;
 
             jsonschema.saveToContext(jsonschema.workOnBody);
 
@@ -429,12 +427,12 @@ ckan.module('jsonschema', function (jQuery, _) {
                     (err)=>{
                         alert('Unable to switch, please contact service desk: ' + err);
                         console.error(err.stack);
-                        $('#editor-opt-toggle').html(jsonschema.workOnBody?"Options":"Body");
+                        $('#editor-opt-toggle').html(jsonschema.workOnBody?"Body":"Options");
                     }
                 )
         },
         editorToggle: function (enable=false) {
-            if(!this.editor) return;
+            if(!jsonschema.isEditorReady()) return;
             if(enable===true || !this.editor.isEnabled()) {
                 this.editor.enable(true);
                 $('#editor-toggle').html("Lock");
@@ -452,8 +450,11 @@ ckan.module('jsonschema', function (jQuery, _) {
                 status.html("locked");
             }
         },
+        isEditorReady: function () {
+            return jsonschema.editor && jsonschema.editor.ready;
+        },
         editorReady: function () {
-            jsonschema.editor && jsonschema.editor.ready && jsonschema.editor.validate();
+            jsonschema.isEditorReady() && jsonschema.editor.validate();
             this.editorToggle(true);
         },
         editorOnChange: function (i) {
