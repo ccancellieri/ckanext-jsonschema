@@ -42,6 +42,56 @@ https://github.com/ckan/ckan/discussions/6364
 
 
 
+### How it works
+
+Leveraging on the extra fields capabilities of CKAN, we are defining these 3 custom extra fields.
+
+These will be used extensively for the definition of the content and behaviours of the types implemented by the jsonschema plugins 
+
+These fields will be attached to the default domain objects of CKAN (datasets, resources and views) 
+
+<!--TODO: Groups, Organizations-->
+
+<!--TODO: show buttons under metadata/resources-->
+
+Then main usage of this additions is to use json and json-schema to define models of domain objects which vary in complexity, on which the logic of each plugins works.
+
+The body of jsonschema objects is commonly used as **single source of truth**, generating an **extraction** **flow** from the json to CKAN fields. 
+
+This is quite useful and easy to implement when you need predefined indexing and mapping logic for any type of JSON.    
+
+The jsonschema_iso plugin extensively use this approach.
+
+
+
+### # TODO Describe jsonschema_type, jsonschema_body, jsonschema_opt (meta-metadata)
+
+The **jsonschema_type** is a string field which identifies a specific jsonschema type. The type is then used widely in the plugin to referr to its configuration (see below: Registry    )
+
+
+
+### Views
+
+From the jsonschema prospective, the view is the representation of the metadata. Each change in the metadata may be reflected into every view configured on it.
+
+For example, changing the title or the description of the metadata, could cause a change in the appearance of the view.
+
+For this reason we introduce for all the jsonschema views the concepts of Resolution and Wrapping, which utility is explained in the following paragraphs.
+
+The terriajs plugin extensively use this approach.
+
+Also, jsonschema introduces indexing for view: this is very useful to search views when creating complex and interconnected views.
+
+**Resolution **(copy something from terria)
+
+**Wrapping** 
+
+
+
+
+
+### A deeper look
+
 ### Extraction flow
 
 The plugin inherits the interface **IDatasetForm** and overrides the actions *create_package_schema* and *update_package_schema* to validate and convert data coming from users.
@@ -108,6 +158,125 @@ At this point, the request is sent to the backend, and validation also occurs on
 
 
 
+###  
+
+### Installation 
+
+The jsonschema plugin comes with several plugins. To add their functionalities these must configured in the *ckan.plugins* property. 
+
+The plugin which depend on jsonschema can be of two types; they can implement **metadata** (and resource) functionalities or **view** functionalities.
+
+| Plugin                  | Version  | Type     | Functionalities                                              |
+| ----------------------- | -------- | -------- | :----------------------------------------------------------- |
+| jsonschema              | Released | core     | This is the main plugin. It implements several actions related to jsonschema metadata, blueprints and Jinja helpers. It also implements the custom jsonschema indexing for SOLR. This plugin needs to be configured to use any of the following |
+| jsonschema_iso          | Released | metadata | Adds support for the *iso* metadata format and for different custom resources |
+| jsonschema_stac         | Alpha    | metadata | Adds support for the *stac* metadata format and for the *stac-asset* resource |
+| jsonschema_dataset      | Released | metadata | Needed to integrate the jsonschema functionalities with the dataset metadata. It also adds the *JSON* custom resource |
+| jsonschema_frictionless | Alpha    | metadata | Adds support for *Tabular Data* custom resource              |
+| harvester_iso19139      | Alpha    | metadata | Harvester for iso19139 from GeoNetwork using CSW. Superseded by the importer |
+
+
+
+**Related plugins** 
+
+| Plugin                    | Version  | Type     | Functionalities | Ref                  |
+| ------------------------- | -------- | -------- | :-------------- | -------------------- |
+| terriajs                  | Released | view     |                 | ...                  |
+| jsonschema_dashboard      | Released | metadata |                 | (Private repository) |
+| jsonschema_dashboard_view | Released | view     |                 | (Private repository) |
+
+
+
+### Configuration
+
+#### Schemas, Templates, Modules
+
+Each type of jsonschema entity can have a corresponding:
+
+- **schema**: which defines the schema of the object, using the json-schema framework (https://json-schema.org/)
+- **template**: a json object which respects the json-schema definition and is used when a new instance is being created as a default value
+- **module**: a javascript file which includes additional functionalities for the editor
+
+The jsonschema plugin ships with schema, template and modules for the types that it implements. 
+
+When CKAN starts, jsonschema reads these files and creates a in-memory catalog where they are stored.
+
+
+
+Plugins that implement additional types should register their schemas, templates and modules into the jsonschema catalog (using the interfaces methods).
+
+The default mechanism to do so is to store these resources under *<plugin_source_folder>/**setup**/**schema**/<plugin_name>*,
+
+*<plugin_source_folder>/**setup**/**template**/<plugin_name>*, *<plugin_source_folder>/**setup**/**module**/<plugin_name>*, and then merge them into the catalog.
+
+(Ref to functions *add_schemas_to_catalog, add_templates_to_catalog, add_modules_to_catalog* in tools.py)
+
+ 
+
+#### Registry 
+
+The jsonschema plugin behaviours are driven by its **registry**.
+
+Each plugin defining new types, may update the jsonschema's registry.
+
+Each plugin  implementation can define its own registry.json to define its own types. 
+
+(Ref to *add_to_registry* in tools.py)
+
+
+
+The **registry.json** consists of a json whose entry are widely used into the jsonschema implementation.
+
+For each entry:
+
+- the key is the **jsonschema_type** which that configuration refers to (it can be referred to a **metadata**, **resource** or **view** type)
+- the value is the configuration related to that type
+
+
+
+An example entry is showed below:
+
+```json
+"iso": {
+
+​    "label": "Iso",
+
+​    "plugin_name": "jsonschema_iso",
+
+​    "schema": "iso/iso.json",
+
+​    "template": "iso/iso.json",
+
+​    "module": "iso/iso.js",
+
+​    "supported_jsonschema_fields": ["body", "opt"],
+
+​    "supported_ckan_fields": ["license_id", "owner_org"]
+
+}
+```
+
+
+
+Most of the configurations are in common between metadatas, resources and views; some are reserved for views.
+
+Below is a comprehensive list of possible values:
+
+| Property Name                   | Entity | Type             | Usage                                                        |
+| ------------------------------- | :----- | ---------------- | ------------------------------------------------------------ |
+| label                           | common | String           | The label for the jsonschema_type. This is used in the CKAN UI's (for example, for resources it is the label shown in the dropdown) |
+| plugin_name                     | common | String           | This is the name of the plugin that implements the entity. The plugin will be used when manipulating entities of this type |
+| schema                          | common | String           | Path to the jsonschema for the type, relative to the main path of schemas |
+| template                        | common | String           | Path to the template for the type, relative to the main path of templates |
+| module                          | common | String           | Path to the module for the type, relative to the main path of modules |
+| supported_jsonschema_fields     | common | Array of Strings | List of jsonschema fields to display in the UI for that type. Possible values are: *body*, *opt* |
+| supported_all_jsonschema_fields | common | Boolean          | If true, enables all jsonschema fields in the UI (overrides supported_jsonschema_fields) |
+| supported_ckan_fields           | common | Array of Strings | List of default CKAN's fields to display in the UI for that type. Possible values are: <br />- for metadata: *title, url, custom, notes, tags, license_id, owner_org, author, maintainer, version* <br />- for resources: *name, description, format, url, metadata_fields*<br />- for views: *title, description, filters* |
+| supported_all_ckan_fields       | common | Boolean          | If true, enables all default CKAN's fields in the UI  (overrides supported_ckan_fields) |
+| skip_indexing                   | common | Boolean          | If true, the jsonschema fields of that metadata, resource or view will not be indexed into SOLR |
+
+
+
 ### Configuration
 
 ##TODO Table for variables (PATHS)
@@ -115,77 +284,6 @@ At this point, the request is sent to the backend, and validation also occurs on
 ##TODO Folder structure
 
 ##DO NOT INSERT "core" folder
-
-
-
-The operations that can be performed for each package type and resource type implemented by Jsonschema based plugins are configured using JSON files.
-
-This plugin currently supports 4 operations on packages:
-
-- **input**: import packages from an external url
-- **supported**: manage the package (create, update, delete...)
-- **clone**: create a clone of the package into the CKAN instance
-- **output**: export the package in different formats (JSON, XML...)
-
-The operations on resources are:
-
-- **supported**: manage the resource (create, update, delete...)
-- **clone**: clone the resource
-
-
-
-For each Jsonschema plugin implementing the IBinder interface, you may put a configuration file under the folder **ckanext.jsonschema.path.config** (default is *config/*) called <*plugin_name>.json*.
-
-
-
-##### Configuration File
-
-A configuration file has this shape:
-
-`
-{
-    "plugin_name": "jsonschema_iso",
-    "description": "",
-    "jsonschema_types": {
-        "iso": {
-            "package_type": "iso",
-            "input": true,
-            "supported": true,
-            "clone": true,
-            "output": true,
-            "resources": {
-                "tabular-data-resource": {
-                    "label": "Table Data Resource",
-                    "clone": false,
-                    "supported": true
-                }
-            ...
-            }
-        },
-        ...
-    }
-}
-`
-
-
-
-| Property Name    | Path                                                         | Values  | Meaning                                                      |
-| ---------------- | :----------------------------------------------------------- | ------- | ------------------------------------------------------------ |
-| plugin_name      | root                                                         | String  | The name of the plugin. This is redundant with the configuration filename. |
-| description      | root                                                         | String  | Description for the plugin                                   |
-| jsonschema_types | root                                                         | Objects | This object contains an object for each jsonschema_type to configure |
-| package_type     | jsonschema_types/<jsonschema_type>                           | String  | The name of the package type which this jsonschema_type refers to. The package type is the type saved into the CKAN database. Different jsonschema types can refere to the same package_type |
-| input            | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the input operation is supported for this jsonschema_type. If True, adds the type to the importer interface. |
-| supported        | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the jsonschema_type is supported (should be true for every configured type) |
-| clone            | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the clone operation is supported for this jsonschema_type. |
-| output           | jsonschema_types/<jsonschema_type>                           | Boolean | Tells if the clone operation is supported for this jsonschema_type. |
-| resources        | jsonschema_types/<jsonschema_type>                           | Object  | This object contains an object for each resource compatible with the jsonschema_type |
-| clone            | jsonschema_types/<jsonschema_type><br />/resources/<resource_type> | Boolean | Tells if the clone operation is supported for this resource type under the specific jsonschema_type. If False, the resource will be skipped during a clone operation. |
-| suppor           | jsonschema_types/<jsonschema_type><br />/resources/<resource_type> | Boolean | Tells if the resource_type is supported (should be true for every configured type) |
-
-For an example, look at *config/jsonschema_iso.json*
-
-##TODO SCHEMA/TEMPLATE/ LOADING
 
 
 
