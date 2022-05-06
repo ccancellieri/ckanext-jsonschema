@@ -80,7 +80,11 @@ ckan.module('jsonschema', function (jQuery, _) {
         initialize: async function () {
             var self = this;
 
-            jsonschema.ckanUrl = self.options.ckanUrl;
+            jsonschema.ckanUrl = self.options.ckanUrl
+            if (!jsonschema.ckanUrl.endsWith('/')){
+                jsonschema.ckanUrl = jsonschema.ckanUrl + '/'
+            }
+
             jsonschema.base_schema_path = 'jsonschema/schema/';
             jsonschema.reload=this.reload.bind(jsonschema);
             jsonschema.getEditor=this.getEditor.bind(jsonschema);
