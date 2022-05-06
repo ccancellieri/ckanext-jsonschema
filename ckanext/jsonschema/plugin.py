@@ -237,11 +237,11 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
 
 
                 view_jsonschema_body = _vt.get_view_body(view)
-                view_jsonschema_body_resolved = None
+                view_jsonschema_body_resolved = json.loads(json.dumps(view_jsonschema_body)) # deep copy of the body
 
                 if view_plugin:
                     try:
-                        view_jsonschema_body_resolved = view_plugin.resolve(_t.as_dict(view_jsonschema_body), view)
+                        view_jsonschema_body_resolved = view_plugin.resolve(view_jsonschema_body_resolved, view)
                     except Exception as e:
                         log.error('Error while resolving view.')
                         log.error('Package id:{}, resource id:{}, view id: {}'.format(package_id, resource_id, view_id))
