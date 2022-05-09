@@ -233,13 +233,13 @@ def clone_metadata(context, data_dict):
                 
                 resource_clone_context = {}
                 resource_type = _t.get_resource_type(resource)
-                plugin = configuration.get_plugin(_type, resource_type)
                 
                 # default to dataset resource
                 if not resource_type:
                     import ckanext.jsonschema.dataset.constants as _dataset_constants
                     resource_type = _dataset_constants.TYPE_DATASET_RESOURCE
 
+                plugin = configuration.get_plugin(_type, resource_type)
                 cloner = plugin.get_resource_cloner(_type, resource_type)
 
                 if not cloner:
