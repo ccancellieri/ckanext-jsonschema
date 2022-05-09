@@ -21,9 +21,11 @@ log = getLogger(__name__)
 def reset_db():
     helpers.reset_db()
 
+
 @pytest.fixture
 def dataset_sample(datadir):
     return json.loads(open(os.path.join(str(datadir), 'dataset_sample.json')).read())
+
 
 @pytest.fixture
 def dataset_sample2(datadir):
@@ -33,6 +35,15 @@ def dataset_sample2(datadir):
 @pytest.fixture
 def dataset_sample3(datadir):
     return json.loads(open(os.path.join(str(datadir), 'dataset_sample3.json')).read())
+
+
+@pytest.fixture
+def json_resource(datadir):
+    return json.loads(open(os.path.join(str(datadir), 'json_resource.json')).read())
+
+@pytest.fixture
+def dataset_resource(datadir):
+    return json.loads(open(os.path.join(str(datadir), 'dataset_resource.json')).read())
 
 
 @pytest.mark.ckan_config("ckan.plugins", "jsonschema_dataset jsonschema_iso jsonschema")
@@ -229,6 +240,58 @@ class TestDataset(object):
                 assert isinstance(resource[_c.SCHEMA_BODY_KEY], dict) 
                 assert isinstance(resource[_c.SCHEMA_OPT_KEY], dict) 
                 assert isinstance(resource[_c.SCHEMA_TYPE_KEY], text_type) 
+
+
+    def test_empty_dataset_add_resources_delete_resources_delete_dataset(self, dataset_sample2, dataset_resource, json_resource):
+        """
+        Creates a package without resources
+        Add a dataset resource and a jsonschema resource
+        Delete all resources
+        Delete the package
+        """
+
+        user1 = factories.User()
+
+        # Create organization with user1 as editor
+        owner_org = factories.Organization(
+            users=[{'name': user1.get('id'), 'capacity': 'editor'}]
+        )
+
+        # Create the metadata in that organization
+        package_dict = {
+            'owner_org': owner_org.get('id'),
+            'name': str(uuid.uuid4()),
+            'type': 'dataset'
+        }
+
+        context = {'user': user1.get('name')}
+
+        # Create with the source package with the first user
+        package = toolkit.get_action('package_create')(context, package_dict)
+
+        # Add a new resource
+        dataset_resource.update({'package_id': package.get('id')})
+        json_resource.update({'package_id': package.get('id')})
+        
+        toolkit.get_action('resource_create')(context, dataset_resource)
+        toolkit.get_action('resource_create')(context, json_resource)
+
+        package = toolkit.get_action('package_show')(context, {'id': package.get('id')})
+
+        # Delete resources
+        for resource in package.get('resources'):
+            toolkit.get_action('resource_delete')(context, resource)
+
+        package = toolkit.get_action('package_show')(context, {'id': package.get('id')})
+
+        # All resources have been deleteds
+        assert len(package.get('resources')) == 0
+
+        # Package has been deleted
+        toolkit.get_action('package_delete')(context, {'id': package.get('id')})
+        package = toolkit.get_action('package_show')(context, {'id': package.get('id')})
+
+        assert package.get('state') == 'deleted'
 
 
     def __do_post(self, app, url, data, headers):

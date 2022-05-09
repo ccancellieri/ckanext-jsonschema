@@ -239,8 +239,8 @@
        },
      {
            "jsonschema_body":{
-               "name": "Fake online resource",
-           "protocol": "WWW:LINK-1.0-http--link"
+            "name": "Fake online resource",
+            "protocol": "WWW:LINK-1.0-http--link"
            },
            "state":"active",
            "hash":"",

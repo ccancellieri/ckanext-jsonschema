@@ -1,0 +1,20 @@
+{
+   "state":"active",
+   "hash":"",
+   "description":"json resource",
+   "format":"",
+   "mimetype_inner":null,
+   "url_type":null,
+   "mimetype":null,
+   "cache_url":null,
+   "name":"JSON Resources",
+   "url":"",
+   "last_modified":null,
+   "resource_type":null,
+   "jsonschema_body": {
+      "sample": "json resource",
+      "can_put": "any key-value"   
+   },
+   "jsonschema_type": "json_resource",
+   "jsonschema_opt": {}
+}

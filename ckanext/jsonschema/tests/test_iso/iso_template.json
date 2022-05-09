@@ -1,0 +1,18 @@
+{
+    "metadataStandardVersion": "1.0",
+    "characterSet": "utf8",
+    "dataIdentification": {
+      "abstract": "",
+      "citation": {
+        "title": ""
+      },
+      "topicCategory": [
+        "farming"
+      ],
+      "resourceMaintenance": {
+        "maintenanceAndUpdateFrequency": "asNeeded"
+      }
+    },
+    "fileIdentifier": "",
+    "metadataStandardName": "ISO 19115:2003/19139"
+}

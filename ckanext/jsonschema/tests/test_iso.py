@@ -24,18 +24,34 @@ log = getLogger(__name__)
 def iso19139_sample(datadir):
     return open(os.path.join(str(datadir), 'iso19139_sample.xml')).read()
 
+
 @pytest.fixture
 def iso_sample(datadir):
     return open(os.path.join(str(datadir), 'iso_sample.json')).read()
+
 
 @pytest.fixture
 def iso_sample2(datadir):
     return json.loads(open(os.path.join(str(datadir), 'iso_sample2.json')).read())
 
+
 @pytest.fixture
 def iso_wayback_sample(datadir):
     return open(os.path.join(str(datadir), 'iso_wayback_sample.xml')).read()
-    
+
+@pytest.fixture
+def iso_template(datadir):
+    return json.loads(open(os.path.join(str(datadir), 'iso_template.json')).read())
+
+
+@pytest.fixture
+def json_resource(datadir):
+    return json.loads(open(os.path.join(str(datadir), 'json_resource.json')).read())
+
+@pytest.fixture
+def dataset_resource(datadir):
+    return json.loads(open(os.path.join(str(datadir), 'dataset_resource.json')).read())
+
 
 # Runs before each test
 @pytest.fixture(autouse=True)
@@ -45,7 +61,7 @@ def reset_db():
 def _render_wayback(schema_body, package):
     return base.render('iso/iso19139.xml', extra_vars={'metadata': schema_body, 'pkg': package})
 
-@pytest.mark.ckan_config("ckan.plugins", "jsonschema_iso jsonschema")
+@pytest.mark.ckan_config("ckan.plugins", "jsonschema_dataset jsonschema_iso jsonschema")
 @pytest.mark.usefixtures("with_plugins")
 class TestIso(object):
 
@@ -218,6 +234,7 @@ class TestIso(object):
             else:
                 assert False
 
+
     @pytest.mark.usefixtures("with_request_context")
     def test_dump_to_output_xml(self, iso19139_sample, iso_wayback_sample):
 
@@ -371,6 +388,61 @@ class TestIso(object):
         assert title == package.get('title')
 
    
+    def test_empty_iso_add_resources_delete_resources_delete_dataset(self, iso_template, dataset_resource, json_resource):
+        """
+        Creates a package without resources
+        Add a dataset resource and a jsonschema resource
+        Delete all resources
+        Delete the package
+        """
+
+        user1 = factories.User()
+
+        # Create organization with user1 as editor
+        owner_org = factories.Organization(
+            users=[{'name': user1.get('id'), 'capacity': 'editor'}]
+        )
+
+        # Create the metadata in that organization
+        package_dict = {
+            'owner_org': owner_org.get('id'),
+            'name': str(uuid.uuid4()),
+            'type': 'iso',
+            _c.SCHEMA_TYPE_KEY: 'iso',
+            _c.SCHEMA_BODY_KEY: iso_template,
+            _c.SCHEMA_OPT_KEY: {}
+        }
+
+        context = {'user': user1.get('name')}
+
+        # Create with the source package with the first user
+        package = toolkit.get_action('package_create')(context, package_dict)
+
+        # Add a new resource
+        dataset_resource.update({'package_id': package.get('id')})
+        json_resource.update({'package_id': package.get('id')})
+        
+        toolkit.get_action('resource_create')(context, dataset_resource)
+        toolkit.get_action('resource_create')(context, json_resource)
+
+        package = toolkit.get_action('package_show')(context, {'id': package.get('id')})
+
+        # Delete resources
+        for resource in package.get('resources'):
+            toolkit.get_action('resource_delete')(context, resource)
+
+        package = toolkit.get_action('package_show')(context, {'id': package.get('id')})
+
+        # All resources have been deleted
+        assert len(package.get('resources')) == 0
+
+        # Package has been deleted
+        toolkit.get_action('package_delete')(context, {'id': package.get('id')})
+        package = toolkit.get_action('package_show')(context, {'id': package.get('id')})
+
+        assert package.get('state') == 'deleted'
+
+
     def _create_iso_package_from_xml(self, iso19139_sample):
         '''
         Replicates the importer logic to create an ISO package
