@@ -293,6 +293,146 @@ Below is a comprehensive list of possible values:
 | supported_all_ckan_fields       | Boolean          | If true, enables all default CKAN's fields in the UI  (overrides supported_ckan_fields) |
 | skip_indexing                   | Boolean          | If true, the jsonschema fields of that metadata, resource or view will not be indexed into SOLR |
 
+**Notes**
+
+The field "plugin_name" is used to retrieve the instance of the plugin handling a type.
+
+In case of views, this field is ignored, because CKAN retrieves itself the corresponding plugin for a view. 
+
+It does this by calling the method "info" of plugins implementing the interface IResourceView. If the field "name" in the object returned by info mathces the field "view type" of the view, that plugin is considered to implement that view. 
+
+Usually the name is set to match the name of the plugin for consistency.
+
+Also for consistency, the field "plugin_name" is still added for entry regarding views in the registry. 
+
+
+
+#### View Configuration
+
+The plugins implementing views must define their own configuration file (JSON).
+
+This file allows having multiple view types (using jsonschema type) in the same plugin. The so created views will all have the same "view type" (the name of the plugin) but different jsonschema types (and behaviours).
+
+At startup, they must load the configuration into the "config" attribute of the plugin object.
+
+An example:
+
+```python
+def update_config(self, config_):
+    ...
+    self.config = json.loads(plugin.PATH_CONFIG, plugin.FILENAME_CONFIG)
+
+```
+
+The attribute "config" will then be accessed by the framework when needed.
+
+
+
+An example configuration is:
+
+```json
+{
+    "views": [
+        {
+            "view_jsonschema_type": ["wms"],
+            "resource_formats": ["wms"],
+            "available_for_all_resource_jsonschema_types": true,
+            "skip_indexing": true,
+            "default_view": true
+        }
+    ],
+    "info": {
+        "icon": "globe", 
+        "title": "Map",
+        "default_title":"Map",
+        "always_available": false,
+        "preview_enabled": false,
+        "full_page_edit": true
+    },
+    "opt": {
+        "base_url": "https://localhost/terriajs",
+        "west": -180,
+        "east": 180,
+        "north": 90,
+        "south": -90
+    }
+}
+```
+
+The configuration is composed of 3 fileds:
+
+- views: which define an array of views configurations (a "block" is a single entry of the array)
+- info: which is used to set general configurations for all of the views of this plugin
+- opt: which is a free JSON field, customizable with any desired object
+
+
+
+List of possible attributes of the a "view" block:
+
+| Property Name                               | Type            | Usage                                                        |
+| ------------------------------------------- | --------------- | ------------------------------------------------------------ |
+| view_jsonschema_type                        | Array of String | The array of view jsonschema types which match this block of configuration |
+| resource_formats                            | Array of String | The resource formats to which this block of configuration applies |
+| resource_jsonschema_type                    | Array of String | The resource jsonschema type to which this block of configuration applies |
+| available_for_all_resource_formats          | Boolean         | If true, skips then check on the format of the resource      |
+| available_for_all_resource_jsonschema_types | Boolean         | If true, skips then check on the jsonschema type of the resource |
+| default_view                                | Boolean         | If true, the view is automatically created when adding/updating the resource (according to CKAN's logic) |
+| skip_indexing                               | Boolean         | If true, skips any custom logic for indexing the view (the view is still indexed) |
+
+
+
+**Notes**
+
+CKAN defines the interface IResourceView for plugin managing views. All plugin implementing IJsonschemaView must also implement IResourceView.
+
+
+
+*Can view*
+
+CKAN uses the interface method "can_view" to decide wether a plugin must manage a specific type of view. 
+
+For example, when showing the dropdown "Add view", CKAN calls the method "can_view" of each plugin implementing IResourceView. If the result value is true, the view type corresponding to that plugin is added to the dropdown.
+
+
+
+*Can View (IJsonschema)*
+
+The jsonschema approach allows each view plugin to implement multiple types of views. These are identified by the jsonschema type.
+
+A plugin "can view" with respect to a resource if there exists a configuration block for the pair (resource format, resource jsonschema type).
+
+For example, based on the example configuration above, if there is a resource of format "wms" and jsonschema type "online-resource", the "can view" method returns true, because there exists a matching configuration.
+
+If there is a resource of format "wms" and jsonschema type "json_resource", the "can view" method still returns true, because a wildcard is used for the jsonschema type of the resource.
+
+On the other hand, if the resource has format "csv", the "can view" method returns false, because there is no matching configuration.
+
+
+
+*View Jsonschema Type*
+
+If there is a matching configuration block for a resource, each of the view types listed in the field "view_jsonschema_type" can be added, edited and viewed.
+
+For each one of those, there should be a corresponding entry in the registry.
+
+
+
+*Default View*
+
+If "default_view" is set to true, the will be created a view with the type of the first entry in the filed "view_jsonschema_type".
+
+
+
+*View type and jsonschema type*
+
+The default CKAN approach allows a plugin to implement only one type of view. The type of the view is stored in the field "view_type".
+
+With jsonschema, the "view_type" is usually set to be the name of the plugin.
+
+Then, in the view configuration there is the field "jsonschema_type".
+
+This allows a plugin to implement different views, each with the same view type, but different jsonschema type.
+
 
 
 ### Lazy Schema Setup
@@ -472,6 +612,46 @@ def register_jsonschema_resources(self):
     tools.add_modules_to_catalog(plugin.PATH_MODULE)
     tools.add_to_registry(plugin.PATH_REGISTRY, plugin.FILENAME_REGISTRY)
 ```
+
+
+
+
+
+**Helpers**
+
+The jsonschema plugins define several helpers to be used in Jinja templates.
+
+| Helper Name                                                | Descriptiom                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------ |
+| jsonschema_as_json                                         | Dumps the content of a dict to a JSON                        |
+| jsonschema_get_package_body                                | Returns the body of a package                                |
+| jsonschema_get_package_type                                | Returns the type of a package                                |
+| jsonschema_get_package_opt                                 | Returns the opt of a package                                 |
+| jsonschema_get_resource_body                               | Returns the body of the resource                             |
+| jsonschema_get_resource_type                               | Returns the type of the resource                             |
+| jsonschema_get_resource_opt                                | Returns the opt of the resource                              |
+| jsonschema_get_view_body                                   | Returns the body of the view                                 |
+| jsonschema_get_view_type                                   | Returns the type of the view                                 |
+| jsonschema_get_view_opt                                    | Returns the opt of the view                                  |
+| jsonschema_url_quote                                       | Quote a URL string                                           |
+| jsonschema_is_jsonschema_view                              | Returns true if the view is managed by a jsonschema plugin   |
+| jsonschema_get_configured_jsonschema_types_for_plugin_view | Returns the available jsonschema types for the given view    |
+| jsonschema_get_view_info                                   | Returns the info from the plugin of the view                 |
+| jsonschema_get_rendered_resource_view                      | Returns a rendered resource view snippet.                    |
+| jsonschema_get_schema                                      | Returns the jsonschema for a type                            |
+| jsonschema_get_template                                    | Returns the template for a type                              |
+| jsonschema_get_opt                                         | Returns the defaults opt                                     |
+| jsonschema_handled_resource_types                          | Returns a list of supported resource types                   |
+| jsonschema_handled_dataset_types                           | Returns a list of supported package types                    |
+| jsonschema_handled_input_types                             | Returns a list of supported import package types             |
+| jsonschema_handled_output_types                            | Returns a list of supported output package types             |
+| jsonschema_get_label_from_registry                         | Get the label from the registry for a type                   |
+| jsonschema_is_supported_ckan_field                         | Check if the CKAN input field is configured as visible in the type config |
+| jsonschema_is_supported_jsonschema_field                   | Check if the jsonschema input field is configured as visible in the type config |
+
+
+
+
 
 
 
