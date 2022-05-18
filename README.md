@@ -1,45 +1,15 @@
 # ckanext-jsonschema
 
-Provides an extensible jsonschema + json based metadata support.
+This plugin provide a quite extensive set of functionnalities to introduce jsonschema + json fields to CKAN (>=2.8).
 
-The UI is based on json-editor and can be customized and extented (also via js modules).
+The UI is based on json-editor (bootstrap) and can be customized and extented (also via js modules, see below).
 
-The plugin provides a generic packages and resource views in to edit and show.
+The goal is to simplify the way a metadata mapping is performed in CKAN. 
+
 
 Provide an iso19139 implementation and a simplified profile and several types already implemented.
 
 Provide several extension points to introduce new dataset and resource formats in other (json based) formats (f.e. STAC).
-
-Importer:
-The importer should be ready here:
-https://{CKAN_URL}/jsonschema/importer
-
-
-The url may return an XML iso, you can obtain one going over a geonetowrk metadata page and select donwload (top right) format xml
-
-Example:
-
-here is a metadata url (view)
-
-https://{GEONETWORK_URL}/srv/eng/catalog.search#/metadata/{UUID}
-
-Resulting xml will be (download):
-
-https://{GEONETWORK_URL}/srv/api/records/{UUID}/formatters/xml?approved=true
-
-- destination format should be iso19139
-- source format xml.
-- organization: choose yours.
-
-Metadata is imported as private or an error is reported.
-
-The final result of the import will be automatically translated into a simplified iso metadata.
-
-Please return json and url used.
-
-Ref:
-https://github.com/ckan/ckan/discussions/6364
-
 
 
 ### How it works
@@ -82,15 +52,12 @@ The terriajs plugin extensively use this approach.
 
 Also, jsonschema introduces indexing for view: this is very useful to search views when creating complex and interconnected views.
 
-**Resolution **(copy something from terria)
+**Resolution ** (TODO copy something from terria)
 
-**Wrapping** 
-
-
+**Wrapping** (TODO)
 
 
-
-### A deeper look
+## A closer look
 
 ### Extraction flow
 
@@ -108,7 +75,35 @@ The next 3 methods call methods of the plugin which manages the specific format,
 
 - *resource_extractor*: for each item in the field "resources" of the data, calls the method *extract_from_json* passing the specific resource type. Plugins should check the type passed in to choose the right implementation to use
 
-  
+### Importer:
+
+The importer should be ready here:
+https://{CKAN_URL}/jsonschema/importer
+
+The url may return an XML iso, you can obtain one going over a geonetowrk metadata page and select donwload (top right) format xml
+
+Example:
+
+here is a metadata url (view)
+
+https://{GEONETWORK_URL}/srv/eng/catalog.search#/metadata/{UUID}
+
+Resulting xml will be (download):
+
+https://{GEONETWORK_URL}/srv/api/records/{UUID}/formatters/xml?approved=true
+
+- destination format should be iso19139
+- source format xml.
+- organization: choose yours.
+
+Metadata is imported as private or an error is reported.
+
+The final result of the import will be automatically translated into a simplified iso metadata.
+
+Please return json and url used.
+
+Ref:
+https://github.com/ckan/ckan/discussions/6364
 
 ### Validation
 
@@ -359,12 +354,11 @@ An example configuration is:
 }
 ```
 
-The configuration is composed of 3 fileds:
+The configuration is based on 3 fileds:
 
 - views: which define an array of views configurations (a "block" is a single entry of the array)
 - info: which is used to set general configurations for all of the views of this plugin
 - opt: which is a free JSON field, customizable with any desired object
-
 
 
 List of possible attributes of the a "view" block:
@@ -378,7 +372,6 @@ List of possible attributes of the a "view" block:
 | available_for_all_resource_jsonschema_types | Boolean         | If true, skips then check on the jsonschema type of the resource |
 | default_view                                | Boolean         | If true, the view is automatically created when adding/updating the resource (according to CKAN's logic) |
 | skip_indexing                               | Boolean         | If true, skips any custom logic for indexing the view (the view is still indexed) |
-
 
 
 **Notes**
@@ -437,9 +430,7 @@ This allows a plugin to implement different views, each with the same view type,
 
 ### Lazy Schema Setup
 
-##TODO Describe the lazy mechanism to 
-
-
+##TODO Describe the lazy mechanism
 
 ### License
 
@@ -467,8 +458,96 @@ The file is written at PATH_SCHEMA/PATH_CORE_SCHEMA (default is schema/core/), s
 From CKAN 2.8.9 it should be possible to create the file at the startup, so the lazy machinery could be avoided.
 
 
-
 ## API
+
+
+### View Search
+
+https://CKAN.../api/action/jsonschema_view_search?type=terriajs
+ 
+This api will try to return and match all the jsonschema based VIEWS indexed into solr (should be fast and safe to call)
+ 
+### Request type:
+	
+GET
+
+### Mandatory params:
+
+type (the plugin name which manage the view. currently only: jsonschema_dashboard_view, terriajs
+
+### Acceptable params:
+	
+package_desc
+	
+package_name
+	
+resource_desc
+	
+resource_name
+
+tags
+	
+full
+	
+organization_name
+	
+join_condition [OR|AND default is AND]
+	
+schema_type (the schema used for the view body it should match with the schema key of the registry, see below)
+	
+rows
+
+### Response:
+	
+metadata_link (WEB page url)
+	
+resource_link (WEB page url)
+	
+jsonschema_body_link (REST API)
+	
+view_type (may match the type parameter)
+	
+jsonschema_body (the resolved view to plug under terriajs!!!)
+	
+jsonschema_type (may match the schema used from the registry, see below)
+	
+jsonschema_opt (meta-metadata optional informations, should never be exposed but can ship some hints)
+
+Notes:
+
+
+	
+in case of spaces into values please quote the string with "value with spaces"
+	
+in case of full you could try to use star notation but it's not guarantee a full text search (f.e.: "*value with *")
+	
+There's an hard limit to 100 packages (which can generate a huge list of views, several for each package) it can be lowered using the parameter rows=99
+
+Registry:
+To get a list of acceptable schema_type check out the keys from this map:
+https://data.review.fao.org/ckanx/jsonschema/registry
+
+F.E.:
+
+jsonschema_dashboard_image_card
+wms
+csv
+
+
+What to do:
+Please test it now, it's in review, and soon (next week) will be delivered to prod.
+ 
+
+May be related / solve:
+https://trello.com/c/gRUM4yUH/412-search-improvement
+https://trello.com/c/3c2rLF5k/427-csw-integrate-csw-aggregator-in-the-platform-probably-using-pycsw
+https://trello.com/c/cQMt9CFR/306-terriajs-when-a-search-is-performed-terria-starts-correctly-asking-for-all-the-queries-around-the-catalogs
+
+ 
+### Geospatial search:
+
+Yes we have also bbox indices fetched directly from wms services... (provided by terriajs view plugin) but we are still not able to use the BBOX parameters which are in solr.
+TODO we planned to change the solr bbox index leveraging on solr > 4.x
 
 ## SOLR
 

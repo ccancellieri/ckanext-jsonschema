@@ -71,8 +71,15 @@ def clone(source_pkg, package_dict, errors, context):
     }
 
     # change the ID
-    body['fileIdentifier'] = 'Cloned {} {}'.format(body.get('fileIdentifier',''), now)
+    title_idx = ('dataIdentification','citation','title',)
+    title = _t.get_nested(body, title_idx)
+    if not title:
+        title = body.get('fileIdentifier','')
 
+    _t.set_nested(body, title_idx, 'Cloned {} {}'.format(title, now))
+
+    body['fileIdentifier'] = ''
+    
     package_dict.update({
         _c.SCHEMA_BODY_KEY: body,
         _c.SCHEMA_TYPE_KEY : _type,

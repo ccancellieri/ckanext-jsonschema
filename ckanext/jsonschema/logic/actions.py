@@ -410,6 +410,8 @@ def view_search(context, data_dict):
         q = aq if aq else q
         (aq, searching_res_desc) = _append_param(data_dict, 'resource_desc', q, 'res_description')
         q = aq if aq else q
+        (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
+        q = aq if aq else q
 
         # q = '+package_title'.format(data_dict.get('title','').lower()) if 'package_title' in data_dict else q
 
@@ -424,7 +426,6 @@ def view_search(context, data_dict):
         # log.debug('Search view result is: {}'.format(results))
 
         returning = []
-
         
         # for each package
         for document in results:
