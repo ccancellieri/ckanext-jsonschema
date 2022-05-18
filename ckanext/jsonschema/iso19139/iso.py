@@ -61,14 +61,17 @@ def clone(source_pkg, package_dict, errors, context):
    
     _type = _t.get_package_type(source_pkg)
     body = _t.get_package_body(source_pkg)
+
+    now = datetime.datetime.now().isoformat()
+
     opt = {
         'cloned' : True,
         'source_url': source_pkg.get('url'),
-        'cloned_on': str(datetime.datetime.now())
+        'cloned_on': str(now)
     }
 
-    # reset the ID so that it is assigned by extract_from_json
-    body['fileIdentifier'] = ''
+    # change the ID
+    body['fileIdentifier'] = 'Cloned {} {}'.format(body.get('fileIdentifier',''), now)
 
     package_dict.update({
         _c.SCHEMA_BODY_KEY: body,
