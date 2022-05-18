@@ -151,12 +151,62 @@ At this point, the request is sent to the backend, and validation also occurs on
 
 ###  
 
-### Installation 
+## Installation 
 
 The jsonschema plugin comes with several plugins. To add their functionalities these must configured in the *ckan.plugins* property. 
 
 The plugin which depend on jsonschema can be of two types; they can implement **metadata** (and resource) functionalities or **view** functionalities.
 
+
+## SOLR
+
+Add the following entry to the SOLR schema.xml:
+
+
+```
+
+<field name="res_ids" type="string" indexed="true" stored="true" multiValued="true"/>
+<field name="res_jsonschemas" type="text" indexed="true" stored="true" multiValued="true"/>
+<field name="res_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true"/>
+<field name="view_ids" type="string" indexed="true" stored="true" multiValued="true"/>
+<field name="view_types" type="string" indexed="true" stored="true" multiValued="true"/>
+<field name="view_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true" />
+<field name="view_jsonschemas" type="text" indexed="true" stored="true" multiValued="true" />
+
+```
+
+
+Optionally (will only work with the terriajs plugin)
+
+```
+<field name="bbox_area" type="float" indexed="true" stored="true" />
+<field name="maxx" type="float" indexed="true" stored="true" />
+<field name="maxy" type="float" indexed="true" stored="true" />
+<field name="minx" type="float" indexed="true" stored="true" />
+<field name="miny" type="float" indexed="true" stored="true" />
+
+```
+
+
+Tomcat9 sorl:
+
+Due to relaxedQueryPath limits (https://tomcat.apache.org/tomcat-8.5-doc/config/http.html)
+we need to properly setup the connector:
+nano /etc/tomcat9/server.xml
+
+Setup the connector as following:
+
+```
+<Connector port="8983" protocol="HTTP/1.1"
+                   connectionTimeout="20000"
+               redirectPort="8443" relaxedQueryChars="&quot;&lt;&gt;[\]^`{|}"
+/>
+```
+
+
+see also:
+
+"&quot;&lt;&gt;![\]^`{|}"
 
 
 **Plugins overview**
@@ -515,13 +565,13 @@ jsonschema_opt (meta-metadata optional informations, should never be exposed but
 
 Notes:
 
-
-	
 in case of spaces into values please quote the string with "value with spaces"
 	
 in case of full you could try to use star notation but it's not guarantee a full text search (f.e.: "*value with *")
 	
 There's an hard limit to 100 packages (which can generate a huge list of views, several for each package) it can be lowered using the parameter rows=99
+
+tags example tags=(food farm rice)
 
 Registry:
 To get a list of acceptable schema_type check out the keys from this map:
@@ -549,56 +599,8 @@ https://trello.com/c/cQMt9CFR/306-terriajs-when-a-search-is-performed-terria-sta
 Yes we have also bbox indices fetched directly from wms services... (provided by terriajs view plugin) but we are still not able to use the BBOX parameters which are in solr.
 TODO we planned to change the solr bbox index leveraging on solr > 4.x
 
-## SOLR
 
-Add the following entry to the SOLR schema.xml:
-
-
-```
-
-<field name="res_ids" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="res_jsonschemas" type="text" indexed="true" stored="true" multiValued="true"/>
-<field name="res_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="view_ids" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="view_types" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="view_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true" />
-<field name="view_jsonschemas" type="text" indexed="true" stored="true" multiValued="true" />
-
-
-<field name="bbox_area" type="float" indexed="true" stored="true" />
-<field name="maxx" type="float" indexed="true" stored="true" />
-<field name="maxy" type="float" indexed="true" stored="true" />
-<field name="minx" type="float" indexed="true" stored="true" />
-<field name="miny" type="float" indexed="true" stored="true" />
-
-```
-
-
-Tomcat9 sorl:
-
-Due to relaxedQueryPath limits (https://tomcat.apache.org/tomcat-8.5-doc/config/http.html)
-we need to properly setup the connector:
-nano /etc/tomcat9/server.xml
-
-Setup the connector as following:
-
-```
-<Connector port="8983" protocol="HTTP/1.1"
-                   connectionTimeout="20000"
-               redirectPort="8443" relaxedQueryChars="&quot;&lt;&gt;[\]^`{|}"
-/>
-```
-
-
-see also:
-
-"&quot;&lt;&gt;![\]^`{|}"
-
-
-
-
-
-### Internal Documentation
+## Internal Documentation
 
 The jsonschema plugin acts as a framework. It defines two interfaces. When needed, it searches for plugins implementing those interfaces and calls the appropriate implementations.
 
