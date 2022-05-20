@@ -484,7 +484,7 @@ These are GET and sideffect free calls which can be used to inspect the content 
 
 ## View Search
 
-    https://{CKAN_URL}/api/action/jsonschema_view_search?type={VIEW_TYPE}
+    https://{CKAN_URL}/api/action/jsonschema_view_search?view_type={VIEW_TYPE}
 
 This api will try to return and match all the jsonschema based VIEWS indexed into solr
 
@@ -513,6 +513,42 @@ GET
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
 | max_package_number | Number | Default is 100. There's an hard limit to 1000 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
 
+
+### Response:
+|Param|Type|Note|Example|
+|--|--|--|--|
+| package_id  | String | ID of the package |  |
+| resource_id  | String | ID of the resource |  |
+| view_id  | String | ID of the view |  |
+| metadata_link  | String (url) | WEB page url |  |
+| resource_link  | String (url) | WEB page url |  |
+| jsonschema_body_link | String (url) | REST API |  |
+| view_type  | String | may match the **type** parameter | terriajs |
+| jsonschema_body | String (Json) | Resolved view body | {"key":"value"} |
+| jsonschema_type | String | may match the schema used from the registry, see below | wms |
+| jsonschema_opt | String (Json) | meta-metadata optional informations, should never be exposed but can ship some hints |  |
+
+**Notes:**
+ - In case of spaces values please quote the string with "value with spaces"
+ - In case of full you could try to use star notation but it's not guarantee a full text search (f.e.: "*value with *")
+
+
+## View List
+
+    https://{CKAN_URL}/api/action/jsonschema_view_list?package_id={VIEW_TYPE}
+
+This api will try to return all the jsonschema based VIEWS indexed into solr from a specific package
+
+It will only query for Public metadata
+ 
+### Request type:
+	
+GET
+
+### Mandatory params:
+|Param|Type|Note|Example|
+|--|--|--|--|
+| package_id  | String | ID of the package |  |
 
 ### Response:
 |Param|Type|Note|Example|
