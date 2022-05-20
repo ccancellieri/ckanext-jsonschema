@@ -386,9 +386,10 @@ def view_list(context, data_dict):
 
         results = indexer.search(query=query)
         
+        returning = []
+        
         # for each package
         if results:
-            returning = []
             views = results[0].get('view_jsonschemas')
             for view in views:
                 # if matching the view_type
@@ -396,8 +397,8 @@ def view_list(context, data_dict):
                     # fetch the body
                 view_document = _t.dictize_pkg(json.loads(view))
                 returning.append(_view_model(view_document))
-
-            return returning
+        
+        return returning
 
     except Exception as e:
         raise ValidationError(str(e))
