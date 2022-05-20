@@ -37,7 +37,6 @@ def search(query, fq='', fl='', rows=100):
     # if include_drafts:
     #     data_dict['fq'] += ' +state:(active OR draft)'
 
-
     solr = make_connection()
     #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
     try:

@@ -497,7 +497,7 @@ GET
 ### Mandatory params:
 |Param|Type|Note|Example|
 |--|--|--|--|
-| type | String | the plugin name which manage the view. currently only | jsonschema_dashboard_view, terriajs |
+| view_type | String | the plugin name which manage the view. currently only | jsonschema_dashboard_view, terriajs |
 
 ### Acceptable params:
 |Param|Type|Note|Example|
@@ -511,12 +511,15 @@ GET
 | organization_name | String |  |  |
 | join_condition | String | [OR|AND default is AND] | AND |
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
-| rows| Number| There's an hard limit to 100 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
+| max_package_number | Number | Default is 100. There's an hard limit to 1000 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
 
 
 ### Response:
 |Param|Type|Note|Example|
 |--|--|--|--|
+| package_id  | String | ID of the package |  |
+| resource_id  | String | ID of the resource |  |
+| view_id  | String | ID of the view |  |
 | metadata_link  | String (url) | WEB page url |  |
 | resource_link  | String (url) | WEB page url |  |
 | jsonschema_body_link | String (url) | REST API |  |

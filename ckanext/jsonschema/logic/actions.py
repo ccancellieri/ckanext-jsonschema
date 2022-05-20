@@ -352,7 +352,8 @@ def view_show(context, data_dict):
 
     return content
     
-def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = False):
+def _append_param(data_dict, dict_key, q, solr_key):
+    # , starred = True, quoted = False):
     solr_val = data_dict.get(dict_key)
     join_condition = data_dict.get('join_condition', 'and').lower()
     # if starred and quoted:
@@ -372,6 +373,35 @@ def _append_param(data_dict, dict_key, q, solr_key, starred = True, quoted = Fal
 
     return None, None
 
+
+@side_effect_free
+def view_list(context, data_dict):
+
+    package_id = data_dict.get('package_id')
+    if not package_id:
+        raise ValidationError('Parameter \'package_id\' is mandatory')
+
+    try:
+        query = 'capacity:public AND id:{}'.format(package_id)
+
+        results = indexer.search(query=query)
+        
+        # for each package
+        if results:
+            returning = []
+            views = results[0].get('view_jsonschemas')
+            for view in views:
+                # if matching the view_type
+                # if searching_view_type in view_type:
+                    # fetch the body
+                view_document = _t.dictize_pkg(json.loads(view))
+                returning.append(_view_model(view_document))
+
+            return returning
+
+    except Exception as e:
+        raise ValidationError(str(e))
+
 @side_effect_free
 def view_search(context, data_dict):
 
@@ -379,19 +409,19 @@ def view_search(context, data_dict):
 
     # view_types=terriajs #plugin name
     
-    if 'type' not in data_dict:
-        raise ValidationError('Parameter \'type\' (plugin name used as view type) is mandatory field')
+    if 'view_type' not in data_dict:
+        raise ValidationError('Parameter \'view_type\' (plugin name used as view type) is mandatory')
+    searching_view_type = data_dict.get('view_type').lower()
 
-    n_rows = data_dict.get('rows', 100)
-    if n_rows > 100:
-        raise ValidationError('Parameter \'rows\' maximum value is 100, try refining your query parameter')
+    max_package_number = data_dict.get('max_package_number', 100)
+    if max_package_number > 1000:
+        raise ValidationError('Parameter \'max_package_number\' maximum value is 100, try refining your query parameter')
     
     # notes
     # name
     # organization
     # 
     try:
-        searching_view_type = data_dict.get('type').lower()
 
         query = 'capacity:public AND view_types:{}'.format(searching_view_type)
 
@@ -421,7 +451,7 @@ def view_search(context, data_dict):
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
 
-        results = indexer.search(query=query, fq=q or '', rows=n_rows)
+        results = indexer.search(query=query, fq=q or '', rows=max_package_number)
 
         # log.debug('Search view result is: {}'.format(results))
 
@@ -509,18 +539,27 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                 if searching_schema_type:
                     if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
                         continue
-
                 # if here append the document
-                ret.append({
-                    'resource_link': toolkit.url_for('/dataset/{}/resource/{}'\
-                        .format(view_document['package_id'], view_document['resource_id']), _external=True),
-                    'metadata_link': toolkit.url_for('/dataset/{}'\
-                        .format(view_document['package_id']), _external=True),
-                    '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}/{}'\
-                        .format(_c.TYPE, view_document['package_id'], view_document['resource_id'], view_document['view_id']),  _external=True, resolve=True),
-                    'view_type': view_document.get('view_type'),
-                    _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
-                    _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
-                    _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
-                })
+                ret.append(_view_model(view_document))
     return ret
+
+
+def _view_model(view_document):
+
+    package_id = view_document['package_id']
+    resource_id = view_document['resource_id']
+    view_id = view_document['view_id']
+    return {
+        'package_id': package_id,
+        'resource_id': resource_id,
+        'view_id': view_id,
+        'resource_link': toolkit.url_for('/dataset/{}/resource/{}'\
+            .format(package_id, resource_id), _external=True),
+        'metadata_link': toolkit.url_for('/dataset/{}'.format(package_id), _external=True),
+        '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}/{}'\
+            .format(_c.TYPE, package_id, resource_id, view_id),  _external=True, resolve=True),
+        'view_type': view_document.get('view_type'),
+        _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
+        _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
+        _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
+    }
