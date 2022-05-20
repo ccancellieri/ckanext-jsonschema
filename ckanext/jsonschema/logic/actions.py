@@ -382,21 +382,23 @@ def view_list(context, data_dict):
         raise ValidationError('Parameter \'package_id\' is mandatory')
 
     try:
-        query = 'capacity:public AND id:{}'.format(package_id)
+        query = 'capacity:public'
+        fq = 'id:{} OR name:{}'.format(package_id, package_id)
 
-        results = indexer.search(query=query)
+        results = indexer.search(query=query, fq=fq)
         
         returning = []
         
         # for each package
         if results:
             views = results[0].get('view_jsonschemas')
-            for view in views:
-                # if matching the view_type
-                # if searching_view_type in view_type:
-                    # fetch the body
-                view_document = _t.dictize_pkg(json.loads(view))
-                returning.append(_view_model(view_document))
+            if views:
+                for view in views:
+                    # if matching the view_type
+                    # if searching_view_type in view_type:
+                        # fetch the body
+                    view_document = _t.dictize_pkg(json.loads(view))
+                    returning.append(_view_model(view_document))
         
         return returning
 
