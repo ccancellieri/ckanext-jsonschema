@@ -548,7 +548,7 @@ GET
 ### Mandatory params:
 |Param|Type|Note|Example|
 |--|--|--|--|
-| package_id  | String | ID of the package |  |
+| package_id  | String | The ID or the Name of the package |  |
 
 ### Response:
 |Param|Type|Note|Example|
