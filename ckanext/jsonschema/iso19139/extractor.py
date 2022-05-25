@@ -7,6 +7,7 @@ import ckanext.jsonschema.tools as _t
 import ckanext.jsonschema.validators as _v
 import six
 import logging
+import json
 log = logging.getLogger(__name__)
 
 
@@ -206,7 +207,9 @@ def render_notes(data, context):
             import ckanext.jsonschema.logic.get as _g
             _data = _g.get_pkg(data['id'])
             _data.update(data)
-            
+        
+        log.debug(json.dumps(_data))
+
         return base.render('iso/description.html', extra_vars={'dataset': _data })
     except (TypeError, RuntimeError) as e: 
         # during tests, a TypeError is raised because a session isn't registered 
