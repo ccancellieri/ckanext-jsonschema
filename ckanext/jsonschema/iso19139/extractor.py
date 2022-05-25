@@ -205,7 +205,7 @@ def render_notes(data, context):
             # in this particular circumstances we need to fetch
             import ckanext.jsonschema.logic.get as _g
             _data = _g.get_pkg(data['id'])
-            _data['resources'] = data.get('resources')
+            _data.update(data)
             
         return base.render('iso/description.html', extra_vars={'dataset': _data })
     except (TypeError, RuntimeError) as e: 
