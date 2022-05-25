@@ -405,17 +405,20 @@ def get(dataset_id, resource_id = None, domain = None):
 
 def _extract_from_resource(resource, domain, default_value = {}):
 
-    # Checking extra data content for extration
-    extras = resource.get('__extras')
-    if not extras:
-        # edit existing resource
-        extras = resource
+    if not domain:
+        raise Exception("Missing parameter domain")
+    if not resource:
+        raise Exception("Missing parameter resource")
 
-    if extras and domain:
-        # TODO: May fail fast
-        return extras.get(domain, default_value)
+    # Checking extra data content for extraction
+    extras = resource.get('__extras')
+    if domain in extras:
+        return extras[domain]
     
-    raise Exception("Missing parameter resource or domain")
+    if domain in resource:
+        return resource[domain]
+
+    # TODO: May fail fast
 
 def _set_into_resource(resource, domain, value):
     
