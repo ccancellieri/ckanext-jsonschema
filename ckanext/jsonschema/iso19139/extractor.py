@@ -197,14 +197,17 @@ def _extract_iso_graphic_overview(data, errors, context):
 
 def render_notes(data, context):
     try:
+        _data = data
         if 'resources' not in data and 'id' in data:
             # during an edit from the UI
             # on update the received data package is
             # not shipping the resources for some reason
             # in this particular circumstances we need to fetch
             import ckanext.jsonschema.logic.get as _g
-            data = _g.get_pkg(data['id'])
-        return base.render('iso/description.html', extra_vars={'dataset': data })
+            _data = _g.get_pkg(data['id'])
+            _data.update(data)
+            
+        return base.render('iso/description.html', extra_vars={'dataset': _data })
     except (TypeError, RuntimeError) as e: 
         # during tests, a TypeError is raised because a session isn't registered 
         # RuntimeError appears to be raised when executing tests on the pipeline instead

@@ -69,7 +69,7 @@ def interpolate_fields(model, template):
         
         import re
 
-        method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\, \.\_\-]*\)\}\})\"'
+        method_recognize_regex = '\"(\{\{[a-zA-Z0-9\.\_\-]+\([a-zA-Z0-9\"\'\:\;\]\[\{\}\, \.\_\-]*\)\}\})\"'
         output_regex = '\g<1>'
         _template = None
         rendered = ''
