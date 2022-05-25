@@ -198,6 +198,12 @@ def _extract_iso_graphic_overview(data, errors, context):
 def render_notes(data, context):
     try:
         _data = data
+        # TODO a better check is required:
+        # when the user delete all the resources
+        # we migth not go into this, the result is that
+        # the resource is fetched from the database and the
+        # description is not updated correctly since we merge
+        # back the resource we were deleting...
         if 'resources' not in data and 'id' in data:
             # during an edit from the UI
             # on update the received data package is
