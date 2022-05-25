@@ -412,7 +412,7 @@ def _extract_from_resource(resource, domain, default_value = {}):
 
     # Checking extra data content for extraction
     extras = resource.get('__extras')
-    if domain in extras:
+    if extras and domain in extras:
         return extras[domain]
     
     if domain in resource:
