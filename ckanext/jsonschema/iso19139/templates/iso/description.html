@@ -33,29 +33,15 @@
 		{% for resource in resources %}
 			{% set resource_type = h.jsonschema_get_resource_type(resource) %}
 			{% set resource_body = h.jsonschema_get_resource_body(resource) %}
-			{% set _label = resource_type %}
-			{% if resource_type == 'resource-contact' %}
-			{% set _label = 'Contact' %}
-			{% elif resource_type == 'graphic-overview' %}
-				{% set _label = 'Graphic overview' %}
-			{% elif resource_type == 'online-resource' %}
-			{% set _label = 'Online resource' %}
-			{% elif resource_type == 'resource-maintainer' %}
-			{% set _label = 'Maintainer' %}
-			{% elif resource_type == 'distributor' %}
-			{% set _label = 'Distributor' %}
-			{% elif resource_type == 'metadata-contact' %}
-			{% set _label = 'Metadata contact' %}
-			{% elif resource_type == 'cited-responsible-party' %}
-			{% set _label = 'Cited contact' %}
-			{% endif %}
+			{% set _label = h.jsonschema_get_label_from_registry(resource_type) %}
+			
 			{% if resource_body and resource_body.contactInfo %}
 				{% if resource_body.contactInfo.address
 					and resource_body.contactInfo.address.electronicMailAddress %}
 					{% set info_name = resource_body.individualName or resource_body.organisationName %}
-		{{_label}}: [{{info_name}}](mailto:{{resource_body.contactInfo.address.electronicMailAddress}})
+{{_label}}: [{{info_name}}](mailto:{{resource_body.contactInfo.address.electronicMailAddress}})
 				{% else %}
-		{{_label}}: {{resource_body.individualName}} {{resource_body.organisationName}}
+{{_label}}: {{resource_body.individualName}} {{resource_body.organisationName}}
 				{% endif %}
 			{% endif %}
 		{% endfor %}
