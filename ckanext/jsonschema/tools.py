@@ -422,6 +422,11 @@ def _extract_from_resource(resource, domain, default_value = {}):
 
 def _set_into_resource(resource, domain, value):
     
+    # TODO __extras is outdated and here for historical
+    # reasons.
+    # we should move this out.
+    # look also what has been done in the getter
+    
     # Checking extra data content for extration
     extras = resource.get('__extras')
     if not extras:
