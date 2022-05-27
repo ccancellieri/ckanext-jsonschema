@@ -85,12 +85,16 @@
 		{% for resource in resources %}
 			{% set resource_type = h.jsonschema_get_resource_type(resource) %}
 			{% if resource_type == 'online-resource' %}
+				{% set url = resource.url %}
+				{% if url and not h.is_url(url) %}
+					{% set url = h.url_for('/dataset/{}/resource/{}/download/{}'.format(dataset['id'], resource['id'], url), _external=True) %}
+				{% endif %}
 				{% set resource_body = h.jsonschema_get_resource_body(resource) %}
 				{% if resource_body.protocol %}
 					{% if resource_body.protocol.lower() == 'www:link-1.0-http--link' %}
-[{{resource.description or resource.name}}]({{resource.url}})
+[{{resource.description or resource.name}}]({{url}})
 					{% elif resource_body.protocol.lower() == 'www:download-1.0-http--download' %}
-[{{resource.description or resource.name}}]({{resource.url}})
+[{{resource.description or resource.name}}]({{url}})
 					{% endif %}
 				{% endif %}
 			{% endif %}

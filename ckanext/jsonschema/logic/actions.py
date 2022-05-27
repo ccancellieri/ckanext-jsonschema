@@ -140,10 +140,7 @@ def importer(context, data_dict):
         # e.error_summary = json.dumps(message)
         raise ValidationError(message)
     
-    
-    # next_action(context,data_dict)
-
-    
+    # next_action(context,data_dict)    
 
 def validate_metadata(context, data_dict):
 
