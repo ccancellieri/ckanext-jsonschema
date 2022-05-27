@@ -87,7 +87,7 @@
 			{% if resource_type == 'online-resource' %}
 				{% set url = resource.url %}
 				{% if url and not h.is_url(url) %}
-					{% set url = h.url_for('/dataset/{}/resource/{}/download/{}'.format(dataset['id'], resource['id'], url), _external=True) %}
+					{% set url = h.url_for('/dataset/{}'.format(dataset['id']), _external=True) %}
 				{% endif %}
 				{% set resource_body = h.jsonschema_get_resource_body(resource) %}
 				{% if resource_body.protocol %}
