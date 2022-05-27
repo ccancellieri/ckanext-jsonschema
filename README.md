@@ -481,6 +481,117 @@ These are GET and sideffect free calls which can be used to inspect the content 
 
     https://{CKAN_URL}/jsonschema/{body|type|opt}/{PACKAGE_ID}[/{RESOURCE_ID}[/{VIEW_ID}]]
 
+## View specific params
+
+When you have a view based on the jsonschema plugin you may (it depends on the specific implementation) have some additional arguments
+available:
+
+https://{CKAN_URL}/jsonschema/{body|type|opt}/{PACKAGE_ID}/{RESOURCE_ID}/{VIEW_ID}
+
+To understand the following optional parameter we may describe the concept of item and the resolution:
+
+### wrap
+
+A view can be based on a composition of existing views, and you may want to compose them into a single big collection.
+
+The Main view configuration (jsonschema_body of the view) for this reason some time could be something which is not usable directly by the viewer (normally an Iframed application which will receive our json as configuration).
+
+For this reason we call each jsonschema_type of a view an **item** which can be composed (optionally) with other items into a **config**.
+
+The logic is not implemented by the jsonschema but should be provided by the implementing view plugin as it could be different for each view.
+
+But the concept is quite common (we have two plugins implementing it, one of them is the publicly available terriajs plugin) and can be shared and reused by the api.
+
+So a **config** can be:
+
+```json
+
+{
+    "catalog":[
+        {
+            "type":"jsonschema_type_1"
+        },
+        ...
+        {
+            "type":"jsonschema_type_n"
+        }
+    ]
+
+}
+
+```
+
+While the **item** is:
+
+```json
+{
+    "type":"jsonschema_type_1",
+    "other": "stuff"
+}
+```
+
+In short wrap=true is a simple whay to ask to the implementing plugin to return a **config** (potentially dynamically generated) starting from an **item**
+
+So if your view is defining an **item** and the url is the following:
+
+    https://{CKAN_URL}/jsonschema/body/{PACKAGE_ID}/{RESOURCE_ID}/{VIEW_ID_OF_THE_ITEM}
+
+To obtain a config to pass to your application viewer you may pass:
+
+    https://{CKAN_URL}/jsonschema/body/{PACKAGE_ID}/{RESOURCE_ID}/{VIEW_ID_OF_THE_ITEM}?wrap=true
+
+Which may wrap the view (body) of the **item** you are referring to into a fake or dynamically generated **config** that your application will recognize as valid.
+
+Obviously all of the above is totally optional if the implementing plugin and the viewer do not need to group items.
+
+This is instead largely used by the terriajs and the Dashboard plugins.
+
+### resolve
+
+The resolve option is instead core to the plugin view and some functionnalities are provided out of the box from into the **view_tools** so an implementing plugin can easily leverage on it.
+
+The base concept is that a view may represent the metadata and the resource and the configuration shipped by the view may be havely based on those data models.
+
+So jsonschema plugin is providing a model (available in the view interface clicking the **model** button) to interpolate values from the package, resource and organization on the fly.
+
+This is quite usefull when an user changes the title of the metadata or the resource where a view is defined, at that point if the view is using the model as placeholder the change is automatically reflected into the view.
+
+For example if a view jsonschema_body contains:
+
+```json
+{
+    "name":"{{resource.name}}",
+    "description": "{{package.notes or resource.description}}"
+}
+```
+
+Using the resolve=true parameter the expected returned body will be:
+
+    https://{CKAN_URL}/jsonschema/body/{PACKAGE_ID}/{RESOURCE_ID}/{VIEW_ID_OF_THE_ITEM}?resolve=true
+
+
+```json
+{
+    "name":"The name of the resource",
+    "description": "The description of the package (or the one from the resource)"
+}
+```
+
+### force_resolve
+
+Thanks to the jsonschema plugin a view is now also indexed into solr and it is used to provide a fast way to return an already resolved view body.
+
+Every time you change a view based on the jsonschema view the package with all the resources and all the views will be reindexed
+
+To enforce the resolution of an already resolved view, use this parameter.
+
+### Acceptable params:
+|Param|Type|Note|Example|
+|--|--|--|--|
+| wrap | Boolean | Is used to provide a defaul wrapping structure when the item is not the first  | resolve=False |
+| resolve | Boolean |  | resolve=True |
+| force_resolve | Boolean |  | force_resolve=True |
+
 
 ## View Search
 
@@ -575,7 +686,45 @@ Yes we have also bbox indices fetched directly from wms services... (provided by
 TODO we planned to change the solr bbox index leveraging on solr > 4.x
 
 
+## Clone (webpage)
 
+    https://{CKAN_URL}/jsonschema/clone
+
+## Importer (webpage)
+
+    https://{CKAN_URL}/jsonschema/importer
+
+## Validate (webpage)
+
+    https://{CKAN_URL}/jsonschema/validate
+
+
+## Registry
+
+Returns all the available (registered) jsonschema types
+
+    https://{CKAN_URL}/jsonschema/registry[/jsonschema_type]
+ 
+### Request type:
+	
+GET
+
+## Schema, template and javascript modules
+
+For each registry entry you may want to retrieve the **schema**, the **template** or the **javascript modules**
+
+    https://{CKAN_URL}/jsonschema/{schema|template|module}/jsonschema_type_path.{json|js}
+
+The javascript **module** is loaded into the interface and can be used to provide autocompletion for a specific jsonschema_type and for several othe extensions point (ref to the json-editor library for a list)
+
+The **template** is used to populate an empty type when it is created
+
+The **schema** is the jsonschema definition of the associated type
+
+
+### Request type:
+	
+GET
 
 
 # Extend jsonschema
