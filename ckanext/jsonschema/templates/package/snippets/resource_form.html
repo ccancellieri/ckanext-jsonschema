@@ -7,7 +7,11 @@
 {% endif %}
 
 {% set use_template = False %}
-{% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
+
+{% set jsonschema_type_from_request = False %}
+{% if request is defined and request.params is defined %}
+  {% set jsonschema_type_from_request = request.params.get('selected_jsonschema_type') %}
+{% endif %}
 
 {% if jsonschema_type_from_request %}
   {% set jsonschema_type = jsonschema_type_from_request %}
@@ -16,6 +20,10 @@
 
 {% set is_jsonschema = jsonschema_type in h.jsonschema_handled_resource_types(dataset_type) %}
 
+{% block custom_styles %}
+    {% asset 'ckanext-jsonschema/main-css' %}
+    {% asset 'ckanext-jsonschema/main-js' %}
+{% endblock %}
 
 {% block stages %}
   {% if is_jsonschema %}
@@ -50,12 +58,11 @@
     {# which is the jsonschema type in this context/environment #}
         <script>
           function select_jsonschema_type(jsonschema_type){
-            {% if c.action == 'new_resource' %}
+            {% if c.view == 'new' %}
             url = "{{h.url_for(controller='package', action='new_resource', id=c.id)}}"
               {% else %}
             url = "{{h.url_for(controller='package', action='resource_edit', id=c.id, resource_id=c.resource_id)}}"
             {% endif %}
-      
             window.location.href = url + '?selected_jsonschema_type=' + jsonschema_type
           }
         </script>

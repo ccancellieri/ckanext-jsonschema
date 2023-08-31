@@ -1,0 +1,15 @@
+main-css:
+  output: ckanext-jsonschema/%(version)s_jsonschema.css
+  # filters: cssrewrite
+  contents:
+    - customizations.css
+main-js:
+  output: ckanext-jsonschema/%(version)s_jsonschema.js
+  # filters: rjsmin
+  extra:
+    preload:
+      - base/main
+  contents:
+    - jsonschema.js
+    - tools.js
+#    jsoneditor.js

@@ -296,7 +296,8 @@ class JsonschemaPlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
-        toolkit.add_resource('fanstatic', 'ckanext-jsonschema')
+        toolkit.add_resource('public/assets', 'ckanext-jsonschema')
+
 
         #import ckanext.jsonschema.indexer as indexer
         #indexer.init_core('jsonschema_core')

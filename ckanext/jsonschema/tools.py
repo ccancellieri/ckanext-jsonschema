@@ -448,7 +448,6 @@ def _extract_from_package(dataset, domain, default_value = {}):
         
     raise Exception("Missing parameter dataset or domain")
     
-    
 # TODO CKAN contribution
 # TODO check also tools.get_package_type
 def _get_package_type(data = None):
@@ -463,13 +462,11 @@ def _get_package_type(data = None):
     if _type:
         return _type
 
-    from ckan.common import c
-
     # TODO: https://github.com/ckan/ckan/issues/6518
-    path = c.environ['CKAN_CURRENT_URL']
+    from ckan.common import request
+    path = request.environ['CKAN_CURRENT_URL']
     _type = path.split('/')[1]
     return _type
-
 
 # def update_extras(data, body, type, opt):
 #     # Checking extra data content for extration
