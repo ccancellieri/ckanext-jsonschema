@@ -89,6 +89,33 @@ Please return json and url used.
 Ref:
 https://github.com/ckan/ckan/discussions/6364
 
+You can use the following Python code to import data into CKAN using the CKAN API:
+
+
+```python
+url = "https://{CKAN_URL}/api/action/jsonschema_importer"
+session = requests.Session()
+session.headers.update({"accept": "application/xml"})
+session.headers update({"Content-Type": "application/json"})
+session.headers.update({'Authorization': 'key'})
+
+data = {
+    'url': 'https://{GEONETWORK_URL}/srv/api/records/' + uuid + '/formatters/xml?approved=true',
+    'jsonschema_type': 'iso19139',
+    'from_xml': 'true',
+    'package_update': 'false',
+    'owner_org': {owner_org},
+    'license_id': 'CC-BY-NC-SA-3.0-IGO',
+    'import': 'import'
+}
+
+final_data = json.dumps(data)
+ckan_import_resp = session.post(url, headers=session.headers, data=final_data)
+```
+
+Make sure to replace the placeholders like {CKAN_URL}, {GEONETWORK_URL}, {owner_org}, and 'key' with the actual values you want to use in your code.
+
+
 ### Validation
 
 Dataset and resources are matched against JSON schema files to validate them.
