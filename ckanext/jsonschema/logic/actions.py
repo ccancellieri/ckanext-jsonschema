@@ -404,7 +404,6 @@ def view_list(context, data_dict):
 
 @side_effect_free
 def view_search(context, data_dict):
-
     # view_jsonschema_types=terriajs # wms, csv, scorecard, mapcard 
 
     # view_types=terriajs #plugin name
@@ -420,9 +419,10 @@ def view_search(context, data_dict):
     # notes
     # name
     # organization
-    # 
-    try:
+    #
 
+    try:
+        # change this according to role
         query = 'capacity:public AND view_types:{}'.format(searching_view_type)
 
         q = None
@@ -466,7 +466,6 @@ def view_search(context, data_dict):
             if searching_full:
                 matching_res_id = res_ids
             elif searching_res_name and searching_res_desc:
-
                 if res_names and res_descs:
                     if len(res_descs) == len(res_names):
                         join_condition = data_dict.get('join_condition', 'and').lower()
@@ -530,6 +529,37 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                 # fetch the body
                 view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[vidx]))
 
+                # add package and organization information to the response
+                view_document['package'] = []
+                view_document['organization'] = []
+                package_tmp = _t.dictize_pkg(json.loads(document.get('data_dict')))
+                organization_tmp = package_tmp['organization']
+
+                # only particular fields of the package data dictionary are shown for the results
+                view_document['package'] = {
+                    'id': package_tmp['id'],
+                    'name': package_tmp['name'],
+                    'title': package_tmp['title'],
+                    'type': package_tmp['type'],
+                    'notes': package_tmp['notes'],
+                    'tags': package_tmp['tags'],
+                    'license_id': package_tmp['license_id'],
+                    'license_title': package_tmp['license_title'],
+                    'author': package_tmp['author'],
+                    'author_email': package_tmp['author_email'],
+                    'maintainer': package_tmp['maintainer'],
+                    'maintainer_email': package_tmp['maintainer_email'],
+                    'creator_user_id': package_tmp['creator_user_id']
+                }
+
+                # only particular fields of the organization data dictionary are shown for the results
+                view_document['organization'] = {
+                    'id': organization_tmp['id'],
+                    'name': organization_tmp['name'],
+                    'title': organization_tmp['title'],
+                    'description': organization_tmp['description']
+                }
+
                 # if res_id is passed we also have to filter by resource_id
                 if res_id:
                     if res_id != view_document.get('resource_id'):
@@ -541,15 +571,21 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                         continue
                 # if here append the document
                 ret.append(_view_model(view_document))
+
     return ret
 
 
 def _view_model(view_document):
 
+    package = view_document['package']
+    organization = view_document['organization']
     package_id = view_document['package_id']
     resource_id = view_document['resource_id']
     view_id = view_document['view_id']
+
     return {
+        'package': package,
+        'organization': organization,
         'package_id': package_id,
         'resource_id': resource_id,
         'view_id': view_id,
