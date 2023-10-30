@@ -453,9 +453,7 @@ def view_search(context, data_dict):
             query = 'view_types:{}'.format(searching_view_type)
 
         q = None
-        # use data_dict instead of extras_jsonschema_body or validated_data_dict
-        (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
-        q = aq if aq else q
+        # view_jsonschema the content
         (aq, searching_schema_type) = _append_param(data_dict, 'schema_type', q, 'view_jsonschema_types')
         q = aq if aq else q
         (aq, searching_organization_name) = _append_param(data_dict, 'organization_name', q, 'organization')
