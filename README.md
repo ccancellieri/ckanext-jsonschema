@@ -613,6 +613,7 @@ GET
 ### Acceptable params:
 |Param|Type|Note|Example|
 |--|--|--|--|
+| keyword | String | Full-text search through all the fields |  |
 | package_desc | String |  |  |
 | package_name | String |  |  |
 | resource_desc | String |  | "my description" |
@@ -628,6 +629,8 @@ GET
 ### Response:
 |Param|Type|Note|Example|
 |--|--|--|--|
+| package  | String | Package metadata information: id, name, title, description, license_id/license_title, tags, author, maintainer, creator_user_id |  |
+| organization  | String | Organization metadata: id, name, title, description |  |
 | package_id  | String | ID of the package |  |
 | resource_id  | String | ID of the resource |  |
 | view_id  | String | ID of the view |  |
