@@ -12,6 +12,9 @@ import ckanext.jsonschema.utils as _u
 # import ckanext.jsonschema.validators as _v
 from ckan.logic import NotFound, ValidationError, side_effect_free
 from ckan.plugins.core import PluginNotFoundException
+import ckan.lib.plugins as lib_plugins
+import ckan.authz as authz
+import ckan.lib.search.query as ckan_query
 
 _ = toolkit._
 h = toolkit.h
@@ -415,15 +418,29 @@ def view_search(context, data_dict):
     max_package_number = data_dict.get('max_package_number', 100)
     if max_package_number > 1000:
         raise ValidationError('Parameter \'max_package_number\' maximum value is 100, try refining your query parameter')
-    
+
+    # The q parameter is going to be used for free text searching though the fileds,
+    # the API should take keyword parametar for q searching
+    query_text = data_dict.get('keyword')
+
     # notes
     # name
     # organization
     #
 
     try:
-        # change this according to role
-        query = 'capacity:public AND view_types:{}'.format(searching_view_type)
+        model = context['model']
+        session = context['session']
+        user = context.get('user')
+
+        # results should be returned according to user permissions
+        if context.get('ignore_auth') or (user and authz.is_sysadmin(user)):
+            labels = None
+        else:
+            labels = lib_plugins.get_permission_labels(
+                ).get_user_dataset_labels(context['auth_user_obj'])
+
+        query = '{} AND view_types:{}'.format(query_text, searching_view_type)
 
         q = None
         (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
@@ -443,6 +460,15 @@ def view_search(context, data_dict):
         (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
         q = aq if aq else q
 
+        fq = []
+        # append permission labels
+        if labels is not None:
+            fq.append('+permission_labels:(%s)' % ' OR '.join(
+                ckan_query.solr_literal(p) for p in labels))
+
+        if q is not None:
+            fq.append(q)
+
         # q = '+package_title'.format(data_dict.get('title','').lower()) if 'package_title' in data_dict else q
 
         # q = '+res_name'.format(data_dict.get('resource_title','').lower()) if 'resource_title' in data_dict else q
@@ -451,7 +477,7 @@ def view_search(context, data_dict):
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
 
-        results = indexer.search(query=query, fq=q or '', rows=max_package_number)
+        results = indexer.search(query=query, fq=fq or '', rows=max_package_number)
 
         # log.debug('Search view result is: {}'.format(results))
 
