@@ -420,8 +420,8 @@ def view_search(context, data_dict):
         raise ValidationError('Parameter \'max_package_number\' maximum value is 100, try refining your query parameter')
 
     # The q parameter is going to be used for free text searching though the fileds,
-    # the API should take keyword parametar for q searching
-    query_text = data_dict.get('keyword')
+    # the API should take query parametar for q searching
+    query_text = data_dict.get('query')
 
     # notes
     # name
@@ -440,9 +440,20 @@ def view_search(context, data_dict):
             labels = lib_plugins.get_permission_labels(
                 ).get_user_dataset_labels(context['auth_user_obj'])
 
-        query = '{} AND view_types:{}'.format(query_text, searching_view_type)
+        # append permission labels
+        fq = []
+        if labels is not None:
+            fq.append('+permission_labels:(%s)' % ' OR '.join(
+                ckan_query.solr_literal(p) for p in labels))
+
+        # check if query_text is not none
+        if query_text is not None:
+            query = '{} AND view_types:{}'.format(query_text, searching_view_type)
+        else:
+            query = 'view_types:{}'.format(searching_view_type)
 
         q = None
+        # use data_dict instead of extras_jsonschema_body or validated_data_dict
         (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
         q = aq if aq else q
         (aq, searching_schema_type) = _append_param(data_dict, 'schema_type', q, 'view_jsonschema_types')
@@ -450,6 +461,8 @@ def view_search(context, data_dict):
         (aq, searching_organization_name) = _append_param(data_dict, 'organization_name', q, 'organization')
         q = aq if aq else q
         (aq, searching_package_name) = _append_param(data_dict, 'package_name', q, 'name')
+        q = aq if aq else q
+        (aq, searching_package_title) = _append_param(data_dict, 'package_title', q, 'title')
         q = aq if aq else q
         (aq, searching_package_desc) = _append_param(data_dict, 'package_desc', q, 'notes')
         q = aq if aq else q
@@ -459,12 +472,6 @@ def view_search(context, data_dict):
         q = aq if aq else q
         (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
         q = aq if aq else q
-
-        fq = []
-        # append permission labels
-        if labels is not None:
-            fq.append('+permission_labels:(%s)' % ' OR '.join(
-                ckan_query.solr_literal(p) for p in labels))
 
         if q is not None:
             fq.append(q)

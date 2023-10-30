@@ -613,9 +613,10 @@ GET
 ### Acceptable params:
 |Param|Type|Note|Example|
 |--|--|--|--|
-| keyword | String | Full-text search through all the fields |  |
+| query | String | Full-text search through all the text fields |  |
 | package_desc | String |  |  |
 | package_name | String |  |  |
+| package_title | String |  |  |
 | resource_desc | String |  | "my description" |
 | resource_name | String |  |  |
 | tags | String or Array | List of dataset tags to search for | (food farm rice) |
