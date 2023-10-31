@@ -470,6 +470,8 @@ def view_search(context, data_dict):
         q = aq if aq else q
         (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
         q = aq if aq else q
+        (aq, searching_res_type) = _append_param(data_dict, 'data_format', q, 'res_format')
+        q = aq if aq else q        
 
         if q is not None:
             fq.append(q)
@@ -481,7 +483,6 @@ def view_search(context, data_dict):
         
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
-
         results = indexer.search(query=query, fq=fq or '', rows=max_package_number)
 
         # log.debug('Search view result is: {}'.format(results))
