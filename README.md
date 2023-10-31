@@ -620,7 +620,7 @@ GET
 | resource_desc | String |  | "my description" |
 | resource_name | String |  |  |
 | tags | String or Array | List of dataset tags to search for | (food farm rice) |
-| full | String | Will full-text search in the jsonschema_body of the package |  |
+| data_format | String | Filter resources by format (wms, csv, json etc.) |  |
 | organization_name | String |  |  |
 | join_condition | String | [OR|AND default is AND] | AND |
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
