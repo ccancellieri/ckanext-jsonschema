@@ -494,9 +494,7 @@ def view_search(context, data_dict):
             res_names = document.get('res_name')
             res_ids = document.get('res_ids')
             matching_res_id = []
-            if searching_full:
-                matching_res_id = res_ids
-            elif searching_res_name and searching_res_desc:
+            if searching_res_name and searching_res_desc:
                 if res_names and res_descs:
                     if len(res_descs) == len(res_names):
                         join_condition = data_dict.get('join_condition', 'and').lower()
