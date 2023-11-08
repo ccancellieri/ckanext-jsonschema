@@ -637,12 +637,12 @@ When passing multiple values to a parameter, you need to have the following in m
 
     **Single selection:**
 
-    http://localhost:5000/api/action/jsonschema_view_search?package_name=* water *&organization_name=wapor
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&organization_name=wapor
 
 
     **Multiple selection:**
 
-    http://localhost:5000/api/action/jsonschema_view_search?package_name=*%20water%20*&organization_name=(wapor OR wapor-3)
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&organization_name=(wapor OR wapor-3)
     
     If you pass AND instead of OR in the organization parameter, you won't get any results, since there is no dataset that belongs to two Organizations at the same time
     
@@ -653,23 +653,23 @@ When passing multiple values to a parameter, you need to have the following in m
 
     **Single selection:**
 
-    http://localhost:5000/api/action/jsonschema_view_search?package_name=* water *&tags=wapor
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=wapor
 
 
     **Multiple selection:**
 
-    http://localhost:5000/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
 
 - **Searching through both Organizations and Tags:** When passing multiple parameters to the API, it is important to pass the join_condition parameter, if not passed the default one (AND) is going to be used
 
     **Single selection:**
 
-    http://localhost:5000/api/action/jsonschema_view_search?package_name=* water *&tags=wapor&organization_name=wapor
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=wapor&organization_name=wapor
 
 
     **Multiple selection:**
 
-    http://localhost:5000/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)&organization_name=(wapor OR wapor-3)
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)&organization_name=(wapor OR wapor-3)
 
 
 ### Response:
