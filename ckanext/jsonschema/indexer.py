@@ -27,7 +27,7 @@ def search_view_by_package_name(package_name):
 
     return views_resolved
 
-def search(query, fq='', fl='', rows=100):
+def search(query, fq='', fl='', start=0, rows=100):
 
     # include_private = asbool(data_dict.pop('include_private', False))
     # include_drafts = asbool(data_dict.pop('include_drafts', False))
@@ -41,7 +41,7 @@ def search(query, fq='', fl='', rows=100):
     #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
     try:
         # defType='edismax', 
-        return solr.search(q=query, fq=fq, fl=fl, rows=rows).docs
+        return solr.search(q=query, fq=fq, fl=fl, start=start, rows=rows).docs
     except socket.error as e:
         err = 'Could not connect to SOLR %r: %r' % (solr.url, e)
         log.error(err)

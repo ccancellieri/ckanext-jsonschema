@@ -419,6 +419,8 @@ def view_search(context, data_dict):
     if max_package_number > 1000:
         raise ValidationError('Parameter \'max_package_number\' maximum value is 100, try refining your query parameter')
 
+    offset =  data_dict.get('offset', 0)
+
     # The q parameter is going to be used for free text searching though the fileds,
     # the API should take query parametar for q searching
     query_text = data_dict.get('query')
@@ -483,7 +485,7 @@ def view_search(context, data_dict):
         
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
-        results = indexer.search(query=query, fq=fq or '', rows=max_package_number)
+        results = indexer.search(query=query, fq=fq or '', start=offset, rows=max_package_number)
 
         # log.debug('Search view result is: {}'.format(results))
 
