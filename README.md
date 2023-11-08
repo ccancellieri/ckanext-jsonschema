@@ -621,10 +621,55 @@ GET
 | resource_name | String |  |  |
 | tags | String or Array | List of dataset tags to search for | (food farm rice) |
 | data_format | String | Filter resources by format (wms, csv, json etc.) |  |
-| organization_name | String |  |  |
+| organization_name | String or Array | List of organizations to search for  |  |
 | join_condition | String | [OR|AND default is AND] | AND |
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
 | max_package_number | Number | Default is 100. There's an hard limit to 1000 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
+
+
+**Notes:**
+
+When passing multiple values to a parameter, you need to have the following in mind:
+
+- **Organizations:** Each Dataset in CKAN belongs to only one organization. Because of that, if the user wants to search through multiple organizations, the OR condition should be used:
+
+    organization_name: (org1 OR org2)
+
+    **Single selection:**
+
+    http://localhost:5000/api/action/jsonschema_view_search?package_name=* water *&organization_name=wapor
+
+
+    **Multiple selection:**
+
+    http://localhost:5000/api/action/jsonschema_view_search?package_name=*%20water%20*&organization_name=(wapor OR wapor-3)
+    
+    If you pass AND instead of OR in the organization parameter, you won't get any results, since there is no dataset that belongs to two Organizations at the same time
+    
+
+- **Tags:** Each Dataset in CKAN can have 0 or many tags. Because of that, if the user wants to search through multiple tags, the OR or AND condition can be used:
+
+    tags: (tag1 AND tag2 OR tag3)
+
+    **Single selection:**
+
+    http://localhost:5000/api/action/jsonschema_view_search?package_name=* water *&tags=wapor
+
+
+    **Multiple selection:**
+
+    http://localhost:5000/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
+
+- **Searching through both Organizations and Tags:** When passing multiple parameters to the API, it is important to pass the join_condition parameter, if not passed the default one (AND) is going to be used
+
+    **Single selection:**
+
+    http://localhost:5000/api/action/jsonschema_view_search?package_name=* water *&tags=wapor&organization_name=wapor
+
+
+    **Multiple selection:**
+
+    http://localhost:5000/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)&organization_name=(wapor OR wapor-3)
 
 
 ### Response:
