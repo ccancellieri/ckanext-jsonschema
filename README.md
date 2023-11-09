@@ -723,21 +723,79 @@ GET
 ### Acceptable params:
 |Param|Type|Note|Example|
 |--|--|--|--|
+| query | String | Full-text search through all the text fields |  |
 | package_desc | String |  |  |
 | package_name | String |  |  |
+| package_title | String |  |  |
 | resource_desc | String |  | "my description" |
 | resource_name | String |  |  |
 | tags | String or Array | List of dataset tags to search for | (food farm rice) |
-| full | String | Will full-text search in the jsonschema_body of the package |  |
-| organization_name | String |  |  |
+| data_format | String | Filter resources by format (wms, csv, json etc.) |  |
+| organization_name | String or Array | List of organizations to search for  |  |
 | join_condition | String | [OR|AND default is AND] | AND |
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
 | max_package_number | Number | Default is 100. There's an hard limit to 1000 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
+| offset | int | Specifies an offset (by default, 0) into the responses at which Solr should begin displaying content. | 0 |
+
+
+**Notes:**
+
+When passing multiple values to a parameter, you need to have the following in mind:
+
+- **Organizations:** Each Dataset in CKAN belongs to only one organization. Because of that, if the user wants to search through multiple organizations, the OR condition should be used:
+
+    organization_name: (org1 OR org2)
+
+    **Single selection:**
+
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&organization_name=wapor
+
+
+    **Multiple selection:**
+
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&organization_name=(wapor OR wapor-3)
+    
+    If you pass AND instead of OR in the organization parameter, you won't get any results, since there is no dataset that belongs to two Organizations at the same time
+    
+
+- **Tags:** Each Dataset in CKAN can have 0 or many tags. Because of that, if the user wants to search through multiple tags, the OR or AND condition can be used:
+
+    tags: (tag1 AND tag2 OR tag3)
+
+    **Single selection:**
+
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=wapor
+
+
+    **Multiple selection:**
+
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=(wapor OR wapor-3 AND air)
+
+    **NOTE:**  When sending the API request programmatically make sure to add escape characters appropriately
+
+    Example: http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
+
+- **Searching through both Organizations and Tags:** When passing multiple parameters to the API, it is important to pass the join_condition parameter, if not passed the default one (AND) is going to be used
+
+    **Single selection:**
+
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=wapor&organization_name=wapor
+
+
+    **Multiple selection:**
+
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=(wapor OR wapor-3 AND air)&organization_name=(wapor OR wapor-3)
+
+    **NOTE:**  When sending the API request programmatically make sure to add escape characters appropriately
+
+    Example: http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
 
 
 ### Response:
 |Param|Type|Note|Example|
 |--|--|--|--|
+| package  | String | Package metadata information: id, name, title, description, license_id/license_title, tags, author, maintainer, creator_user_id |  |
+| organization  | String | Organization metadata: id, name, title, description |  |
 | package_id  | String | ID of the package |  |
 | resource_id  | String | ID of the resource |  |
 | view_id  | String | ID of the view |  |

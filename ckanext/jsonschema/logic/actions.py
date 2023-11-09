@@ -12,6 +12,9 @@ import ckanext.jsonschema.utils as _u
 # import ckanext.jsonschema.validators as _v
 from ckan.logic import NotFound, ValidationError, side_effect_free
 from ckan.plugins.core import PluginNotFoundException
+import ckan.lib.plugins as lib_plugins
+import ckan.authz as authz
+import ckan.lib.search.query as ckan_query
 
 _ = toolkit._
 h = toolkit.h
@@ -404,7 +407,6 @@ def view_list(context, data_dict):
 
 @side_effect_free
 def view_search(context, data_dict):
-
     # view_jsonschema_types=terriajs # wms, csv, scorecard, mapcard 
 
     # view_types=terriajs #plugin name
@@ -416,23 +418,51 @@ def view_search(context, data_dict):
     max_package_number = data_dict.get('max_package_number', 100)
     if max_package_number > 1000:
         raise ValidationError('Parameter \'max_package_number\' maximum value is 100, try refining your query parameter')
-    
+
+    offset =  data_dict.get('offset', 0)
+
+    # The q parameter is going to be used for free text searching though the fileds,
+    # the API should take query parametar for q searching
+    query_text = data_dict.get('query')
+
     # notes
     # name
     # organization
-    # 
-    try:
+    #
 
-        query = 'capacity:public AND view_types:{}'.format(searching_view_type)
+    try:
+        model = context['model']
+        session = context['session']
+        user = context.get('user')
+
+        # results should be returned according to user permissions
+        if context.get('ignore_auth') or (user and authz.is_sysadmin(user)):
+            labels = None
+        else:
+            labels = lib_plugins.get_permission_labels(
+                ).get_user_dataset_labels(context['auth_user_obj'])
+
+        # append permission labels
+        fq = []
+        if labels is not None:
+            fq.append('+permission_labels:(%s)' % ' OR '.join(
+                ckan_query.solr_literal(p) for p in labels))
+
+        # check if query_text is not none
+        if query_text is not None:
+            query = '{} AND view_types:{}'.format(query_text, searching_view_type)
+        else:
+            query = 'view_types:{}'.format(searching_view_type)
 
         q = None
-        (aq, searching_full) = _append_param(data_dict, 'full', q, 'extras_jsonschema_body')
-        q = aq if aq else q
+        # view_jsonschema the content
         (aq, searching_schema_type) = _append_param(data_dict, 'schema_type', q, 'view_jsonschema_types')
         q = aq if aq else q
         (aq, searching_organization_name) = _append_param(data_dict, 'organization_name', q, 'organization')
         q = aq if aq else q
         (aq, searching_package_name) = _append_param(data_dict, 'package_name', q, 'name')
+        q = aq if aq else q
+        (aq, searching_package_title) = _append_param(data_dict, 'package_title', q, 'title')
         q = aq if aq else q
         (aq, searching_package_desc) = _append_param(data_dict, 'package_desc', q, 'notes')
         q = aq if aq else q
@@ -442,6 +472,11 @@ def view_search(context, data_dict):
         q = aq if aq else q
         (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
         q = aq if aq else q
+        (aq, searching_res_type) = _append_param(data_dict, 'data_format', q, 'res_format')
+        q = aq if aq else q        
+
+        if q is not None:
+            fq.append(q)
 
         # q = '+package_title'.format(data_dict.get('title','').lower()) if 'package_title' in data_dict else q
 
@@ -450,8 +485,7 @@ def view_search(context, data_dict):
         
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
-
-        results = indexer.search(query=query, fq=q or '', rows=max_package_number)
+        results = indexer.search(query=query, fq=fq or '', start=offset, rows=max_package_number)
 
         # log.debug('Search view result is: {}'.format(results))
 
@@ -463,10 +497,7 @@ def view_search(context, data_dict):
             res_names = document.get('res_name')
             res_ids = document.get('res_ids')
             matching_res_id = []
-            if searching_full:
-                matching_res_id = res_ids
-            elif searching_res_name and searching_res_desc:
-
+            if searching_res_name and searching_res_desc:
                 if res_names and res_descs:
                     if len(res_descs) == len(res_names):
                         join_condition = data_dict.get('join_condition', 'and').lower()
@@ -530,6 +561,37 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                 # fetch the body
                 view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[vidx]))
 
+                # add package and organization information to the response
+                view_document['package'] = []
+                view_document['organization'] = []
+                package_tmp = _t.dictize_pkg(json.loads(document.get('data_dict')))
+                organization_tmp = package_tmp['organization']
+
+                # only particular fields of the package data dictionary are shown for the results
+                view_document['package'] = {
+                    'id': package_tmp['id'],
+                    'name': package_tmp['name'],
+                    'title': package_tmp['title'],
+                    'type': package_tmp['type'],
+                    'notes': package_tmp['notes'],
+                    'tags': package_tmp['tags'],
+                    'license_id': package_tmp['license_id'],
+                    'license_title': package_tmp['license_title'],
+                    'author': package_tmp['author'],
+                    'author_email': package_tmp['author_email'],
+                    'maintainer': package_tmp['maintainer'],
+                    'maintainer_email': package_tmp['maintainer_email'],
+                    'creator_user_id': package_tmp['creator_user_id']
+                }
+
+                # only particular fields of the organization data dictionary are shown for the results
+                view_document['organization'] = {
+                    'id': organization_tmp['id'],
+                    'name': organization_tmp['name'],
+                    'title': organization_tmp['title'],
+                    'description': organization_tmp['description']
+                }
+
                 # if res_id is passed we also have to filter by resource_id
                 if res_id:
                     if res_id != view_document.get('resource_id'):
@@ -541,15 +603,21 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
                         continue
                 # if here append the document
                 ret.append(_view_model(view_document))
+
     return ret
 
 
 def _view_model(view_document):
 
+    package = view_document['package']
+    organization = view_document['organization']
     package_id = view_document['package_id']
     resource_id = view_document['resource_id']
     view_id = view_document['view_id']
+
     return {
+        'package': package,
+        'organization': organization,
         'package_id': package_id,
         'resource_id': resource_id,
         'view_id': view_id,
