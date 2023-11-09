@@ -769,7 +769,11 @@ When passing multiple values to a parameter, you need to have the following in m
 
     **Multiple selection:**
 
-    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=(wapor OR wapor-3 AND air)
+
+    **NOTE:**  When sending the API request programmatically make sure to add escape characters appropriately
+
+    Example: http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
 
 - **Searching through both Organizations and Tags:** When passing multiple parameters to the API, it is important to pass the join_condition parameter, if not passed the default one (AND) is going to be used
 
@@ -780,7 +784,11 @@ When passing multiple values to a parameter, you need to have the following in m
 
     **Multiple selection:**
 
-    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)&organization_name=(wapor OR wapor-3)
+    http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=* water *&tags=(wapor OR wapor-3 AND air)&organization_name=(wapor OR wapor-3)
+
+    **NOTE:**  When sending the API request programmatically make sure to add escape characters appropriately
+
+    Example: http://{CKAN_URL}/api/action/jsonschema_view_search?package_name=*%20water%20*&tags=(wapor OR wapor-3 AND air)
 
 
 ### Response:
