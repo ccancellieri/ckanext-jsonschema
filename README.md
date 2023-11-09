@@ -89,6 +89,33 @@ Please return json and url used.
 Ref:
 https://github.com/ckan/ckan/discussions/6364
 
+You can use the following Python code to import data into CKAN using the CKAN API:
+
+
+```python
+url = "https://{CKAN_URL}/api/action/jsonschema_importer"
+session = requests.Session()
+session.headers.update({"accept": "application/xml"})
+session.headers update({"Content-Type": "application/json"})
+session.headers.update({'Authorization': 'key'})
+
+data = {
+    'url': 'https://{GEONETWORK_URL}/srv/api/records/' + uuid + '/formatters/xml?approved=true',
+    'jsonschema_type': 'iso19139',
+    'from_xml': 'true',
+    'package_update': 'false',
+    'owner_org': {owner_org},
+    'license_id': 'CC-BY-NC-SA-3.0-IGO',
+    'import': 'import'
+}
+
+final_data = json.dumps(data)
+ckan_import_resp = session.post(url, headers=session.headers, data=final_data)
+```
+
+Make sure to replace the placeholders like {CKAN_URL}, {GEONETWORK_URL}, {owner_org}, and 'key' with the actual values you want to use in your code.
+
+
 ### Validation
 
 Dataset and resources are matched against JSON schema files to validate them.
@@ -474,6 +501,89 @@ Starting from CKAN 2.8.9 it should be possible to create the file at the startup
 
 
 # API
+
+#### Using CKAN's REST API to Manage Data
+
+This guide will walk you through using CKAN's REST API to perform essential data management tasks such as creating packages, resources, and views.
+
+##### Create a Package
+
+To create a package using CKAN's REST API, you can use the following Python code as a starting point:
+
+```python
+import requests
+
+# Define your CKAN API URL and API key
+api_url = "https://{CKAN_URL}/api/action/package_create"
+api_key = "your-api-key"
+
+# Data for creating a new package
+data = {
+    "name": "my-new-package",
+    "title": "My New Package",
+    "author": "Your Name",
+    # Add more metadata fields as needed
+}
+
+headers = {
+    "Authorization": api_key,
+    "Content-Type": "application/json",
+}
+
+response = requests.post(api_url, json=data, headers=headers)
+
+```
+
+##### Create a Resource
+
+```python
+
+# Define your CKAN API URL and API key
+api_url = "https://{CKAN_URL}/api/action/resource_create"
+api_key = "your-api-key"
+
+# Data for creating a new resource
+data = {
+    "package_id": "your-package-id",
+    "name": "my-new-resource",
+    "url": "https://url-to-your-data-resource",
+    "format": "CSV",
+    # Add more metadata fields as needed
+}
+
+headers = {
+    "Authorization": api_key,
+    "Content-Type": "application/json",
+}
+
+response = requests.post(api_url, json=data, headers=headers)
+
+```
+##### Create a View
+
+```python
+
+# Define your CKAN API URL and API key
+api_url = "https://{CKAN_URL}/api/action/resource_view_create"
+api_key = "your-api-key"
+
+# Data for creating a new view
+data = {
+    "resource_id": "your-resource-id",
+    "title": "My Data View",
+    "view_type": "recline_view",
+    # Add more view configuration as needed
+}
+
+headers = {
+    "Authorization": api_key,
+    "Content-Type": "application/json",
+}
+
+response = requests.post(api_url, json=data, headers=headers)
+
+
+```
 
 ## Body, Type, Opt
 
