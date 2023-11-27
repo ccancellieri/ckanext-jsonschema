@@ -415,9 +415,9 @@ def view_search(context, data_dict):
         raise ValidationError('Parameter \'view_type\' (plugin name used as view type) is mandatory')
     searching_view_type = data_dict.get('view_type').lower()
 
-    max_package_number = data_dict.get('max_package_number', 100)
-    if max_package_number > 1000:
-        raise ValidationError('Parameter \'max_package_number\' maximum value is 100, try refining your query parameter')
+    page_size = int(data_dict.get('page_size', 100))
+    if page_size > 1000:
+        raise ValidationError('Parameter \'page_size\' maximum value is 100, try refining your query parameter')
 
     offset =  data_dict.get('offset', 0)
 
@@ -429,7 +429,6 @@ def view_search(context, data_dict):
     # name
     # organization
     #
-    print ('TEST!')
 
     try:
         model = context['model']
@@ -486,16 +485,26 @@ def view_search(context, data_dict):
         
         # commented out, not properly supported by solr 3.6
         # fl = 'view_*,indexed_ts'
-        solr_results = indexer.search(query=query, fq=fq or '', start=offset, rows=max_package_number)
+        solr_results = indexer.search(query=query, fq=fq or '', start=offset, rows=page_size)
         results = solr_results.docs
         count = solr_results.hits
 
         # log.debug('Search view result is: {}'.format(results))
 
         returning = []
+        # view_matches
+        total_views = 0
         
         # for each package
         for document in results:
+            # create the result entry pkg dict
+            result = []
+
+            # add package and organization information to the response
+            package_tmp = _t.dictize_pkg(json.loads(document.get('data_dict')))
+            resources_tmp = package_tmp['resources']
+            organization_tmp = package_tmp['organization']
+
             res_descs = document.get('res_description')
             res_names = document.get('res_name')
             # resources that have terrijs view?
@@ -549,58 +558,41 @@ def view_search(context, data_dict):
             
             if len(matching_res_id) > 0:
                 for res_id in matching_res_id:
-                    resources.extend(matching_views_by_package(document, searching_view_type, res_id, searching_schema_type))
-
-            # create the result entry pkg dict
-            result = []
-
-            # add package and organization information to the response
-            package_tmp = _t.dictize_pkg(json.loads(document.get('data_dict')))
-            organization_tmp = package_tmp['organization']
-            org_dict_tmp = {}
-
-            # list of needed pkg params
-            pkg_info = {
-                'id': package_tmp['id'],
-                'name': package_tmp['name'],
-                'title': package_tmp['title'],
-                'type': package_tmp['type'],
-                'notes': package_tmp['notes'],
-                'tags': package_tmp['tags'],
-                'license_id': package_tmp['license_id'],
-                'license_title': package_tmp['license_title'],
-                'author': package_tmp['author'],
-                'author_email': package_tmp['author_email'],
-                'maintainer': package_tmp['maintainer'],
-                'maintainer_email': package_tmp['maintainer_email'],
-                'creator_user_id': package_tmp['creator_user_id']
-            }
+                    resource = next((d for d in resources_tmp if d.get('id') == res_id), None)
+                    resources.extend(matching_views_by_package(document, resource, searching_view_type, res_id, searching_schema_type))
 
             # only particular fields of the organization data dictionary are shown for the results
-            org_dict_tmp['organization'] = {
+            package_tmp['organization'] = {
                 'id': organization_tmp['id'],
                 'name': organization_tmp['name'],
                 'title': organization_tmp['title'],
                 'description': organization_tmp['description']
             }
 
-            pkg_info['organization'] = org_dict_tmp
-            pkg_info['resources'] = resources
-            result.append(pkg_info)
+            package_tmp.pop('resources', None)
+            total_views += len(resources)
+            package_tmp['views'] = resources
+            package_tmp['num_resources_view'] = len(resources)
+            result.append(package_tmp)
 
             returning.extend(result)
 
+        pkg_count = len(returning)
+
         # generate the response
         search_results = {
-            'count': count,
-            'results': returning
+            'total_package_count': count,
+            'package_count': pkg_count,
+            'view_count': total_views,
+            'offset': offset,
+            'packages': returning
         }
 
         return search_results
     except Exception as e:
         raise ValidationError(str(e))
 
-def matching_views_by_package(document, searching_view_type = None, res_id = None, searching_schema_type = None):
+def matching_views_by_package(document, resource, searching_view_type = None, res_id = None, searching_schema_type = None):
     ret = []
     view_types = document.get('view_types')
     # for each view
@@ -620,8 +612,12 @@ def matching_views_by_package(document, searching_view_type = None, res_id = Non
                 if searching_schema_type:
                     if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
                         continue
-                ret.append(_view_model_resource(view_document))
 
+                view = _view_model_resource(view_document)
+                for key in view:
+                    if key not in resource.keys():
+                        resource[key] = view[key]
+                ret.append(resource)
     return ret
 
 def matching_views(document, searching_view_type = None, res_id = None, searching_schema_type = None):
@@ -707,13 +703,11 @@ def _view_model(view_document):
     }
 
 def _view_model_resource(view_document):
-    print ('in the view model')
     package_id = view_document['package_id']
     resource_id = view_document['resource_id']
     view_id = view_document['view_id']
 
     return {
-        'resource_id': resource_id,
         'view_id': view_id,
         'resource_link': toolkit.url_for('/dataset/{}/resource/{}'\
             .format(package_id, resource_id), _external=True),
