@@ -420,6 +420,16 @@ def _extract_from_resource(resource, domain, default_value = {}):
 
     # TODO: May fail fast
 
+def encode_dict_values(data, encoding='utf-8'):
+    if isinstance(data, dict):
+        return {key: encode_dict_values(value, encoding) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [encode_dict_values(item, encoding) for item in data]
+    elif isinstance(data, unicode):
+        return data.encode(encoding)
+    else:
+        return data
+
 def _set_into_resource(resource, domain, value):
     
     # TODO __extras is outdated and here for historical
@@ -434,6 +444,9 @@ def _set_into_resource(resource, domain, value):
         extras = resource
 
     if extras and domain:
+        if isinstance(value, dict):
+            value = encode_dict_values(value)
+
         # TODO: May fail fast
         extras[domain] = value
         return resource

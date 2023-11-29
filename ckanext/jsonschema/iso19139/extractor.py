@@ -138,10 +138,9 @@ def _extract_iso_online_resource(data, errors, context):
 
 
 def _extract_iso_resource_responsible(data, errors, context):
-
     body = _t.get_resource_body(data)
 
-    name = _t.encode_str(body.get('individualName', 'Contact'))
+    name = body.get('individualName', 'Contact')
 
     # NAME IS ORGANIZATION NAME or INDIVIDUAL NAME or ONLINERESOURCE/NAME
     # as discussed on 06/12/2021
