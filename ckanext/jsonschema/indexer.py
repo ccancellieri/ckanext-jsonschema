@@ -41,7 +41,8 @@ def search(query, fq='', fl='', start=0, rows=100):
     #query += "+site_id:\"%s\"" % (config.get('ckan.site_id'))
     try:
         # defType='edismax', 
-        return solr.search(q=query, fq=fq, fl=fl, start=start, rows=rows).docs
+        # we need to return the full query Results so that we can get the count
+        return solr.search(q=query, fq=fq, fl=fl, start=start, rows=rows)
     except socket.error as e:
         err = 'Could not connect to SOLR %r: %r' % (solr.url, e)
         log.error(err)

@@ -734,7 +734,7 @@ GET
 | organization_name | String or Array | List of organizations to search for  |  |
 | join_condition | String | [OR|AND default is AND] | AND |
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
-| max_package_number | Number | Default is 100. There's an hard limit to 1000 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
+| page_size | Number | Default is 100. There's an hard limit to 1000 packages (which can generate a huge list of views, several for each package) it can be reduced using this parameter | 99 |
 | offset | int | Specifies an offset (by default, 0) into the responses at which Solr should begin displaying content. | 0 |
 
 
