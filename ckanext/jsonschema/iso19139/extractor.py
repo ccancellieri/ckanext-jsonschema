@@ -138,7 +138,6 @@ def _extract_iso_online_resource(data, errors, context):
 
 
 def _extract_iso_resource_responsible(data, errors, context):
-
     body = _t.get_resource_body(data)
 
     name = body.get('individualName', 'Contact')
