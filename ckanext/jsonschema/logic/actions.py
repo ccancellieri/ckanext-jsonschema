@@ -319,7 +319,7 @@ def view_show(context, data_dict):
 
     log.debug('Search view result is: {}'.format(results))
 
-    document = results[0]
+    document = results.docs[0]
 
     found = False
     view_ids = document.get('view_ids')
