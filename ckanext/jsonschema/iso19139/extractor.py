@@ -85,6 +85,8 @@ def _extract_iso_name(data, context):
 
     if not name:
         name = str(uuid.uuid4())
+    elif isinstance(name, dict):
+        name = munge.munge_name(name[u'#text'])
     else:
         name = munge.munge_name(name)
 
