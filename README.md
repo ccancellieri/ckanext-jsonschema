@@ -24,46 +24,65 @@ These fields could be attached to the dataset, resource or view objects of CKAN.
 
 Registry : 
 
-This functionality drives the behaviours of jsonschema plugin. Each plugin  can define its own registry to define its own types with configurations. In case you need more details please reference the [Registry section in development documentation](README_DEV.md###Registry)
+This functionality drives the behaviours of jsonschema plugin. Each plugin  can define its own registry to define its own types with configurations.
+
+In case you need more details please reference the [Registry section in development documentation](README_DEV.md#registry)
 
 Validator :
 
-This functionality of jsonschema plugin makes it possible to dynamically validate user inputs.In case you need more details please reference the [Validator section in development documentation](README_DEV.md#validator)
+This functionality of jsonschema plugin makes it possible to dynamically validate user inputs.
+
+In case you need more details please reference the [Validator section in development documentation](README_DEV.md#validator)
 
 View Configurations : 
 
-This functionality allows each plugin to have multiple view types.In case you need more details please reference the [View Configurations section in development documentation](README_DEV.md#view-configurations)
+This functionality allows each plugin to have multiple view types.
 
+In case you need more details please reference the [View Configurations section in development documentation](README_DEV.md#view-configurations)
+
+<a id="additional-functionalities"></a>
 ## ADDITIONAL FUNCTIONALITIES
 
 Json addition is just a way to store JSON's in CKAN providing an interface and a validation. On top of these feature jsonschema implements some additional functionalities:
 
-Extractor(from JSON to CKAN or reverse)
+Extractor:
+
+Jsonschema creates an extraction flow from JSON to CKAN or reverse
+
+In case you need more details please reference the [Extractor section in development documentation](README_DEV.md#extractor)
 
 Importer:
 
-This functionality can be used to import metadata from an external repository, it can be in any supported format (f.e. from geonetwork).In case you need more details please reference the [Importer section in development documentation](README_DEV.md#importer)
+This functionality can be used to import metadata from an external repository, it can be in any supported format (f.e. from geonetwork).
+
+In case you need more details please reference the [Importer section in development documentation](README_DEV.md#importer)
 
 Exporter:
 
-This functionality can be used to export a metadata in CKAN to a standart XML.In case you need more details please reference the  
+This functionality can be used to export a metadata in CKAN to a standart XML.
+
 In case you need more details please reference the [Exporter section in development documentation](README_DEV.md#exporter)
 
 Cloner:
 
 This functionality provides an interface to duplicate an existing metadata.
+
 In case you need more details please reference the [Cloner section in development documentation](README_DEV.md#cloner)
 
-Harvester:?
+Harvester:
+<!-- TODO -->
 
 Resolver:
 
-This functionality allows a change in a CKAN object to be reflected into another object that is configured on it. In case you need more details please reference the [Resolver section in development documentation](README_DEV.md#resolver)
+This functionality allows a change in a CKAN object to be reflected into another object that is configured on it. 
+
+In case you need more details please reference the [Resolver section in development documentation](README_DEV.md#resolver)
 
 Wrapper:
 
-This functionality allows users to compose views into a big collection. In case you need more details please reference the [Wrapper section in development documentation](README_DEV.md#wrapper)
+This functionality allows users to compose views into a big collection.
 
+In case you need more details please reference the [Wrapper section in development documentation](README_DEV.md#wrapper)
 
 
 
@@ -72,10 +91,6 @@ This functionality allows users to compose views into a big collection. In case 
 From the jsonschema perspective, the view is the representation of the metadata. Each change in the metadata may be reflected into every view configured on it.
 
 For example, changing the title or the description of the metadata, could cause a change in the appearance of the view.
-
-<!-- Question do we need this part ? -->
-
-
 
 
 
@@ -161,7 +176,6 @@ see also:
 
 This guide will walk you through using CKAN's REST API to perform essential data management tasks such as creating packages, resources, and views.
 
-<!-- QUESTION maybe we can talk about how to get an api key ? -->
 
 ### Create a Package
 
@@ -355,11 +369,11 @@ As mentioned above the packages key, returnes a list of dictized datasets. Each 
 | isopen  | String | Legacy - openness of the dataset according to licence [NOT USED] |  |
 | state  | String | State of the resource (active/deleted) |  |
 | num_tags  | int | Number of tags per Dataset |  |
-| tags  | list of tag dictionaries | The dataset’s tags |  |
+| tags  | list of tag dictionaries | The datasetï¿½s tags |  |
 | license_title  | String | Title of the License associated with the dataset |  |
 | license_id | String | Unique identifier of the License associated with the dataset |  |
 | num_resources  | int | Total number of resources per Dataset |  |
-| extras  | list of extra dictionaries | The dataset’s extra metadata (not included in the default CKAN metadata model) |  |
+| extras  | list of extra dictionaries | The datasetï¿½s extra metadata (not included in the default CKAN metadata model) |  |
 | owner_org  | String | unique identifer of the owner organization |  |
 | organization  | dictionary| The owner organization metadata |  |
 | groups  | list of resources dictionaries | The groups to which the dataset belongs |  |
@@ -396,6 +410,7 @@ Views key contains a list of dictized resources that satisfy the view_type searc
 
 
 Organization key is a list of key/value pair details for the owner_organization.
+
 |Param|Type|Note|Example|
 |--|--|--|--|
 | id  | String | Unique identifier of the organization |  |
@@ -405,6 +420,7 @@ Organization key is a list of key/value pair details for the owner_organization.
 
 **Notes:**
  - In case of spaces values please quote the string with "value with spaces"
+
  - In case of full you could try to use star notation but it's not guarantee a full text search (f.e.: "*value with *")
 
 
@@ -442,6 +458,12 @@ GET
 **Notes:**
  - In case of spaces values please quote the string with "value with spaces"
  - In case of full you could try to use star notation but it's not guarantee a full text search (f.e.: "*value with *")
+
+### Jsonschema Reload
+
+Reload jsonschema after a change has been made to make effect come out.
+
+    https://{CKAN_URL}/api/action/jsonschema_reload
 
 
 ### Geospatial search:
@@ -510,7 +532,9 @@ To understand the following optional parameter we may describe the concept of it
 
 ### wrap
 
-wrap=true is a simple way to ask to the implementing plugin to return a **config** (potentially dynamically generated) starting from an **item**. In case you need more details please reference the [Additional Functionalities section](#additional-functionalities)
+wrap=true is a simple way to ask to the implementing plugin to return a **config** (potentially dynamically generated) starting from an **item**. 
+
+In case you need more details please reference the [Additional Functionalities section](#additional-functionalities)
 
 
 So if your view is defining an **item** and the url is the following:
@@ -529,7 +553,8 @@ This is instead largely used by the terriajs and the Dashboard plugins.
 
 ### resolve
 
-resolve=true is a way to ask a change in a CKAN object to be reflected into another object that is configured on it. In case you need more details please reference the [Additional Functionalities section](#additional-functionalities)
+resolve=true is a way to ask a change in a CKAN object to be reflected into another object that is configured on it.
+ more details please reference the [Additional Functionalities section](#additional-functionalities)
 
 For example if a view jsonschema_body contains:
 
@@ -551,7 +576,7 @@ https://{CKAN_URL}/jsonschema/body/{PACKAGE_ID}/{RESOURCE_ID}/{VIEW_ID_OF_THE_IT
     "description": "The description of the package (or the one from the resource)"
 }
 ```
-<!-- QUESTION otherwise the values will not be reloaded and old values will be returned right ? if so this may also be added here-->
+
 
 ### force_resolve
 
@@ -566,31 +591,28 @@ To enforce the resolution of an already resolved view, use this parameter.
 
 
 
-<!-- Question i feel like the next section should also be here -->
 # Provided plugins:
 
 ## jsonschema
 
-base plugin to enable extensions points provide basic jsonschema functionnalities
+Base plugin to enable extensions points provide basic jsonschema functionnalities
 
 ## jsonschema_iso19139
 
-extension to provide an iso19139 binding from iso19139 and the below simplified iso profile
+Extension to provide an iso19139 binding from iso19139 and the below simplified iso profile
 
 ## jsonschema_iso
 
-extension to provide a simplified but quite complet iso model
+Extension to provide a simplified but quite complex iso model
 
 ## harvester_iso19139 (deprecated, ise importer)
 
-An harvester from CSW to iso19139/iso
-
-requires harves plugin to be installed, also has a dedicate requirements file
+An harvester from CSW to iso19139/iso requires harves plugin to be installed, also has a dedicate requirements file
 
 ## Suggested configuration:
 
     jsonschema jsonschema_iso19139 jsonschema_iso
 
-know issue:
+Known issue:
 ---
- the xml importer is encountering some runtime issue (due to xml format body) with the google analytics extension.
+The xml importer is encountering some runtime issue (due to xml format body) with the google analytics extension.

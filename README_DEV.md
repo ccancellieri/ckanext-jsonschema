@@ -32,14 +32,14 @@ This is quite useful and easy to implement when you need predefined indexing and
 
 The jsonschema_iso plugin extensively uses this approach.
 
-/*<!-- TODO Describe jsonschema_type, jsonschema_body, jsonschema_opt (meta-metadata) -->*/
 
 The **jsonschema_type** is a string field which identifies a specific jsonschema type. The type is then used widely in the plugin to refer to its configuration (see below: Registry)
 
-The **jsonschema_body**, the body of jsonschema, is a json object which uniquely describes the an object as it was mentioned.   <!--TODO should be approved-->
+The **jsonschema_body** is the container of the body of the json portion of the metadata, it a pure json object which (depending on the plugin implementation) can be treated as single source of thought for the ckan standard metadata fields (please ref. to the Extractors section below).
 
-The **jsonschema_opt** is another json object that describes general options of the object mainly the information about the object itself <!--TODO should be approved-->
+The **jsonschema_opt** is another json object part of the payload sent to the ckan api, it should be intended as META-Metadata object.
 
+Since jsonschema adds 3 fields which does not exists on default CKAN objects, these fields are stored in new tables with the naming convention {type_of_the_object}_extra (f.e. package_extras). 
 
 ## Base concepts
 
@@ -103,6 +103,7 @@ The terriajs plugin extensively uses this approach.
 
 Also, jsonschema introduces indexing for view: this is very useful to search views when creating complex and interconnected views.
 
+<a name="registry"></a>
 ### Registry 
 
 The jsonschema plugin behaviours are driven by its **registry**.
@@ -121,7 +122,6 @@ To get a list of acceptable schema_type check out the keys from this map:
 
 Some of the startup operations in CKAN are performed just after the setup of a plugin for this reason there's a lazy load mechanism which will perform some operations when required the first time from the api (f.e. load the list of registry entries).
 
-<!-- QUESTION maybe we should mention reload api method here, or maybe we should add it in api section and reference to there ? -->
 
 #### License
 
@@ -204,6 +204,7 @@ Usually the name is set to match the name of the plugin for consistency.
 
 Also for consistency, the field "plugin_name" is still added for entry regarding views in the registry. 
 
+<a name="validator"></a>
 ### Validator
 
 Dataset and resources are matched against JSON schema files to validate them.
@@ -248,7 +249,7 @@ When the validation is successful, it is possible to use the confirmation button
 
 At this point, the request is sent to the backend, and validation also occurs on this side. If there are no errors, the process is completed; otherwise the page is reloaded and the errors are displayed on the top.
 
-
+<a name="view-configurations"></a>
 ### View Configurations
 
 The plugins implementing views must define their own configuration file (JSON).
@@ -412,13 +413,13 @@ def register_jsonschema_resources(self):
 
 Json addition is just a way to store JSON's in CKAN providing an interface and a validation. On top of these feature jsonschema implements some additional functionalities:
 
-Extractor(from JSON to CKAN or reverse)
-Importer
-Exporter
-Cloner
-Harvester
-Resolver
-Wrapper
+- Extractor(from JSON to CKAN or reverse)
+- Importer
+- Exporter
+- Cloner
+- Harvester
+- Resolver
+- Wrapper
 
 ### Plugins functionalities
 
@@ -465,8 +466,9 @@ Plugins that implement additional types should register their schemas, templates
 
 
 
-
+<a name="extractor"></a>
 ### Extractor:
+
 
 The plugin inherits the interface **IDatasetForm** and overrides the actions *create_package_schema* and *update_package_schema* to validate and convert data coming from users.
 
@@ -482,13 +484,29 @@ The next 3 methods call methods of the plugin which manages the specific format,
 
 - *resource_extractor*: for each item in the field "resources" of the data, calls the method *extract_from_json* passing the specific resource type. Plugins should check the type passed in to choose the right implementation to use
 
+In short, extraction and validation flows are two integrated processes implemented as a stack/set of function calls including the ones above. These methods are called during the **__before phase** and applied to 3 extra jsonschema_fields.
+
 
 **An example Flow:**
 
 Creation of an iso:
 
 **jsonschhema_type**, one of the three field of jsonschema, is set to be *iso*.
-An entry with the key iso is found in registry.json file in corresponding plugin, ckanext-jsonschema in this case.
+
+An entry with the key iso is found in registry.json file in corresponding plugin, jsonschema-iso in this case.
+
+
+```json
+"iso": {
+    "label": "Iso",
+    "plugin_name": "jsonschema_iso",
+    "schema": "iso/iso.json",
+    "template": "iso/iso.json",
+    "module": "iso/iso.js",
+    "supported_jsonschema_fields": ["body", "opt"],
+    "supported_ckan_fields": ["license_id", "owner_org"]
+}
+```
 
 Extraction and validations will be performed based on this configuration.
 
@@ -509,7 +527,7 @@ The body is validated in *schema_check* method against the schema that was in th
 
 *before_extractor*, *extractor* and *resource_extractor* methods are also called respectively.
 
-Since there is no resource yet it basically does nothing at this point.
+Since no resource has been added at this point of time, resource_extractor method would not have any effect.
 
 After these called are performed resource addition page/section is rendered.
 
@@ -517,10 +535,12 @@ When "finish" button is clicked the same function calls are performed as they we
 
 If there is no error an iso metadata is successfully created.
 
+<a name="converter"></a>
 ### Converter:
 
 Converter is an implicit functionality provided during the import or export phase which allows the jsonschema implementing plugin to switch from one format to another.
 
+<a name="importer"></a>
 ### Importer:
 
 The importer should be ready here:
@@ -596,6 +616,7 @@ When the operation is successfully, a detailed json of the imported package is r
 the error that causated the failure.
 <!-- TODO add some images and better explanation -->
 
+<a name="exporter"></a>
 ### Exporter:
 
 Even if it is not recommendable, a metadata that was an Iso19139 XML at the source and was then imported into CKAN, can be exported back into the original format (for example, a metadata can be imported into CKAN, edited and then exported back into standard XML).
@@ -604,15 +625,17 @@ Even if it is not recommendable, a metadata that was an Iso19139 XML at the sour
 
 This is provided by the wayback functionality. Please notice that, even if efforts were put to make this possible, the mapping between the standards is not complitely bijective and so the export could result a little different from the original version.
 
-
+<a name="cloner"></a>
 ### Cloner:
 
  Cloner interface will allow you to duplicate an existing metadata. Each implementation can have its own logic avoiding, duplication undesired resources or uuid's.
 
+<a name="harvester"></a>
 ### Harvester:
 
  harvester_iso19139      | Alpha    | metadata | Harvester for iso19139 from GeoNetwork using CSW. Superseded by the importer |
 
+<a name="resolver"></a>
 ### Resolver:
 
 The resolve option is instead core to the plugin view and some functionalities are provided out of the box from into the **view_tools** so an implementing plugin can easily leverage on it.
@@ -643,7 +666,8 @@ Using the resolve=true parameter the expected returned body will be:
     "description": "The description of the package (or the one from the resource)"
 }
 ```
-<!-- QUESTION otherwise the values will not be reloaded and old values will be returned right ? if so this may also be added here-->
+
+
 #### force_resolve
 
 Thanks to the jsonschema plugin a view is now also indexed into solr and it is used to provide a fast way to return an already resolved view body.
@@ -659,7 +683,7 @@ To enforce the resolution of an already resolved view, use this parameter.
 | resolve | Boolean |  | resolve=True |
 | force_resolve | Boolean |  | force_resolve=True |
 
-
+<a name="wrapper"></a>
 ### Wrapper:
 
 A view can be based on a composition of existing views, and you may want to compose them into a single big collection.
