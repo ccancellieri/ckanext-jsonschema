@@ -131,7 +131,7 @@ def view_schema_check(key, data, errors, context):
 
     _data = df.unflatten(data)
 
-    body, jsonschema_type, opt = get_extras_from_view(_data)
+    body, jsonschema_type, opt = _vt.get_extras_from_view(_data)
     
     if not jsonschema_type:
         stop_with_error('Unable to load a valid json schema type', key, errors)
@@ -147,7 +147,7 @@ def view_schema_check(key, data, errors, context):
         stop_with_error('Unable to continue validation error found in View for format {}'.format(jsonschema_type), key, errors)
 
 def resources_extractor(key, data, errors, context):
-    
+
     _data = df.unflatten(data)
 
     package_type = _t.get_package_type(_data)
@@ -213,7 +213,8 @@ def before_extractor(key, data, errors, context):
     plugin = configuration.get_plugin(jsonschema_type)
 
     try:
-        extractor = plugin.get_before_extractor(jsonschema_type, context) 
+        extractor = plugin.get_before_extractor(jsonschema_type, context)
+
         extractor(_data, errors, context)        
                 
         # update datamodel
@@ -270,13 +271,7 @@ def dataset_dump(dataset_id, format = None):
     return body
 
 
-def get_extras_from_view(view):
-    
-    body = _t.as_dict(_vt.get_view_body(view))
-    _type = _vt.get_view_type(view)
-    opt = _t.as_dict(_vt.get_view_opt(view))
 
-    return body, _type, opt
 
 ########### UNUSED
 
@@ -350,6 +345,7 @@ def modify_package_schema(schema):
         before = []
         schema['__before'] = before
 
+
     #TODO
     #Remove resource_extractor. Should be done with actions chain handler (resource_create, resource_update)
     
@@ -379,7 +375,7 @@ def show_package_schema(schema):
     return schema
 
 def jsonschema_fields_to_json(key, data, errors, context):
-    
+
     _data = df.unflatten(data)
 
     _data[_c.SCHEMA_BODY_KEY] = _t.as_dict(_t.get_package_body(_data))

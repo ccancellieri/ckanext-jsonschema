@@ -31,6 +31,28 @@ def _extract_from_view(view, domain):
     
     raise Exception("Missing parameter resource or domain")
 
+def _set_view(view, domain, value=None):
+
+    if view and domain:
+        view[domain] = value
+
+def set_view_body(view, value):
+    _set_view(view, _c.SCHEMA_BODY_KEY, value)
+
+def set_view_type(view, value):
+    _set_view(view, _c.SCHEMA_TYPE_KEY, value)
+
+def set_view_opt(view, value):
+    _set_view(view, _c.SCHEMA_OPT_KEY, value)
+
+def get_extras_from_view(view):
+
+    body = _t.as_dict(get_view_body(view))
+    _type = get_view_type(view)
+    opt = _t.as_dict(get_view_opt(view))
+
+    return body, _type, opt
+
 def interpolate_fields(model, template):
 
     def functionLoader(_template):
