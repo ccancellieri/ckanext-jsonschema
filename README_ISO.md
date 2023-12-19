@@ -21,7 +21,6 @@ The original XML is mapped into the "iso" profile, which is just the JSON repres
 The "iso" profile JSON is kept into the package's jsonschema_body extra field.
 
 
-
 ### Wayback 
 
 Even if it is not recommendable, a metadata that was an Iso19139 XML at the source and was then imported into CKAN, can be exported back into the original format (for example, a metadata can be imported into CKAN, edited and then exported back into standard XML).
