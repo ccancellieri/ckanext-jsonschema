@@ -716,3 +716,34 @@ def json_serial(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     raise TypeError ("Type %s not serializable" % type(obj))
+
+
+def _extract_from_extras(package, domain, default_value = {}):
+    # extract from extras of a dataset
+    if not domain:
+        raise Exception("Missing parameter domain")
+    if not package:
+        raise Exception("Missing parameter package")
+
+    # Checking extra data content for extraction
+    extras = package.get('extras')
+
+    for extra in extras:
+        if domain in extra.get('key'):
+            return extra['value']
+    
+    if domain in package:
+        return package[domain]
+
+
+def pop_from_extras(extras, domain, default_value = {}):
+    # pop key/value pairs from extras
+    if not domain:
+        raise Exception("Missing parameter domain")
+    if not extras:
+        raise Exception("Missing parameter extras")
+
+    for extra in extras:
+        if domain in extra.get('key'):
+            return extras.pop()   
+        

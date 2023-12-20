@@ -389,25 +389,32 @@ As mentioned above the packages key, returnes a list of dictized datasets. Each 
 | relationships_as_object  | list of relationship dictionaries | Relationship between two datasets (packages) [NOT USED] |  |
 | relationships_as_subject  | list of relationship dictionaries | Relationship between two datasets (packages) [NOT USED] |  |
 | revision_id  | list of resources dictionaries | Unique identifier of the dataset |  |
+| jsonschema_body | String (Json) | Resolved view body | {"key":"value"} |
+| jsonschema_type | String | may match the schema used from the registry, see below | wms |
+| jsonschema_opt | String (Json) | meta-metadata optional informations, should never be exposed but can ship some hints |  |
 Views key contains a list of dictized resources that satisfy the view_type search criteria. Each of them has the following keys:
 |Param|Type|Note|Example|
 |--|--|--|--|
 | id  | String | Unique identifier of the resource |  |
-| package_id  | String | Unique identifier of the dataset |  |
 | name  | String | Name of the resource |  |
 | size  | int | Size of the resource file |  |
 | state  | String | State of the resource (active/deleted) |  |
 | description  | String | Description of the resource |  |
 | format  | String | Format of the resource |  |
-| metadata_link  | String (url) | WEB page url to the dataset |  |
 | url  | String (url) | URL pointing to the resource |  |
-| resource_link  | String (url) | WEB page url |  |
-| jsonschema_body_link | String (url) | REST API |  |
+| views  | List of terriajs views per resource |  |  |
 | view_type  | String | may match the **type** parameter | terriajs |
 | jsonschema_body | String (Json) | Resolved view body | {"key":"value"} |
 | jsonschema_type | String | may match the schema used from the registry, see below | wms |
 | jsonschema_opt | String (Json) | meta-metadata optional informations, should never be exposed but can ship some hints |  |
-
+Each view object contains the following metadata fields:
+|Param|Type|Note|Example|
+|--|--|--|--|
+| view_id  | String | Unique identifier of the resource |  |
+| view_type  | String | may match the **type** parameter | terriajs |
+| jsonschema_body | String (Json) | Resolved view body | {"key":"value"} |
+| jsonschema_type | String | may match the schema used from the registry, see below | wms |
+| jsonschema_opt | String (Json) | meta-metadata optional informations, should never be exposed but can ship some hints |  |
 
 Organization key is a list of key/value pair details for the owner_organization.
 
