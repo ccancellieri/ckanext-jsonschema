@@ -738,8 +738,6 @@ def _extract_from_extras(package, domain, default_value = {}):
 
 def pop_from_extras(extras, domain, default_value = {}):
     # pop key/value pairs from extras
-    print (extras)
-    print ('IN POP!!!!!!!!!!')
     if not domain:
         raise Exception("Missing parameter domain")
     if not extras:
