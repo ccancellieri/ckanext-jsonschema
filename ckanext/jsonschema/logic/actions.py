@@ -555,7 +555,7 @@ def view_search(context, data_dict):
             else:
                 # no resource filter condition
                 matching_res_id = res_ids
-            
+                        
             if len(matching_res_id) > 0:
                 for res_id in matching_res_id:
                     resource = next((d for d in resources_tmp if d.get('id') == res_id), None)
@@ -571,10 +571,25 @@ def view_search(context, data_dict):
 
             package_tmp.pop('resources', None)
             total_views += len(resources)
-            package_tmp['views'] = resources
-            package_tmp['num_resources_view'] = len(resources)
-            result.append(package_tmp)
+            package_tmp['resources'] = resources
 
+            # extras
+            if 'extras' in package_tmp.keys():
+                package_tmp[_c.SCHEMA_BODY_KEY] = _t._extract_from_extras(package_tmp, _c.SCHEMA_BODY_KEY)
+                package_tmp[_c.SCHEMA_TYPE_KEY] =  _t._extract_from_extras(package_tmp, _c.SCHEMA_TYPE_KEY)
+                package_tmp[_c.SCHEMA_OPT_KEY] =  _t._extract_from_extras(package_tmp, _c.SCHEMA_OPT_KEY)
+                # remove from extras
+                extras = package_tmp.get('extras')
+                if len(extras) > 0:
+                    extras_tmp = extras
+                    extras_tmp = _t.pop_from_extras(extras, _c.SCHEMA_BODY_KEY)
+                    extras_tmp = _t.pop_from_extras(extras, _c.SCHEMA_OPT_KEY)
+                    extras_tmp = _t.pop_from_extras(extras, _c.SCHEMA_TYPE_KEY)
+
+                    if extras_tmp is not None:
+                        package_tmp['extras'] = extras_tmp
+
+            result.append(package_tmp)
             returning.extend(result)
 
         pkg_count = len(returning)
@@ -584,7 +599,7 @@ def view_search(context, data_dict):
             'total_package_count': count,
             'package_count': pkg_count,
             'view_count': total_views,
-            'offset': offset,
+            'offset': int(offset),
             'packages': returning
         }
 
@@ -678,43 +693,29 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
 
 
 def _view_model(view_document):
-
-    package = view_document['package']
-    organization = view_document['organization']
     package_id = view_document['package_id']
     resource_id = view_document['resource_id']
     view_id = view_document['view_id']
 
     return {
-        'package': package,
-        'organization': organization,
-        'package_id': package_id,
-        'resource_id': resource_id,
         'view_id': view_id,
-        'resource_link': toolkit.url_for('/dataset/{}/resource/{}'\
-            .format(package_id, resource_id), _external=True),
-        'metadata_link': toolkit.url_for('/dataset/{}'.format(package_id), _external=True),
-        '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}/{}'\
-            .format(_c.TYPE, package_id, resource_id, view_id),  _external=True, resolve=True),
         'view_type': view_document.get('view_type'),
         _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
         _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
         _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
     }
 
+
 def _view_model_resource(view_document):
     package_id = view_document['package_id']
     resource_id = view_document['resource_id']
     view_id = view_document['view_id']
 
+    views = []
+    views = _view_model(view_document)
+
     return {
-        'view_id': view_id,
-        'resource_link': toolkit.url_for('/dataset/{}/resource/{}'\
-            .format(package_id, resource_id), _external=True),
-        'metadata_link': toolkit.url_for('/dataset/{}'.format(package_id), _external=True),
-        '{}_link'.format(_c.SCHEMA_BODY_KEY): toolkit.url_for('/{}/body/{}/{}/{}'\
-            .format(_c.TYPE, package_id, resource_id, view_id),  _external=True, resolve=True),
-        'view_type': view_document.get('view_type'),
+        'views': views,
         _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
         _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
         _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
