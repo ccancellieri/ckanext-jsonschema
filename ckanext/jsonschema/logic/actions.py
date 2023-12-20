@@ -632,7 +632,7 @@ def matching_views_by_package(document, resource, searching_view_type = None, re
                 for key in view:
                     if key not in resource.keys():
                         resource[key] = view[key]
-                ret.append(resource)
+                ret.extend(resource)
     return ret
 
 def matching_views(document, searching_view_type = None, res_id = None, searching_schema_type = None):
