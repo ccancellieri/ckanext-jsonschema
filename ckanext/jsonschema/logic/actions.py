@@ -628,11 +628,7 @@ def matching_views_by_package(document, resource, searching_view_type = None, re
                     if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
                         continue
 
-                view = _view_model_resource(view_document)
-                for key in view:
-                    if key not in resource.keys():
-                        resource[key] = view[key]
-                ret.extend(resource)
+                ret.append(_view_model_resource(view_document))
     return ret
 
 def matching_views(document, searching_view_type = None, res_id = None, searching_schema_type = None):
@@ -693,8 +689,6 @@ def matching_views(document, searching_view_type = None, res_id = None, searchin
 
 
 def _view_model(view_document):
-    package_id = view_document['package_id']
-    resource_id = view_document['resource_id']
     view_id = view_document['view_id']
 
     return {
@@ -707,15 +701,9 @@ def _view_model(view_document):
 
 
 def _view_model_resource(view_document):
-    package_id = view_document['package_id']
-    resource_id = view_document['resource_id']
-    view_id = view_document['view_id']
-
-    views = []
-    views = _view_model(view_document)
 
     return {
-        'views': views,
+        'views': [_view_model(view_document)],
         _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
         _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
         _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
