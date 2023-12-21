@@ -473,7 +473,7 @@ def view_search(context, data_dict):
         q = aq if aq else q
         (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
         q = aq if aq else q
-        (aq, searching_res_type) = _append_param(data_dict, 'data_format', q, 'res_format')
+        (aq, searching_res_format) = _append_param(data_dict, 'resource_format', q, 'res_format')
         q = aq if aq else q
         (aq, searching_view_id) = _append_param(data_dict, 'view_id', q, 'view_ids')
         q = aq if aq else q        

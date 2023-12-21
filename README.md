@@ -276,13 +276,14 @@ GET
 |Param|Type|Note|Example|
 |--|--|--|--|
 | query | String | Full-text search through all the text fields |  |
+| view_id | String |  |  |
 | package_desc | String |  |  |
 | package_name | String |  |  |
 | package_title | String |  |  |
 | resource_desc | String |  | "my description" |
 | resource_name | String |  |  |
+| resource_format | String | Filter resources by format (wms, csv, json etc.) |  |
 | tags | String or Array | List of dataset tags to search for | (food farm rice) |
-| data_format | String | Filter resources by format (wms, csv, json etc.) |  |
 | organization_name | String or Array | List of organizations to search for  |  |
 | join_condition | String | [OR|AND default is AND] | AND |
 | schema_type | String | the schema used for the view body it should match with the schema key of the registry, see below |  |
