@@ -8,6 +8,7 @@ import ckanext.jsonschema.constants as _c
 import ckanext.jsonschema.indexer as indexer
 # import ckanext.jsonschema.logic.get as _g
 import ckanext.jsonschema.tools as _t
+import ckanext.jsonschema.view_tools as _vt
 import ckanext.jsonschema.utils as _u
 # import ckanext.jsonschema.validators as _v
 from ckan.logic import NotFound, ValidationError, side_effect_free
@@ -431,8 +432,8 @@ def view_search(context, data_dict):
     #
 
     try:
-        model = context['model']
-        session = context['session']
+        # model = context['model']
+        # session = context['session']
         user = context.get('user')
 
         # results should be returned according to user permissions
@@ -473,6 +474,8 @@ def view_search(context, data_dict):
         (aq, searching_tags) = _append_param(data_dict, 'tags', q, 'tags')
         q = aq if aq else q
         (aq, searching_res_type) = _append_param(data_dict, 'data_format', q, 'res_format')
+        q = aq if aq else q
+        (aq, searching_view_id) = _append_param(data_dict, 'view_id', q, 'view_ids')
         q = aq if aq else q        
 
         if q is not None:
@@ -509,9 +512,25 @@ def view_search(context, data_dict):
             res_names = document.get('res_name')
             # resources that have terrijs view?
             res_ids = document.get('res_ids')
+            view_ids = document.get('view_ids')
             matching_res_id = []
             resources = []
-            if searching_res_name and searching_res_desc:
+
+            if searching_view_id:
+                for vidx, v_id in enumerate(view_ids):
+                    if v_id == searching_view_id:
+                        # fetch the body
+                        for ridx, resource in enumerate(resources_tmp):
+                            view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[vidx]))
+                            if view_document['resource_id']==resource['id']:
+                                if not resource.get('views'):
+                                    resource['views']=[]
+                                resource['views'].append(_view_model(view_document))
+                                total_views += 1
+                                resources.append(resource)
+                                break
+
+            elif searching_res_name and searching_res_desc:
                 if res_names and res_descs:
                     if len(res_descs) == len(res_names):
                         join_condition = data_dict.get('join_condition', 'and').lower()
@@ -556,10 +575,17 @@ def view_search(context, data_dict):
                 # no resource filter condition
                 matching_res_id = res_ids
                         
+        
             if len(matching_res_id) > 0:
                 for res_id in matching_res_id:
+                    # get the matching resource dict given a resource ID
                     resource = next((d for d in resources_tmp if d.get('id') == res_id), None)
-                    resources.extend(matching_views_by_package(document, resource, searching_view_type, res_id, searching_schema_type))
+                    matching_views = matching_views_by_package(document, resource, searching_view_type, res_id, searching_schema_type)
+                    # TODO do we want to filter out not matching resources views? shall we return all the resources anyhow?
+                    if matching_views:
+                        total_views += len(matching_views)
+                        resource['views'] = matching_views
+                        resources.append(resource)
 
             # only particular fields of the organization data dictionary are shown for the results
             package_tmp['organization'] = {
@@ -570,7 +596,7 @@ def view_search(context, data_dict):
             }
 
             package_tmp.pop('resources', None)
-            total_views += len(resources)
+            
             package_tmp['resources'] = resources
 
             # extras
@@ -625,67 +651,67 @@ def matching_views_by_package(document, resource, searching_view_type = None, re
 
                 # filter by view schema type
                 if searching_schema_type:
-                    if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
+                    if searching_schema_type != _vt.get_view_type(view_document):
                         continue
 
-                ret.append(_view_model_resource(view_document))
-    return ret
-
-def matching_views(document, searching_view_type = None, res_id = None, searching_schema_type = None):
-    ret = []
-    view_types = document.get('view_types')
-    # for each view
-    if view_types:
-        for vidx, view_type in enumerate(view_types):
-            # if matching the view_type
-            if searching_view_type in view_type:
-                # fetch the body
-                view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[vidx]))
-
-                # add package and organization information to the response
-                view_document['package'] = []
-                view_document['organization'] = []
-                package_tmp = _t.dictize_pkg(json.loads(document.get('data_dict')))
-                organization_tmp = package_tmp['organization']
-
-                # only particular fields of the package data dictionary are shown for the results
-                view_document['package'] = {
-                    'id': package_tmp['id'],
-                    'name': package_tmp['name'],
-                    'title': package_tmp['title'],
-                    'type': package_tmp['type'],
-                    'notes': package_tmp['notes'],
-                    'tags': package_tmp['tags'],
-                    'license_id': package_tmp['license_id'],
-                    'license_title': package_tmp['license_title'],
-                    'author': package_tmp['author'],
-                    'author_email': package_tmp['author_email'],
-                    'maintainer': package_tmp['maintainer'],
-                    'maintainer_email': package_tmp['maintainer_email'],
-                    'creator_user_id': package_tmp['creator_user_id']
-                }
-
-                # only particular fields of the organization data dictionary are shown for the results
-                view_document['organization'] = {
-                    'id': organization_tmp['id'],
-                    'name': organization_tmp['name'],
-                    'title': organization_tmp['title'],
-                    'description': organization_tmp['description']
-                }
-
-                # if res_id is passed we also have to filter by resource_id
-                if res_id:
-                    if res_id != view_document.get('resource_id'):
-                        continue
-
-                # filter by view schema type
-                if searching_schema_type:
-                    if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
-                        continue
-                # if here append the document
                 ret.append(_view_model(view_document))
-
     return ret
+
+# def matching_views(document, searching_view_type = None, res_id = None, searching_schema_type = None):
+#     ret = []
+#     view_types = document.get('view_types')
+#     # for each view
+#     if view_types:
+#         for vidx, view_type in enumerate(view_types):
+#             # if matching the view_type
+#             if searching_view_type in view_type:
+#                 # fetch the body
+#                 view_document = _t.dictize_pkg(json.loads(document.get('view_jsonschemas')[vidx]))
+
+#                 # add package and organization information to the response
+#                 view_document['package'] = []
+#                 view_document['organization'] = []
+#                 package_tmp = _t.dictize_pkg(json.loads(document.get('data_dict')))
+#                 organization_tmp = package_tmp['organization']
+
+#                 # only particular fields of the package data dictionary are shown for the results
+#                 view_document['package'] = {
+#                     'id': package_tmp['id'],
+#                     'name': package_tmp['name'],
+#                     'title': package_tmp['title'],
+#                     'type': package_tmp['type'],
+#                     'notes': package_tmp['notes'],
+#                     'tags': package_tmp['tags'],
+#                     'license_id': package_tmp['license_id'],
+#                     'license_title': package_tmp['license_title'],
+#                     'author': package_tmp['author'],
+#                     'author_email': package_tmp['author_email'],
+#                     'maintainer': package_tmp['maintainer'],
+#                     'maintainer_email': package_tmp['maintainer_email'],
+#                     'creator_user_id': package_tmp['creator_user_id']
+#                 }
+
+#                 # only particular fields of the organization data dictionary are shown for the results
+#                 view_document['organization'] = {
+#                     'id': organization_tmp['id'],
+#                     'name': organization_tmp['name'],
+#                     'title': organization_tmp['title'],
+#                     'description': organization_tmp['description']
+#                 }
+
+#                 # if res_id is passed we also have to filter by resource_id
+#                 if res_id:
+#                     if res_id != view_document.get('resource_id'):
+#                         continue
+
+#                 # filter by view schema type
+#                 if searching_schema_type:
+#                     if searching_schema_type != view_document.get(_c.SCHEMA_TYPE_KEY):
+#                         continue
+#                 # if here append the document
+#                 ret.append(_view_model(view_document))
+
+#     return ret
 
 
 def _view_model(view_document):
@@ -695,16 +721,7 @@ def _view_model(view_document):
         'view_id': view_id,
         'view_type': view_document.get('view_type'),
         _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
-        _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
-        _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
+        _c.SCHEMA_TYPE_KEY: _vt.get_view_type(view_document),
+        _c.SCHEMA_OPT_KEY: _vt.get_view_opt(view_document)
     }
 
-
-def _view_model_resource(view_document):
-
-    return {
-        'views': [_view_model(view_document)],
-        _c.SCHEMA_BODY_KEY: view_document.get('{}_resolved'.format(_c.SCHEMA_BODY_KEY)),
-        _c.SCHEMA_TYPE_KEY: view_document.get(_c.SCHEMA_TYPE_KEY),
-        _c.SCHEMA_OPT_KEY: view_document.get(_c.SCHEMA_OPT_KEY)
-    }
