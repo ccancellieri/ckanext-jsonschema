@@ -28,7 +28,7 @@ import ckan.logic as logic
 
 _check_access = logic.check_access
 
-#@plugins.toolkit.chained_action
+
 def importer(context, data_dict):
     if not data_dict:
         error_msg = 'No dict provided'
@@ -411,7 +411,7 @@ def view_search(context, data_dict):
     # view_jsonschema_types=terriajs # wms, csv, scorecard, mapcard 
 
     # view_types=terriajs #plugin name
-    
+
     if 'view_type' not in data_dict:
         raise ValidationError('Parameter \'view_type\' (plugin name used as view type) is mandatory')
     searching_view_type = data_dict.get('view_type').lower()
@@ -596,24 +596,17 @@ def view_search(context, data_dict):
             }
 
             package_tmp.pop('resources', None)
-            
+            package_tmp['num_resources'] = len(resources)
             package_tmp['resources'] = resources
+
 
             # extras
             if 'extras' in package_tmp.keys():
-                package_tmp[_c.SCHEMA_BODY_KEY] = _t._extract_from_extras(package_tmp, _c.SCHEMA_BODY_KEY)
-                package_tmp[_c.SCHEMA_TYPE_KEY] =  _t._extract_from_extras(package_tmp, _c.SCHEMA_TYPE_KEY)
-                package_tmp[_c.SCHEMA_OPT_KEY] =  _t._extract_from_extras(package_tmp, _c.SCHEMA_OPT_KEY)
-                # remove from extras
-                extras = package_tmp.get('extras')
-                if len(extras) > 0:
-                    extras_tmp = extras
-                    extras_tmp = _t.pop_from_extras(extras, _c.SCHEMA_BODY_KEY)
-                    extras_tmp = _t.pop_from_extras(extras, _c.SCHEMA_OPT_KEY)
-                    extras_tmp = _t.pop_from_extras(extras, _c.SCHEMA_TYPE_KEY)
-
-                    if extras_tmp is not None:
-                        package_tmp['extras'] = extras_tmp
+                package_tmp[_c.SCHEMA_BODY_KEY] = _t.pop_from_extras(package_tmp['extras'], _c.SCHEMA_BODY_KEY)
+                package_tmp[_c.SCHEMA_TYPE_KEY] = _t.pop_from_extras(package_tmp['extras'], _c.SCHEMA_TYPE_KEY)
+                package_tmp[_c.SCHEMA_OPT_KEY] =  _t.pop_from_extras(package_tmp['extras'], _c.SCHEMA_OPT_KEY)
+                if len(package_tmp['extras']) == 0:
+                    del package_tmp['extras']
 
             result.append(package_tmp)
             returning.extend(result)

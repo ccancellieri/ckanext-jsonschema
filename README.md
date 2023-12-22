@@ -121,13 +121,36 @@ Add the following entry to the SOLR schema.xml:
 
 
 ```xml
+<types>
+    <!-- A general unstemmed text field - good if one does not know the language of the field -->
+    <fieldType name="caseInsensitive" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="0"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+        </analyzer>
+    </fieldType>
+</types>
+```
+
+```xml
 <field name="res_ids" type="string" indexed="true" stored="true" multiValued="true"/>
 <field name="res_jsonschemas" type="text" indexed="true" stored="true" multiValued="true"/>
-<field name="res_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true"/>
+<field name="res_jsonschema_types" type="caseInsensitive" indexed="true" stored="true" multiValued="true"/>
 <field name="view_ids" type="string" indexed="true" stored="true" multiValued="true"/>
 <field name="view_types" type="string" indexed="true" stored="true" multiValued="true"/>
-<field name="view_jsonschema_types" type="string" indexed="true" stored="true" multiValued="true" />
+<field name="view_jsonschema_types" type="caseInsensitive" indexed="true" stored="true" multiValued="true" />
 <field name="view_jsonschemas" type="text" indexed="true" stored="true" multiValued="true" />
+```
+The res_format field of ckan should be changed as below
+
+```xml
+<field name="res_format" type="caseInsensitive" indexed="true" stored="true" multiValued="true"/>
 ```
 
 Optionally (will only work with the terriajs plugin)

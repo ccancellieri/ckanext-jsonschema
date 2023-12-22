@@ -743,7 +743,7 @@ def pop_from_extras(extras, domain, default_value = {}):
     if not extras:
         raise Exception("Missing parameter extras")
 
-    for extra in extras:
+    for extra_idx, extra in enumerate(extras):
         if domain in extra.get('key'):
-            return extras.pop()   
+            return extras.pop(extra_idx)   
         
