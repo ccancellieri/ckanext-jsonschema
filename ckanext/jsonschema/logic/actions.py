@@ -601,7 +601,7 @@ def view_search(context, data_dict):
 
 
             # extras
-            if 'extras' in package_tmp.keys():
+            if 'extras' in package_tmp.keys() and len(package_tmp['extras']) > 0:
                 package_tmp[_c.SCHEMA_BODY_KEY] = _t.pop_from_extras(package_tmp['extras'], _c.SCHEMA_BODY_KEY)
                 package_tmp[_c.SCHEMA_TYPE_KEY] = _t.pop_from_extras(package_tmp['extras'], _c.SCHEMA_TYPE_KEY)
                 package_tmp[_c.SCHEMA_OPT_KEY] =  _t.pop_from_extras(package_tmp['extras'], _c.SCHEMA_OPT_KEY)
