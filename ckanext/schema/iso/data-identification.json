@@ -1,6 +1,7 @@
 {
   "type": "object",
-  "required": [
+  "title": "Data Identification Info",
+    "required": [
     "citation",
     "abstract",
     "topicCategory",
@@ -160,6 +161,9 @@
       "propertyOrder": 30,
       "title": "Descriptive keywords",
       "type": "array",
+      "options": {
+        "collapsed": true
+      },
       "format": "table",
       "items": {
         "type": "object",
@@ -266,6 +270,9 @@
       "propertyOrder": 60,
       "title": "Resource Constraints",
       "type":"object",
+      "options": {
+        "collapsed": true
+      },
       "properties":{
         "legalConstraints":{
           "title": "Legal constraints",
@@ -405,6 +412,9 @@
       "propertyOrder": 70,
       "title": "Spatial representation type",
       "type":"array",
+      "options": {
+        "collapsed": true
+      },
       "items":{
         "type": "string",
         "enum": [
@@ -421,6 +431,9 @@
       "propertyOrder": 80,
       "title": "Spatial resolution",
       "type": "array",
+      "options": {
+        "collapsed": true
+      },
       "items": {
         "type": "object",
         "properties": {
@@ -445,7 +458,10 @@
     "extent": {
       "propertyOrder": 90,
       "title": "Extent",
-      "$ref": "extent.json"
+      "$ref": "extent.json",
+      "options": {
+        "collapsed": true
+      }
     },
     "supplementalInformation": {
       "propertyOrder": 100,

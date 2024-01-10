@@ -45,6 +45,9 @@
           "bbox": {
             "title": "Geografic bounding box",
             "description": "bbox geographic extent",
+            "options": {
+              "collapsed": true
+            },
             "properties": {
               "east": {
                 "propertyOrder": 10,

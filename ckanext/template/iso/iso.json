@@ -3,5 +3,56 @@
     "metadataStandardName": "ISO 19115:2003/19139",
     "metadataStandardVersion": "1.0",
     "characterSet": "utf-8",
-    "dataIdentification": {}
+    "dataIdentification": {
+        "descriptiveKeywords": {},
+        "resourceConstraints": {
+            "legalConstraints":{
+                "otherConstraints": [],
+                "useConstraints": [
+                    "license"
+                ],
+                "accessConstraints": [
+                    "copyright"
+                ]
+            }
+        },
+        "spatialRepresentationType": {},
+        "spatialResolution": [
+            {
+                "distance": "",
+                "unit": "",
+                "scaleDenominator": ""
+            }
+        ],
+        "extent": {
+            "temporal": {},
+            "geographic": {
+                "bbox":{
+                    "east": "",
+                    "south": "",
+                    "west": "",
+                    "north": ""
+                }
+            }
+        },
+        "citation": {
+            "dates": [
+                {}
+            ]
+        },
+        "language": "eng"
+    },
+    "referenceSystemIdentifier": "",
+    "spatialRepresentationInfo": {
+        "gridSpatialRepresentation" : [],
+        "vectorSpatialRepresentation": []
+    },
+    "distributionFormat": [
+        {}
+    ],
+    "dataQualityInfo": {
+        "lineage":{
+            "source": []
+        }
+    }
 }

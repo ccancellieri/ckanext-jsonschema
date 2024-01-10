@@ -44,7 +44,7 @@
         },
         "dataIdentification": {
             "propertyOrder": 70,
-            "title": "Data identification info",
+            "title": "Data Identification Info",
             "$ref": "data-identification.json"
         },
         "referenceSystemIdentifier": {
@@ -60,13 +60,16 @@
         },
         "spatialRepresentationInfo": {
             "propertyOrder": 90,
-            "title": "Spatial representation info",
+            "title": "Spatial Representation Info",
             "$ref": "spatial-representation-info.json"
         },
         "distributionFormat": {
-            "title": "Distribution format",
+            "title": "Distribution Format",
             "propertyOrder": 95,
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "format": "table",
             "items": {
                 "type": "object",
@@ -85,8 +88,11 @@
         },
         "dataQualityInfo": {
             "propertyOrder": 100,
-            "title": "Data quality info",
+            "title": "Data Quality Info",
             "type": "object",
+            "options": {
+                "collapsed": true
+            },
             "required": [
                 "scope"
             ],
@@ -120,13 +126,30 @@
                     "title": "Lineage",
                     "description": "Information about the events or source data used in constructing the data specified by the scope",
                     "type": "object",
+                    "options" : {
+                        "no_additional_properties": true
+                    },
                     "properties": {
+                        "description": {
+                            "propertyOrder": 0,
+                            "title": "Description",
+                            "description": "The description of the lineage",
+                            "type": "string",
+                            "format": "markdown"
+                        },
                         "statement": {
-                            "propertyOrder": 1,
+                            "propertyOrder": 5,
                             "title": "Statement",
                             "description": "General explanation of the data producer about the lineage of the dataset",
                             "type": "string",
                             "format": "textarea"
+                        },
+                        "processStep": {
+                            "propertyOrder": 2,
+                            "title": "Process step",
+                            "description": "Describing the process step",
+                            "type": "string",
+                            "format": "markdown"
                         },
                         "source": {
                             "propertyOrder": 10,
